@@ -11,9 +11,10 @@ function Shop() {
   const [activeCategory, setActiveCategory] = useState(null)
   const { products, loading, error } = useProducts()
 
+  const publishedProducts = products.filter((p) => p.actif !== false)
   const visibleProducts = activeCategory
-    ? products.filter((p) => p.categorie === activeCategory)
-    : products
+    ? publishedProducts.filter((p) => p.categorie === activeCategory)
+    : publishedProducts
 
   return (
     <PriceModeProvider>

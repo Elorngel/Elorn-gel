@@ -7,9 +7,9 @@ export default function Header({ activeCategory, onSelectCategory }) {
   return (
     <header className="bg-paper border-b border-ink/15 sticky top-0 z-10">
       <div className="bg-ink text-stone text-[11px] font-tag px-5 py-1.5 flex justify-between">
-        <span>Retrait gratuit sous 48h à Ploudiry</span>
+        <span>Retrait gratuit sous 24h à Plouédern</span>
         <div className="flex gap-4">
-          <span>02 98 XX XX XX</span>
+          <span>02 98 20 50 43</span>
           <a href="#admin" className="text-stone/60 hover:text-stone">
             Administration
           </a>
@@ -17,9 +17,23 @@ export default function Header({ activeCategory, onSelectCategory }) {
       </div>
 
       <div className="flex items-center justify-between gap-6 px-5 py-3 flex-wrap">
-        <div className="font-display text-3xl tracking-wide text-forest">
-          ELORN GEL
-        </div>
+        <a href="#" className="block h-10 relative">
+          <img
+            src="/logo.png"
+            alt="Elorn Gel"
+            className="h-10 w-auto"
+            onError={(e) => {
+              e.target.style.display = 'none'
+              e.target.nextSibling.style.display = 'block'
+            }}
+          />
+          <span
+            className="font-display text-3xl tracking-wide text-forest absolute inset-0"
+            style={{ display: 'none' }}
+          >
+            ELORN GEL
+          </span>
+        </a>
 
         <nav className="flex gap-5 text-sm flex-wrap">
           {categories.map((cat) => (

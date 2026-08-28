@@ -61,6 +61,14 @@ export default function AdminPage() {
     }
   }
 
+  const toggleActive = async (product) => {
+    try {
+      await updateProduct(product.id, { actif: !(product.actif !== false) })
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    }
+  }
+
   if (loading) {
     return <div className="p-8 font-body text-sm text-muted">Chargement du catalogue…</div>
   }
@@ -103,6 +111,7 @@ export default function AdminPage() {
                 <th className="p-3 w-28">Prix livr.</th>
                 <th className="p-3 w-32">Prix / kg</th>
                 <th className="p-3 w-32">Stock</th>
+                <th className="p-3 w-28">Publié</th>
               </tr>
             </thead>
             <tbody>
@@ -110,7 +119,7 @@ export default function AdminPage() {
                 <tr
                   key={product.id}
                   className={`border-b border-ink/10 ${
-                    product.en_rupture ? 'opacity-50' : ''
+                    product.en_rupture || product.actif === false ? 'opacity-50' : ''
                   }`}
                 >
                   <td className="p-3">
@@ -189,6 +198,18 @@ export default function AdminPage() {
                       }`}
                     >
                       {product.en_rupture ? 'Bientôt de retour' : 'En stock'}
+                    </button>
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => toggleActive(product)}
+                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
+                        product.actif !== false
+                          ? 'border-ink/40 text-ink'
+                          : 'border-rust bg-rust/10 text-rust'
+                      }`}
+                    >
+                      {product.actif !== false ? 'Publié' : 'Masqué'}
                     </button>
                   </td>
                 </tr>

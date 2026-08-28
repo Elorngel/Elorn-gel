@@ -3,12 +3,12 @@ export default function Hero() {
     <section className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border-b border-ink/15">
       <div className="bg-forest text-paper px-8 py-10 flex flex-col justify-center">
         <span className="font-tag text-xs uppercase tracking-widest text-stone/80 mb-2">
-          250 produits · Ploudiry
+          250 références
         </span>
         <h1 className="font-display text-5xl md:text-6xl leading-[0.95] mb-4">
-          Le surgelé breton,
+          Le surgelé,
           <br />
-          en livraison ou au retrait
+          en livraison ou en retrait
         </h1>
         <p className="font-body text-sm text-stone/90 max-w-md mb-6">
           Commandez chez vous, récupérez en point de retrait et économisez 20%
@@ -18,8 +18,20 @@ export default function Hero() {
           Voir le catalogue
         </button>
       </div>
-      <div className="bg-stone flex items-center justify-center min-h-[220px]">
-        <span className="font-tag text-xs uppercase text-muted">
+      <div className="relative bg-stone flex items-center justify-center min-h-[220px] overflow-hidden">
+        <img
+          src="/images/vitrine.jpg"
+          alt="Elorn Gel"
+          className="w-full h-full object-cover absolute inset-0"
+          onError={(e) => {
+            e.target.style.display = 'none'
+            e.target.nextSibling.style.display = 'block'
+          }}
+        />
+        <span
+          className="font-tag text-xs uppercase text-muted relative"
+          style={{ display: 'none' }}
+        >
           Photo produit / vitrine
         </span>
       </div>
