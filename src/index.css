@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Public+Sans:wght@400;500;600;700&family=Roboto+Condensed:wght@600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #1b231a;
+  --color-forest: #23422b;
+  --color-forest-light: #3c6b46;
+  --color-stone: #e7e2d3;
+  --color-paper: #fbfaf6;
+  --color-rust: #a34428;
+  --color-muted: #6b7264;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Public Sans', sans-serif;
+  --font-tag: 'Roboto Condensed', sans-serif;
+}
+
+body {
+  background: var(--color-stone);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
