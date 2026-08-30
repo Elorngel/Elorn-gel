@@ -52,5 +52,22 @@ export function useProducts() {
     return data.publicUrl
   }, [updateProduct])
 
-  return { products, loading, error, refetch: fetchProducts, updateProduct, uploadPhoto }
+  const uploadPhotoOnly = useCallback(async (id, file) => {
+    const fileExt = file.name.split('.').pop()
+    const filePath = `${id}-${Date.now()}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('photos-produits')
+      .upload(filePath, file, { upsert: true })
+
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage
+      .from('photos-produits')
+      .getPublicUrl(filePath)
+
+    return data.publicUrl
+  }, [])
+
+  return { products, loading, error, refetch: fetchProducts, updateProduct, uploadPhoto, uploadPhotoOnly }
 }

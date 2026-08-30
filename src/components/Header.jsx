@@ -1,8 +1,10 @@
 import { usePriceMode } from '../context/PriceModeContext'
 import { categories } from '../data/products'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 
 export default function Header({ activeCategory, onSelectCategory }) {
   const { mode, setMode } = usePriceMode()
+  const { settings } = useSiteSettings()
 
   return (
     <header className="bg-paper border-b border-ink/15 sticky top-0 z-10">
@@ -19,7 +21,7 @@ export default function Header({ activeCategory, onSelectCategory }) {
       <div className="flex items-center justify-between gap-6 px-5 py-3 flex-wrap">
         <a href="#" className="block h-10 relative">
           <img
-            src="/logo.png"
+            src={settings?.logo_url || '/logo.png'}
             alt="Elorn Gel"
             className="h-10 w-auto"
             onError={(e) => {

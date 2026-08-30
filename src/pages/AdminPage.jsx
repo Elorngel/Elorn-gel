@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useProducts } from '../hooks/useProducts'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 import { categories } from '../data/products'
+import CroppableImage from '../components/CroppableImage'
+import PhotoEditorModal from '../components/PhotoEditorModal'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full' }) {
   const [draft, setDraft] = useState(value ?? '')
@@ -37,21 +40,85 @@ function CategorySelect({ value, onSave }) {
   )
 }
 
-export default function AdminPage() {
-  const { products, loading, error, updateProduct, uploadPhoto } = useProducts()
-  const [uploadingId, setUploadingId] = useState(null)
+function SiteSettingsPanel() {
+  const { settings, loading, updateSettings, uploadSiteImage } = useSiteSettings()
+  const [editing, setEditing] = useState(null) // 'hero' | 'logo' | null
 
-  const handlePhotoChange = async (id, file) => {
-    if (!file) return
-    setUploadingId(id)
-    try {
-      await uploadPhoto(id, file)
-    } catch (err) {
-      alert(`Erreur upload photo : ${err.message}`)
-    } finally {
-      setUploadingId(null)
-    }
-  }
+  if (loading || !settings) return null
+
+  return (
+    <div className="bg-paper border border-ink/15 p-4 mb-6">
+      <h2 className="font-display text-xl text-ink mb-3">Réglages du site</h2>
+      <div className="flex gap-4 flex-wrap">
+        <button
+          onClick={() => setEditing('hero')}
+          className="flex items-center gap-3 border border-ink/20 p-2 hover:border-ink/40"
+        >
+          <span className="block w-20 h-14 bg-stone overflow-hidden relative">
+            {settings.hero_url && (
+              <CroppableImage
+                src={settings.hero_url}
+                zoom={settings.hero_zoom}
+                posX={settings.hero_pos_x}
+                posY={settings.hero_pos_y}
+              />
+            )}
+          </span>
+          <span className="font-tag text-xs uppercase">Photo vitrine</span>
+        </button>
+
+        <button
+          onClick={() => setEditing('logo')}
+          className="flex items-center gap-3 border border-ink/20 p-2 hover:border-ink/40"
+        >
+          <span className="block w-20 h-14 bg-stone overflow-hidden flex items-center justify-center">
+            {settings.logo_url && (
+              <img src={settings.logo_url} alt="" className="max-w-full max-h-full" />
+            )}
+          </span>
+          <span className="font-tag text-xs uppercase">Logo</span>
+        </button>
+      </div>
+
+      {editing === 'hero' && (
+        <PhotoEditorModal
+          title="Photo vitrine (page d'accueil)"
+          initialUrl={settings.hero_url}
+          initialZoom={settings.hero_zoom ?? 1}
+          initialPosX={settings.hero_pos_x ?? 50}
+          initialPosY={settings.hero_pos_y ?? 50}
+          onUpload={(file) => uploadSiteImage(file, 'vitrine')}
+          onSave={({ url, zoom, posX, posY }) =>
+            updateSettings({
+              hero_url: url,
+              hero_zoom: zoom,
+              hero_pos_x: posX,
+              hero_pos_y: posY,
+            })
+          }
+          onClose={() => setEditing(null)}
+        />
+      )}
+
+      {editing === 'logo' && (
+        <PhotoEditorModal
+          title="Logo"
+          initialUrl={settings.logo_url}
+          initialZoom={1}
+          initialPosX={50}
+          initialPosY={50}
+          onUpload={(file) => uploadSiteImage(file, 'logo')}
+          onSave={({ url }) => updateSettings({ logo_url: url })}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default function AdminPage() {
+  const { products, loading, error, updateProduct, uploadPhotoOnly } = useProducts()
+  const [editingProduct, setEditingProduct] = useState(null)
 
   const toggleStock = async (product) => {
     try {
@@ -93,9 +160,12 @@ export default function AdminPage() {
       </header>
 
       <main className="p-6 max-w-7xl mx-auto">
+        <SiteSettingsPanel />
+
         <p className="font-body text-sm text-muted mb-4">
-          {products.length} produits. Clique sur un champ pour le modifier, la sauvegarde
-          se fait automatiquement quand tu cliques ailleurs.
+          {products.length} produits. Clique sur la photo pour la choisir et la régler
+          (molette pour zoomer, glisser pour recentrer). Les autres champs se
+          sauvegardent automatiquement quand tu cliques ailleurs.
         </p>
 
         <div className="bg-paper border border-ink/15 overflow-x-auto">
@@ -123,30 +193,23 @@ export default function AdminPage() {
                   }`}
                 >
                   <td className="p-3">
-                    <label className="block w-14 h-14 bg-stone border border-ink/15 cursor-pointer overflow-hidden relative">
+                    <button
+                      onClick={() => setEditingProduct(product)}
+                      className="block w-14 h-14 bg-stone border border-ink/15 overflow-hidden relative"
+                    >
                       {product.photo_url ? (
-                        <img
+                        <CroppableImage
                           src={product.photo_url}
-                          alt=""
-                          className="w-full h-full object-cover"
+                          zoom={product.photo_zoom ?? 1}
+                          posX={product.photo_pos_x ?? 50}
+                          posY={product.photo_pos_y ?? 50}
                         />
                       ) : (
                         <span className="flex items-center justify-center h-full font-tag text-[9px] text-muted text-center px-1">
                           Ajouter
                         </span>
                       )}
-                      {uploadingId === product.id && (
-                        <span className="absolute inset-0 bg-ink/60 flex items-center justify-center text-paper text-[9px]">
-                          …
-                        </span>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handlePhotoChange(product.id, e.target.files[0])}
-                      />
-                    </label>
+                    </button>
                   </td>
                   <td className="p-3 font-tag text-xs text-muted">{product.code_article}</td>
                   <td className="p-3">
@@ -218,6 +281,26 @@ export default function AdminPage() {
           </table>
         </div>
       </main>
+
+      {editingProduct && (
+        <PhotoEditorModal
+          title={editingProduct.nom}
+          initialUrl={editingProduct.photo_url}
+          initialZoom={editingProduct.photo_zoom ?? 1}
+          initialPosX={editingProduct.photo_pos_x ?? 50}
+          initialPosY={editingProduct.photo_pos_y ?? 50}
+          onUpload={(file) => uploadPhotoOnly(editingProduct.id, file)}
+          onSave={({ url, zoom, posX, posY }) =>
+            updateProduct(editingProduct.id, {
+              photo_url: url,
+              photo_zoom: zoom,
+              photo_pos_x: posX,
+              photo_pos_y: posY,
+            })
+          }
+          onClose={() => setEditingProduct(null)}
+        />
+      )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
   const { isPickup } = usePriceMode()
@@ -15,10 +16,12 @@ export default function ProductCard({ product }) {
     >
       <div className="relative h-36 bg-stone flex items-center justify-center overflow-hidden">
         {product.photo_url ? (
-          <img
+          <CroppableImage
             src={product.photo_url}
             alt={product.nom}
-            className="w-full h-full object-cover"
+            zoom={product.photo_zoom ?? 1}
+            posX={product.photo_pos_x ?? 50}
+            posY={product.photo_pos_y ?? 50}
           />
         ) : (
           <span className="font-tag text-xs uppercase tracking-wide text-muted">
