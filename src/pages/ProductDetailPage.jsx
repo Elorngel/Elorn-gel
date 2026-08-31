@@ -1,0 +1,208 @@
+import { useState } from 'react'
+import { useProduct } from '../hooks/useProduct'
+import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import CroppableImage from '../components/CroppableImage'
+import ProductCard from '../components/ProductCard'
+import Header from '../components/Header'
+
+export default function ProductDetailPage({ id }) {
+  const { product, related, loading, error } = useProduct(id)
+  const { isPickup } = usePriceMode()
+  const [quantity, setQuantity] = useState(1)
+  const [activeTab, setActiveTab] = useState('description')
+
+  if (loading) {
+    return (
+      <div>
+        <Header activeCategory={null} />
+        <div className="p-8 font-body text-sm text-muted">Chargement…</div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div>
+        <Header activeCategory={null} />
+        <div className="p-8 font-body text-sm text-rust">
+          Produit introuvable.{' '}
+          <a href="#" className="underline">
+            Retour au catalogue
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  const pickupPrice = getPickupPrice(product.prix_livraison)
+  const displayPrice = isPickup ? pickupPrice : product.prix_livraison
+  const tags = product.tags
+    ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
+    : []
+
+  return (
+    <div className="min-h-screen bg-stone">
+      <Header activeCategory={product.categorie} />
+      <div className="max-w-5xl mx-auto px-5 py-6">
+        <a href="#" className="font-tag text-xs uppercase text-muted hover:text-ink">
+          ‹ Retour au catalogue
+        </a>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+          <div className="relative bg-paper border border-ink/15 overflow-hidden aspect-square">
+            {product.photo_url ? (
+              <CroppableImage
+                src={product.photo_url}
+                alt={product.nom}
+                zoom={product.photo_zoom ?? 1}
+                posX={product.photo_pos_x ?? 50}
+                posY={product.photo_pos_y ?? 50}
+              />
+            ) : (
+              <span className="absolute inset-0 flex items-center justify-center font-tag text-xs uppercase text-muted">
+                Photo produit
+              </span>
+            )}
+
+            {product.en_rupture && (
+              <div className="absolute inset-0 bg-ink/70 flex items-center justify-center">
+                <span className="font-tag text-paper text-sm uppercase font-semibold tracking-wide border border-paper/60 px-4 py-2">
+                  Bientôt de retour
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h1 className="font-display text-4xl text-ink leading-tight mb-2">
+              {product.nom}
+            </h1>
+            {product.poids && (
+              <p className="font-tag text-sm text-muted mb-3">{product.poids}</p>
+            )}
+
+            {tags.length > 0 && (
+              <div className="flex gap-1.5 mb-4 flex-wrap">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="font-tag text-[11px] border border-ink/25 text-muted px-2 py-1"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="border-y border-ink/15 py-4 mb-4">
+              {product.prix_par_kg && (
+                <p className="font-tag text-xs text-muted mb-1">{product.prix_par_kg}</p>
+              )}
+              <div className="flex items-baseline gap-3">
+                {isPickup && (
+                  <span className="font-tag text-sm text-muted line-through">
+                    {product.prix_livraison.toFixed(2)} €
+                  </span>
+                )}
+                <span className="font-display text-4xl text-ink">
+                  {displayPrice.toFixed(2)} €
+                </span>
+                {isPickup && (
+                  <span className="font-tag text-xs uppercase font-semibold text-forest">
+                    Retrait -20%
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {!product.en_rupture ? (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center border border-ink/40">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      className="w-9 h-9 font-display text-lg hover:bg-stone"
+                      aria-label="Diminuer la quantité"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) =>
+                        setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                      }
+                      className="w-12 h-9 text-center font-body text-sm bg-transparent"
+                    />
+                    <button
+                      onClick={() => setQuantity((q) => q + 1)}
+                      className="w-9 h-9 font-display text-lg hover:bg-stone"
+                      aria-label="Augmenter la quantité"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button className="flex-1 bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2.5 hover:bg-forest transition-colors">
+                    Ajouter au panier
+                  </button>
+                </div>
+                <span className="inline-block font-tag text-[11px] uppercase font-semibold text-forest border border-forest px-2 py-1">
+                  Disponible
+                </span>
+              </>
+            ) : (
+              <span className="inline-block font-tag text-[11px] uppercase font-semibold text-rust border border-rust px-2 py-1">
+                Bientôt de retour
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-10 border border-ink/15 bg-paper">
+          <div className="flex border-b border-ink/15">
+            <button
+              onClick={() => setActiveTab('description')}
+              className={`font-tag text-xs uppercase font-semibold px-4 py-3 border-b-2 ${
+                activeTab === 'description'
+                  ? 'border-forest text-forest'
+                  : 'border-transparent text-muted'
+              }`}
+            >
+              Description
+            </button>
+            <button
+              onClick={() => setActiveTab('ingredients')}
+              className={`font-tag text-xs uppercase font-semibold px-4 py-3 border-b-2 ${
+                activeTab === 'ingredients'
+                  ? 'border-forest text-forest'
+                  : 'border-transparent text-muted'
+              }`}
+            >
+              Détails du produit
+            </button>
+          </div>
+          <div className="p-5 font-body text-sm text-ink leading-relaxed whitespace-pre-line">
+            {activeTab === 'description'
+              ? product.description || 'Description à venir.'
+              : product.ingredients || 'Détails du produit à venir.'}
+          </div>
+        </div>
+
+        {related.length > 0 && (
+          <div className="mt-10">
+            <h2 className="font-display text-2xl text-ink mb-4">
+              Dans la même catégorie
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {related.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

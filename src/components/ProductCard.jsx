@@ -14,7 +14,7 @@ export default function ProductCard({ product }) {
         product.en_rupture ? 'opacity-60' : ''
       }`}
     >
-      <div className="relative h-36 bg-stone flex items-center justify-center overflow-hidden">
+      <a href={`#produit/${product.id}`} className="relative h-36 bg-stone flex items-center justify-center overflow-hidden">
         {product.photo_url ? (
           <CroppableImage
             src={product.photo_url}
@@ -45,12 +45,14 @@ export default function ProductCard({ product }) {
             -20% retrait
           </div>
         )}
-      </div>
+      </a>
 
       <div className="p-3 flex flex-col grow">
-        <h3 className="font-body font-semibold text-sm leading-snug mb-1.5">
-          {product.nom}
-        </h3>
+        <a href={`#produit/${product.id}`}>
+          <h3 className="font-body font-semibold text-sm leading-snug mb-1.5 hover:underline">
+            {product.nom}
+          </h3>
+        </a>
         <p className="font-tag text-[11px] text-muted mb-1.5">{product.poids}</p>
 
         {tags.length > 0 && (

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useProducts } from '../hooks/useProducts'
 import { useSiteSettings } from '../hooks/useSiteSettings'
-import { categories } from '../data/products'
+import { categories, subcategoriesByCategory } from '../data/products'
 import CroppableImage from '../components/CroppableImage'
 import PhotoEditorModal from '../components/PhotoEditorModal'
+import ProductDetailsModal from '../components/ProductDetailsModal'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full' }) {
   const [draft, setDraft] = useState(value ?? '')
@@ -34,6 +35,29 @@ function CategorySelect({ value, onSave }) {
       {categories.map((cat) => (
         <option key={cat} value={cat}>
           {cat}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+function SubcategorySelect({ categorie, value, onSave }) {
+  const options = subcategoriesByCategory[categorie] || []
+
+  if (options.length === 0) {
+    return <span className="font-tag text-xs text-muted">—</span>
+  }
+
+  return (
+    <select
+      className="w-full bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-sm py-1 cursor-pointer"
+      value={value ?? ''}
+      onChange={(e) => onSave(e.target.value)}
+    >
+      <option value="">— non classé —</option>
+      {options.map((sub) => (
+        <option key={sub} value={sub}>
+          {sub}
         </option>
       ))}
     </select>
@@ -119,6 +143,7 @@ function SiteSettingsPanel() {
 export default function AdminPage() {
   const { products, loading, error, updateProduct, uploadPhotoOnly } = useProducts()
   const [editingProduct, setEditingProduct] = useState(null)
+  const [detailsProduct, setDetailsProduct] = useState(null)
 
   const toggleStock = async (product) => {
     try {
@@ -176,12 +201,14 @@ export default function AdminPage() {
                 <th className="p-3 w-20">Réf.</th>
                 <th className="p-3">Désignation</th>
                 <th className="p-3">Catégorie</th>
+                <th className="p-3">Sous-catégorie</th>
                 <th className="p-3">Fournisseur</th>
                 <th className="p-3 w-28">Poids</th>
                 <th className="p-3 w-28">Prix livr.</th>
                 <th className="p-3 w-32">Prix / kg</th>
                 <th className="p-3 w-32">Stock</th>
                 <th className="p-3 w-28">Publié</th>
+                <th className="p-3 w-20">Fiche</th>
               </tr>
             </thead>
             <tbody>
@@ -222,6 +249,13 @@ export default function AdminPage() {
                     <CategorySelect
                       value={product.categorie}
                       onSave={(v) => updateProduct(product.id, { categorie: v })}
+                    />
+                  </td>
+                  <td className="p-3">
+                    <SubcategorySelect
+                      categorie={product.categorie}
+                      value={product.sous_categorie}
+                      onSave={(v) => updateProduct(product.id, { sous_categorie: v })}
                     />
                   </td>
                   <td className="p-3">
@@ -275,6 +309,14 @@ export default function AdminPage() {
                       {product.actif !== false ? 'Publié' : 'Masqué'}
                     </button>
                   </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => setDetailsProduct(product)}
+                      className="font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border border-ink/40 text-ink hover:bg-stone"
+                    >
+                      Fiche
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -299,6 +341,14 @@ export default function AdminPage() {
             })
           }
           onClose={() => setEditingProduct(null)}
+        />
+      )}
+
+      {detailsProduct && (
+        <ProductDetailsModal
+          product={detailsProduct}
+          onSave={(changes) => updateProduct(detailsProduct.id, changes)}
+          onClose={() => setDetailsProduct(null)}
         />
       )}
     </div>

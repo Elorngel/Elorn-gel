@@ -8,6 +8,38 @@ export const categories = [
   'Épicerie et boissons',
 ]
 
+// Sous-catégories proposées pour chaque rayon (utilisées dans l'admin et
+// dans les filtres du site). Une valeur vide ("") signifie "non classé" —
+// libre à toi d'ajuster cette liste plus tard si besoin.
+export const subcategoriesByCategory = {
+  'Entrées et apéritifs': ['Feuilletés', 'Bouchées', 'Apéritif', 'Pizzas', 'Snacking'],
+  'Viandes et volailles': [
+    'Boeuf',
+    'Veau',
+    'Porc',
+    'Agneau',
+    'Charcuterie',
+    'Volailles',
+    'Brochettes',
+  ],
+  'Poissons et fruits de mer': [
+    'Poissons blancs',
+    'Saumon et truite',
+    'Poissons panés',
+    'Fruits de mer',
+  ],
+  Accompagnements: ['Légumes', 'Poêlées', 'Pommes de terre'],
+  'Plats cuisinés': ['Plats individuels', 'Plats à partager', "Saveurs d'Asie"],
+  'Desserts et glaces': [
+    'Pâtisseries',
+    'Viennoiseries',
+    'Glaces et bâtonnets',
+    'Bacs de glace',
+    'Fruits',
+  ],
+  'Épicerie et boissons': ['Boissons', 'Épicerie sucrée', 'Épicerie salée'],
+}
+
 // Le champ "ref" est la référence article (celle de ton catalogue Excel).
 // La photo est retrouvée automatiquement dans public/images/ à partir
 // de cette référence : ref "0118" -> fichier images/0118.jpg
