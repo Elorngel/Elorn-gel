@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProduct } from '../hooks/useProduct'
 import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
@@ -8,8 +9,10 @@ import Header from '../components/Header'
 export default function ProductDetailPage({ id }) {
   const { product, related, loading, error } = useProduct(id)
   const { isPickup } = usePriceMode()
+  const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
+  const [justAdded, setJustAdded] = useState(false)
 
   if (loading) {
     return (
@@ -144,8 +147,19 @@ export default function ProductDetailPage({ id }) {
                     </button>
                   </div>
 
-                  <button className="flex-1 bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2.5 hover:bg-forest transition-colors">
-                    Ajouter au panier
+                  <button
+                    onClick={() => {
+                      addItem(product, quantity)
+                      setJustAdded(true)
+                      setTimeout(() => setJustAdded(false), 1500)
+                    }}
+                    className={`flex-1 font-tag text-xs font-semibold uppercase tracking-wide py-2.5 transition-colors ${
+                      justAdded
+                        ? 'bg-forest text-paper'
+                        : 'bg-ink text-paper hover:bg-forest'
+                    }`}
+                  >
+                    {justAdded ? 'Ajouté au panier ✓' : 'Ajouter au panier'}
                   </button>
                 </div>
                 <span className="inline-block font-tag text-[11px] uppercase font-semibold text-forest border border-forest px-2 py-1">

@@ -1,12 +1,22 @@
+import { useState } from 'react'
 import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import { useCart } from '../context/CartContext'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
   const { isPickup } = usePriceMode()
+  const { addItem } = useCart()
+  const [justAdded, setJustAdded] = useState(false)
   const pickupPrice = getPickupPrice(product.prix_livraison)
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
+
+  const handleAddToCart = () => {
+    addItem(product, 1)
+    setJustAdded(true)
+    setTimeout(() => setJustAdded(false), 1200)
+  }
 
   return (
     <div
@@ -88,10 +98,13 @@ export default function ProductCard({ product }) {
         </div>
 
         <button
+          onClick={handleAddToCart}
           disabled={product.en_rupture}
-          className="mt-auto w-full bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2 hover:bg-forest transition-colors disabled:bg-muted disabled:cursor-not-allowed"
+          className={`mt-auto w-full font-tag text-xs font-semibold uppercase tracking-wide py-2 transition-colors disabled:bg-muted disabled:cursor-not-allowed ${
+            justAdded ? 'bg-forest text-paper' : 'bg-ink text-paper hover:bg-forest'
+          }`}
         >
-          {product.en_rupture ? 'Indisponible' : 'Ajouter au panier'}
+          {product.en_rupture ? 'Indisponible' : justAdded ? 'Ajouté ✓' : 'Ajouter au panier'}
         </button>
       </div>
     </div>

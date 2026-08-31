@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { PriceModeProvider } from './context/PriceModeContext'
+import { CartProvider } from './context/CartContext'
 import { subcategoriesByCategory } from './data/products'
 import { useProducts } from './hooks/useProducts'
 import Header from './components/Header'
@@ -7,6 +8,7 @@ import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
 import AdminPage from './pages/AdminPage'
 import ProductDetailPage from './pages/ProductDetailPage'
+import CartPage from './pages/CartPage'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery }) {
   const { products, loading, error } = useProducts()
@@ -121,15 +123,19 @@ function App() {
 
   return (
     <PriceModeProvider>
-      {produitMatch ? (
-        <ProductDetailPage id={produitMatch[1]} />
-      ) : (
-        <Shop
-          activeCategory={activeCategory}
-          activeSubcategory={activeSubcategory}
-          searchQuery={searchQuery}
-        />
-      )}
+      <CartProvider>
+        {produitMatch ? (
+          <ProductDetailPage id={produitMatch[1]} />
+        ) : route === '#panier' ? (
+          <CartPage />
+        ) : (
+          <Shop
+            activeCategory={activeCategory}
+            activeSubcategory={activeSubcategory}
+            searchQuery={searchQuery}
+          />
+        )}
+      </CartProvider>
     </PriceModeProvider>
   )
 }

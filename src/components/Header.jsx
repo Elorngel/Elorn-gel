@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
+import { useCart } from '../context/CartContext'
 import { categories } from '../data/products'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 
 export default function Header({ activeCategory }) {
   const { mode, setMode } = usePriceMode()
   const { settings } = useSiteSettings()
+  const { itemCount } = useCart()
   const [searchText, setSearchText] = useState('')
 
   const handleSearch = (e) => {
@@ -99,6 +101,18 @@ export default function Header({ activeCategory }) {
               Retrait -20%
             </button>
           </div>
+
+          <a
+            href="#panier"
+            className="relative border border-ink/40 px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-stone"
+          >
+            Panier
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-rust text-paper text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
+          </a>
         </div>
       </div>
     </header>
