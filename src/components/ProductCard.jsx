@@ -52,7 +52,7 @@ export default function ProductCard({ product }) {
             className="absolute -right-2 top-3 rotate-[8deg] bg-rust text-paper font-tag font-bold text-xs px-3 py-1 shadow-sm"
             style={{ clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)' }}
           >
-            -20% retrait
+            -10% retrait
           </div>
         )}
       </a>

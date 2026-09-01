@@ -16,7 +16,7 @@ export default function Hero() {
           en livraison ou en retrait
         </h1>
         <p className="font-body text-sm text-stone/90 max-w-md mb-6">
-          Commandez chez vous, récupérez en point de retrait et économisez 20%
+          Commandez chez vous, récupérez en point de retrait et économisez 10%
           sur chaque commande retirée sur place.
         </p>
         <button className="w-fit bg-rust text-paper font-tag text-sm font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-rust/90 transition-colors">

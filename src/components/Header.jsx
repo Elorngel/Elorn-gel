@@ -45,7 +45,7 @@ export default function Header({ activeCategory }) {
             className="font-display text-3xl tracking-wide text-forest absolute inset-0"
             style={{ display: 'none' }}
           >
-            ELORN GEL
+            BONTIN
           </span>
         </a>
 
@@ -98,7 +98,7 @@ export default function Header({ activeCategory }) {
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
-              Retrait -20%
+              Retrait -10%
             </button>
           </div>
 

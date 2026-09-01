@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react'
 
 const PriceModeContext = createContext(null)
 
-export const PICKUP_DISCOUNT = 0.2
+export const PICKUP_DISCOUNT = 0.1
 
 export function PriceModeProvider({ children }) {
   const [mode, setMode] = useState('livraison')
