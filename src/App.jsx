@@ -7,9 +7,9 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
 import AdminPage from './pages/AdminPage'
+import AdminGate from './components/AdminGate'
 import ProductDetailPage from './pages/ProductDetailPage'
 import CartPage from './pages/CartPage'
-import AdminGate from './components/AdminGate'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery }) {
   const { products, loading, error } = useProducts()
@@ -109,7 +109,7 @@ function App() {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-      if (route === '#admin') {
+  if (route === '#admin') {
     return (
       <AdminGate>
         <AdminPage />

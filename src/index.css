@@ -15,8 +15,10 @@
   --font-tag: 'Roboto Condensed', sans-serif;
 }
 
-body {
+html, body {
   background: var(--color-stone);
   color: var(--color-ink);
   font-family: var(--font-body);
+  overflow-x: hidden;
+  max-width: 100vw;
 }

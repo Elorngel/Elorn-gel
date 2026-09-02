@@ -112,7 +112,7 @@ export default function ProductDetailPage({ id }) {
                 </span>
                 {isPickup && (
                   <span className="font-tag text-xs uppercase font-semibold text-forest">
-                    Retrait -10%
+                    Retrait -20%
                   </span>
                 )}
               </div>

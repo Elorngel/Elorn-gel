@@ -9,47 +9,52 @@ export default function Header({ activeCategory }) {
   const { settings } = useSiteSettings()
   const { itemCount } = useCart()
   const [searchText, setSearchText] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const handleSearch = (e) => {
     e.preventDefault()
     const query = searchText.trim()
     if (query) {
+      setMenuOpen(false)
       window.location.hash = `#recherche/${encodeURIComponent(query)}`
     }
   }
 
   return (
-    <header className="bg-paper border-b border-ink/15 sticky top-0 z-10">
-      <div className="bg-ink text-stone text-[11px] font-tag px-5 py-1.5 flex justify-between">
-        <span>Retrait gratuit sous 24h à Plouédern</span>
-        <div className="flex gap-4">
-          <span>02 98 20 50 43</span>
+    <header className="bg-paper border-b border-ink/15 sticky top-0 z-20">
+      <div className="bg-ink text-stone text-[11px] font-tag px-4 md:px-5 py-1.5 flex justify-between">
+        <span className="truncate">Retrait gratuit sous 24h à Plouédern</span>
+        <div className="flex gap-4 shrink-0 ml-2">
+          <a href="tel:0298205043" className="hidden sm:inline">
+            02 98 20 50 43
+          </a>
           <a href="#admin" className="text-stone/60 hover:text-stone">
             Administration
           </a>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-6 px-5 py-3 flex-wrap">
-        <a href="#" className="block h-10 relative">
+      <div className="flex items-center justify-between gap-4 px-4 md:px-5 py-3">
+        <a href="#" className="block h-9 md:h-10 relative shrink-0">
           <img
             src={settings?.logo_url || '/logo.png'}
             alt="Elorn Gel"
-            className="h-10 w-auto"
+            className="h-9 md:h-10 w-auto"
             onError={(e) => {
               e.target.style.display = 'none'
               e.target.nextSibling.style.display = 'block'
             }}
           />
           <span
-            className="font-display text-3xl tracking-wide text-forest absolute inset-0"
+            className="font-display text-2xl md:text-3xl tracking-wide text-forest absolute inset-0"
             style={{ display: 'none' }}
           >
-            BONTIN
+            ELORN GEL
           </span>
         </a>
 
-        <nav className="flex gap-5 text-sm flex-wrap">
+        {/* Navigation catégories : visible seulement à partir de md (tablette/desktop) */}
+        <nav className="hidden md:flex gap-5 text-sm flex-wrap">
           {categories.map((cat) => (
             <a
               key={cat}
@@ -65,7 +70,8 @@ export default function Header({ activeCategory }) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        {/* Bloc recherche + toggle : visible seulement à partir de md */}
+        <div className="hidden md:flex items-center gap-3">
           <form onSubmit={handleSearch} className="flex border border-ink/40">
             <input
               type="text"
@@ -114,7 +120,106 @@ export default function Header({ activeCategory }) {
             )}
           </a>
         </div>
+
+        {/* Panier + burger : visibles seulement en dessous de md */}
+        <div className="flex md:hidden items-center gap-3 shrink-0">
+          <a href="#panier" className="relative" aria-label="Voir le panier">
+            <span className="font-tag text-xs uppercase font-semibold border border-ink/40 px-2.5 py-1.5 block">
+              Panier
+            </span>
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-rust text-paper text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
+          </a>
+
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Ouvrir le menu"
+            aria-expanded={menuOpen}
+            className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 border border-ink/40"
+          >
+            <span
+              className={`block w-5 h-0.5 bg-ink transition-transform ${
+                menuOpen ? 'translate-y-2 rotate-45' : ''
+              }`}
+            />
+            <span
+              className={`block w-5 h-0.5 bg-ink transition-opacity ${
+                menuOpen ? 'opacity-0' : ''
+              }`}
+            />
+            <span
+              className={`block w-5 h-0.5 bg-ink transition-transform ${
+                menuOpen ? '-translate-y-2 -rotate-45' : ''
+              }`}
+            />
+          </button>
+        </div>
       </div>
+
+      {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-ink/15 bg-paper px-4 py-4">
+          <form onSubmit={handleSearch} className="flex border border-ink/40 mb-4">
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Rechercher un produit…"
+              className="flex-1 min-w-0 px-2.5 py-2 text-sm font-body bg-transparent focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="px-3 border-l border-ink/40 font-tag text-xs uppercase shrink-0"
+            >
+              OK
+            </button>
+          </form>
+
+          <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase mb-4">
+            <button
+              onClick={() => setMode('livraison')}
+              className={`flex-1 py-2 transition-colors ${
+                mode === 'livraison' ? 'bg-ink text-paper' : 'text-ink'
+              }`}
+            >
+              Livraison
+            </button>
+            <button
+              onClick={() => setMode('retrait')}
+              className={`flex-1 py-2 border-l border-ink/40 transition-colors ${
+                mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
+              }`}
+            >
+              Retrait -10%
+            </button>
+          </div>
+
+          <nav className="flex flex-col divide-y divide-ink/10 border-t border-ink/10">
+            {categories.map((cat) => (
+              <a
+                key={cat}
+                href={`#categorie/${encodeURIComponent(cat)}`}
+                onClick={() => setMenuOpen(false)}
+                className={`py-3 font-body text-sm ${
+                  activeCategory === cat ? 'text-forest font-semibold' : 'text-ink'
+                }`}
+              >
+                {cat}
+              </a>
+            ))}
+          </nav>
+
+          <a
+            href="tel:0298205043"
+            className="block mt-4 font-tag text-xs uppercase text-muted"
+          >
+            Appeler le dépôt · 02 98 20 50 43
+          </a>
+        </div>
+      )}
     </header>
   )
 }

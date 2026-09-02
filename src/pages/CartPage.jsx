@@ -170,7 +170,7 @@ export default function CartPage() {
               <div className="bg-paper border border-ink/15 p-4 mb-4">
                 <div className="flex justify-between font-tag text-xs uppercase text-muted mb-1">
                   <span>Mode</span>
-                  <span>{mode === 'retrait' ? 'Retrait -10%' : 'Livraison'}</span>
+                  <span>{mode === 'retrait' ? 'Retrait -20%' : 'Livraison'}</span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-ink/15">
                   <span className="font-tag text-xs uppercase text-muted">Total</span>
