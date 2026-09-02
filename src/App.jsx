@@ -9,6 +9,7 @@ import ProductCard from './components/ProductCard'
 import AdminPage from './pages/AdminPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import CartPage from './pages/CartPage'
+import AdminGate from './components/AdminGate'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery }) {
   const { products, loading, error } = useProducts()
@@ -108,8 +109,12 @@ function App() {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-  if (route === '#admin') {
-    return <AdminPage />
+      if (route === '#admin') {
+    return (
+      <AdminGate>
+        <AdminPage />
+      </AdminGate>
+    )
   }
 
   const produitMatch = route.match(/^#produit\/(.+)$/)

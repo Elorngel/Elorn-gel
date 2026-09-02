@@ -5,6 +5,7 @@ import { categories, subcategoriesByCategory } from '../data/products'
 import CroppableImage from '../components/CroppableImage'
 import PhotoEditorModal from '../components/PhotoEditorModal'
 import ProductDetailsModal from '../components/ProductDetailsModal'
+import { adminLogout } from '../components/AdminGate'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full' }) {
   const [draft, setDraft] = useState(value ?? '')
@@ -179,9 +180,20 @@ export default function AdminPage() {
     <div className="min-h-screen bg-stone">
       <header className="bg-ink text-paper px-6 py-4 flex items-center justify-between">
         <h1 className="font-display text-2xl tracking-wide">ELORN GEL — Administration</h1>
-        <a href="#" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
-          Voir le site
-        </a>
+                <div className="flex gap-4">
+          <a href="#" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
+            Voir le site
+          </a>
+          <button
+            onClick={() => {
+              adminLogout()
+              window.location.reload()
+            }}
+            className="font-tag text-xs uppercase text-stone/80 hover:text-paper"
+          >
+            Déconnexion
+          </button>
+        </div>
       </header>
 
       <main className="p-6 max-w-7xl mx-auto">
