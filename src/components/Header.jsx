@@ -5,7 +5,7 @@ import { categories } from '../data/products'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 
 export default function Header({ activeCategory }) {
-  const { mode, setMode } = usePriceMode()
+  const { mode, setMode, discountPercent } = usePriceMode()
   const { settings } = useSiteSettings()
   const { itemCount } = useCart()
   const [searchText, setSearchText] = useState('')
@@ -53,24 +53,7 @@ export default function Header({ activeCategory }) {
           </span>
         </a>
 
-        {/* Navigation catégories : visible seulement à partir de md (tablette/desktop) */}
-        <nav className="hidden md:flex gap-5 text-sm flex-wrap">
-          {categories.map((cat) => (
-            <a
-              key={cat}
-              href={`#categorie/${encodeURIComponent(cat)}`}
-              className={`font-body pb-0.5 border-b-2 transition-colors ${
-                activeCategory === cat
-                  ? 'border-forest text-forest font-semibold'
-                  : 'border-transparent text-ink hover:border-ink/30'
-              }`}
-            >
-              {cat}
-            </a>
-          ))}
-        </nav>
-
-        {/* Bloc recherche + toggle : visible seulement à partir de md */}
+        {/* Bloc recherche + toggle + panier : visible seulement à partir de md */}
         <div className="hidden md:flex items-center gap-3">
           <form onSubmit={handleSearch} className="flex border border-ink/40">
             <input
@@ -104,7 +87,7 @@ export default function Header({ activeCategory }) {
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
-              Retrait -10%
+              Retrait -{discountPercent}%
             </button>
           </div>
 
@@ -159,6 +142,23 @@ export default function Header({ activeCategory }) {
         </div>
       </div>
 
+      {/* Navigation catégories : sa propre ligne, pleine largeur, à partir de md */}
+      <nav className="hidden md:flex gap-5 text-sm px-4 md:px-5 pb-3 flex-wrap">
+        {categories.map((cat) => (
+          <a
+            key={cat}
+            href={`#categorie/${encodeURIComponent(cat)}`}
+            className={`font-body pb-0.5 border-b-2 transition-colors ${
+              activeCategory === cat
+                ? 'border-forest text-forest font-semibold'
+                : 'border-transparent text-ink hover:border-ink/30'
+            }`}
+          >
+            {cat}
+          </a>
+        ))}
+      </nav>
+
       {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
       {menuOpen && (
         <div className="md:hidden border-t border-ink/15 bg-paper px-4 py-4">
@@ -193,7 +193,7 @@ export default function Header({ activeCategory }) {
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
-              Retrait -10%
+              Retrait -{discountPercent}%
             </button>
           </div>
 

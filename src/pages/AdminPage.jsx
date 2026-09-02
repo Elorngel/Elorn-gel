@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useProducts } from '../hooks/useProducts'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { categories, subcategoriesByCategory } from '../data/products'
@@ -68,8 +68,22 @@ function SubcategorySelect({ categorie, value, onSave }) {
 function SiteSettingsPanel() {
   const { settings, loading, updateSettings, uploadSiteImage } = useSiteSettings()
   const [editing, setEditing] = useState(null) // 'hero' | 'logo' | null
+  const [discountDraft, setDiscountDraft] = useState(null)
+
+  useEffect(() => {
+    if (settings && discountDraft === null) {
+      setDiscountDraft(settings.remise_retrait ?? 10)
+    }
+  }, [settings, discountDraft])
 
   if (loading || !settings) return null
+
+  const saveDiscount = () => {
+    const value = parseFloat(discountDraft)
+    if (!isNaN(value) && value !== settings.remise_retrait) {
+      updateSettings({ remise_retrait: value })
+    }
+  }
 
   return (
     <div className="bg-paper border border-ink/15 p-4 mb-6">
@@ -103,6 +117,26 @@ function SiteSettingsPanel() {
           </span>
           <span className="font-tag text-xs uppercase">Logo</span>
         </button>
+
+        <div className="flex items-center gap-3 border border-ink/20 p-2">
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Remise retrait
+            </label>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={discountDraft ?? ''}
+                onChange={(e) => setDiscountDraft(e.target.value)}
+                onBlur={saveDiscount}
+                className="w-16 border border-ink/20 p-1.5 font-body text-sm text-center focus:border-forest focus:outline-none"
+              />
+              <span className="font-tag text-sm">%</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {editing === 'hero' && (

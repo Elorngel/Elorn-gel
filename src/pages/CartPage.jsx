@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCart } from '../context/CartContext'
-import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { getAvailablePickupDates, getPickupTimeSlots } from '../lib/pickupSlots'
 import Header from '../components/Header'
@@ -11,7 +11,7 @@ const pickupSlots = getPickupTimeSlots()
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear } = useCart()
-  const { mode, isPickup } = usePriceMode()
+  const { mode, isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { submitOrder, submitting, error } = useOrder()
 
   const [nomClient, setNomClient] = useState('')
@@ -170,7 +170,7 @@ export default function CartPage() {
               <div className="bg-paper border border-ink/15 p-4 mb-4">
                 <div className="flex justify-between font-tag text-xs uppercase text-muted mb-1">
                   <span>Mode</span>
-                  <span>{mode === 'retrait' ? 'Retrait -20%' : 'Livraison'}</span>
+                  <span>{mode === 'retrait' ? `Retrait -${discountPercent}%` : 'Livraison'}</span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-ink/15">
                   <span className="font-tag text-xs uppercase text-muted">Total</span>

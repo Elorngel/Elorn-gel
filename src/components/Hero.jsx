@@ -16,8 +16,8 @@ export default function Hero() {
           en livraison ou en retrait
         </h1>
         <p className="font-body text-sm text-stone/90 max-w-md mb-6">
-          Commandez chez vous, récupérez en point de retrait et économisez 10%
-          sur chaque commande retirée sur place.
+          Commandez chez vous, récupérez en point de retrait et économisez{' '}
+          {settings?.remise_retrait ?? 10}% sur chaque commande retirée sur place.
         </p>
         <a
           href="#"

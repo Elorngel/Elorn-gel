@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
-  const { isPickup } = usePriceMode()
+  const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState(false)
   const pickupPrice = getPickupPrice(product.prix_livraison)
@@ -52,7 +52,7 @@ export default function ProductCard({ product }) {
             className="absolute -right-2 top-3 rotate-[8deg] bg-rust text-paper font-tag font-bold text-xs px-3 py-1 shadow-sm"
             style={{ clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)' }}
           >
-            -20% retrait
+            -{discountPercent}% retrait
           </div>
         )}
       </a>

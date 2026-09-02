@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useProduct } from '../hooks/useProduct'
-import { usePriceMode, getPickupPrice } from '../context/PriceModeContext'
+import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
@@ -8,7 +8,7 @@ import Header from '../components/Header'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, loading, error } = useProduct(id)
-  const { isPickup } = usePriceMode()
+  const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
@@ -112,7 +112,7 @@ export default function ProductDetailPage({ id }) {
                 </span>
                 {isPickup && (
                   <span className="font-tag text-xs uppercase font-semibold text-forest">
-                    Retrait -20%
+                    Retrait -{discountPercent}%
                   </span>
                 )}
               </div>
