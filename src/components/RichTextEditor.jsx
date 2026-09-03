@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 
 // Ne garde que les balises de mise en forme simples au collage (gras,
 // italique, listes...), et retire tout le reste (styles Word, couleurs,
@@ -28,14 +28,15 @@ function sanitizeHtml(html) {
 
 export default function RichTextEditor({ value, onChange, placeholder, minHeightRem = 6 }) {
   const ref = useRef(null)
-  const initialized = useRef(false)
 
-  // On ne remplit le contenu qu'une fois au montage, pour ne pas faire
-  // sauter le curseur pendant que la personne tape.
-  if (ref.current && !initialized.current) {
-    ref.current.innerHTML = value || ''
-    initialized.current = true
-  }
+  // On remplit le contenu une fois que le champ existe vraiment dans la
+  // page (après le premier rendu), sinon la valeur de départ est ignorée.
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = value || ''
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const exec = (command) => {
     ref.current?.focus()
