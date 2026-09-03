@@ -6,6 +6,8 @@ import CroppableImage from '../components/CroppableImage'
 import PhotoEditorModal from '../components/PhotoEditorModal'
 import ProductDetailsModal from '../components/ProductDetailsModal'
 import { adminLogout } from '../components/AdminGate'
+import OrdersPanel from '../components/OrdersPanel'
+import VariantsModal from '../components/VariantsModal'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full' }) {
   const [draft, setDraft] = useState(value ?? '')
@@ -176,9 +178,11 @@ function SiteSettingsPanel() {
 }
 
 export default function AdminPage() {
-  const { products, loading, error, updateProduct, uploadPhotoOnly } = useProducts()
+  const { products, loading, error, updateProduct, uploadPhotoOnly, refetch } = useProducts()
   const [editingProduct, setEditingProduct] = useState(null)
   const [detailsProduct, setDetailsProduct] = useState(null)
+  const [variantsProduct, setVariantsProduct] = useState(null)
+  const [tab, setTab] = useState('produits') // 'produits' | 'commandes'
 
   const toggleStock = async (product) => {
     try {
@@ -233,11 +237,32 @@ export default function AdminPage() {
       <main className="p-6 max-w-7xl mx-auto">
         <SiteSettingsPanel />
 
-        <p className="font-body text-sm text-muted mb-4">
-          {products.length} produits. Clique sur la photo pour la choisir et la régler
-          (molette pour zoomer, glisser pour recentrer). Les autres champs se
-          sauvegardent automatiquement quand tu cliques ailleurs.
-        </p>
+        <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase w-fit mb-4">
+          <button
+            onClick={() => setTab('produits')}
+            className={`px-4 py-2 ${tab === 'produits' ? 'bg-ink text-paper' : 'text-ink'}`}
+          >
+            Produits
+          </button>
+          <button
+            onClick={() => setTab('commandes')}
+            className={`px-4 py-2 border-l border-ink/40 ${
+              tab === 'commandes' ? 'bg-ink text-paper' : 'text-ink'
+            }`}
+          >
+            Commandes
+          </button>
+        </div>
+
+        {tab === 'commandes' ? (
+          <OrdersPanel />
+        ) : (
+          <>
+            <p className="font-body text-sm text-muted mb-4">
+              {products.length} produits. Clique sur la photo pour la choisir et la régler
+              (molette pour zoomer, glisser pour recentrer). Les autres champs se
+              sauvegardent automatiquement quand tu cliques ailleurs.
+            </p>
 
         <div className="bg-paper border border-ink/15 overflow-x-auto">
           <table className="w-full text-left">
@@ -254,6 +279,7 @@ export default function AdminPage() {
                 <th className="p-3 w-32">Prix / kg</th>
                 <th className="p-3 w-32">Stock</th>
                 <th className="p-3 w-28">Publié</th>
+                <th className="p-3 w-28">Promo</th>
                 <th className="p-3 w-20">Fiche</th>
               </tr>
             </thead>
@@ -356,9 +382,42 @@ export default function AdminPage() {
                     </button>
                   </td>
                   <td className="p-3">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() =>
+                          updateProduct(product.id, { en_promo: !product.en_promo })
+                        }
+                        className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
+                          product.en_promo
+                            ? 'border-rust bg-rust text-paper'
+                            : 'border-ink/40 text-ink'
+                        }`}
+                      >
+                        {product.en_promo ? 'En promo' : 'Promo'}
+                      </button>
+                      {product.en_promo && (
+                        <div className="flex items-center gap-1">
+                          <EditableCell
+                            type="number"
+                            width="w-14"
+                            value={product.taux_promo}
+                            onSave={(v) =>
+                              updateProduct(product.id, { taux_promo: parseFloat(v) || 0 })
+                            }
+                          />
+                          <span className="font-tag text-xs">%</span>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3">
                     <button
                       onClick={() => setDetailsProduct(product)}
-                      className="font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border border-ink/40 text-ink hover:bg-stone"
+                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border hover:bg-stone ${
+                        product.poids_variable || product.variantes?.length > 0
+                          ? 'border-forest text-forest'
+                          : 'border-ink/40 text-ink'
+                      }`}
                     >
                       Fiche
                     </button>
@@ -368,6 +427,8 @@ export default function AdminPage() {
             </tbody>
           </table>
         </div>
+          </>
+        )}
       </main>
 
       {editingProduct && (
@@ -394,7 +455,22 @@ export default function AdminPage() {
         <ProductDetailsModal
           product={detailsProduct}
           onSave={(changes) => updateProduct(detailsProduct.id, changes)}
+          updateProduct={updateProduct}
+          onOpenVariants={() => {
+            setVariantsProduct(detailsProduct)
+            setDetailsProduct(null)
+          }}
           onClose={() => setDetailsProduct(null)}
+        />
+      )}
+
+      {variantsProduct && (
+        <VariantsModal
+          product={variantsProduct}
+          onClose={() => {
+            setVariantsProduct(null)
+            refetch()
+          }}
         />
       )}
     </div>

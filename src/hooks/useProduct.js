@@ -26,7 +26,13 @@ export function useProduct(id) {
         return
       }
 
-      setProduct(productData)
+      const { data: variantesData } = await supabase
+        .from('variantes_produit')
+        .select('*')
+        .eq('produit_id', id)
+        .order('ordre', { ascending: true })
+
+      setProduct({ ...productData, variantes: variantesData || [] })
 
       const { data: relatedData } = await supabase
         .from('produits')

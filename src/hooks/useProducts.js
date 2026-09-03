@@ -15,10 +15,19 @@ export function useProducts() {
 
     if (error) {
       setError(error.message)
-    } else {
-      setProducts(data)
-      setError(null)
+      setLoading(false)
+      return
     }
+
+    const { data: variantesData } = await supabase.from('variantes_produit').select('*')
+
+    const withVariants = data.map((p) => ({
+      ...p,
+      variantes: (variantesData || []).filter((v) => v.produit_id === p.id),
+    }))
+
+    setProducts(withVariants)
+    setError(null)
     setLoading(false)
   }, [])
 

@@ -1,19 +1,24 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
+import { getBasePrice, getDefaultVariant } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
   const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState(false)
-  const pickupPrice = getPickupPrice(product.prix_livraison)
+  const defaultVariant = getDefaultVariant(product)
+  const referencePrice = defaultVariant ? defaultVariant.prix_livraison : product.prix_livraison
+  const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
+  const basePrice = getBasePrice(product, referencePrice)
+  const pickupPrice = getPickupPrice(basePrice)
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
 
   const handleAddToCart = () => {
-    addItem(product, 1)
+    addItem(product, 1, defaultVariant)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1200)
   }
@@ -47,6 +52,12 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
+        {product.en_promo && !product.en_rupture && (
+          <div className="absolute left-2 top-2 bg-ink text-paper font-tag font-bold text-xs px-2 py-1">
+            PROMO -{product.taux_promo}%
+          </div>
+        )}
+
         {!product.en_rupture && isPickup && (
           <div
             className="absolute -right-2 top-3 rotate-[8deg] bg-rust text-paper font-tag font-bold text-xs px-3 py-1 shadow-sm"
@@ -63,7 +74,7 @@ export default function ProductCard({ product }) {
             {product.nom}
           </h3>
         </a>
-        <p className="font-tag text-[11px] text-muted mb-1.5">{product.poids}</p>
+        <p className="font-tag text-[11px] text-muted mb-1.5">{displayWeight}</p>
 
         {tags.length > 0 && (
           <div className="flex gap-1 mb-2 flex-wrap">
@@ -78,29 +89,42 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        <p className="font-tag text-[10px] text-muted mb-0.5">{product.prix_par_kg}</p>
+        <div className="mt-auto">
+          <p className="font-tag text-[10px] text-muted mb-0.5 text-right">
+            {product.prix_par_kg}
+          </p>
 
-        <div className="flex items-baseline gap-2 mb-3">
-          {isPickup ? (
-            <>
+          <div className="flex items-baseline justify-end gap-2 mb-3 flex-wrap">
+            {product.en_promo && (
               <span className="font-tag text-[11px] text-muted line-through">
-                {product.prix_livraison.toFixed(2)} €
+                {referencePrice.toFixed(2)} €
               </span>
-              <span className="font-display text-2xl text-forest leading-none">
-                {pickupPrice.toFixed(2)} €
+            )}
+            {isPickup ? (
+              <>
+                <span className="font-tag text-[11px] text-muted line-through">
+                  {basePrice.toFixed(2)} €
+                </span>
+                <span className="font-display text-2xl text-forest leading-none">
+                  {pickupPrice.toFixed(2)} €
+                </span>
+              </>
+            ) : (
+              <span
+                className={`font-display text-2xl leading-none ${
+                  product.en_promo ? 'text-rust' : 'text-ink'
+                }`}
+              >
+                {basePrice.toFixed(2)} €
               </span>
-            </>
-          ) : (
-            <span className="font-display text-2xl text-ink leading-none">
-              {product.prix_livraison.toFixed(2)} €
-            </span>
-          )}
+            )}
+          </div>
         </div>
 
         <button
           onClick={handleAddToCart}
           disabled={product.en_rupture}
-          className={`mt-auto w-full font-tag text-xs font-semibold uppercase tracking-wide py-2 transition-colors disabled:bg-muted disabled:cursor-not-allowed ${
+          className={`w-full font-tag text-xs font-semibold uppercase tracking-wide py-2 transition-colors disabled:bg-muted disabled:cursor-not-allowed ${
             justAdded ? 'bg-forest text-paper' : 'bg-ink text-paper hover:bg-forest'
           }`}
         >

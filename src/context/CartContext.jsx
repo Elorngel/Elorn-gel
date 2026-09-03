@@ -23,43 +23,50 @@ export function CartProvider({ children }) {
     }
   }, [items])
 
-  const addItem = (product, quantity = 1) => {
+  const addItem = (product, quantity = 1, variant = null) => {
+    const cartKey = variant ? `${product.id}::${variant.id}` : product.id
+
     setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id)
+      const existing = prev.find((item) => item.cartKey === cartKey)
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.cartKey === cartKey
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         )
       }
       return [
         ...prev,
         {
+          cartKey,
           id: product.id,
           nom: product.nom,
-          prix_livraison: product.prix_livraison,
+          prix_livraison: variant ? variant.prix_livraison : product.prix_livraison,
           prix_par_kg: product.prix_par_kg,
+          en_promo: product.en_promo,
+          taux_promo: product.taux_promo,
           photo_url: product.photo_url,
           photo_zoom: product.photo_zoom,
           photo_pos_x: product.photo_pos_x,
           photo_pos_y: product.photo_pos_y,
-          poids: product.poids,
+          poids: variant ? variant.poids : product.poids,
           quantity,
         },
       ]
     })
   }
 
-  const removeItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
+  const removeItem = (cartKey) => {
+    setItems((prev) => prev.filter((item) => item.cartKey !== cartKey))
   }
 
-  const updateQuantity = (id, quantity) => {
+  const updateQuantity = (cartKey, quantity) => {
     if (quantity < 1) {
-      removeItem(id)
+      removeItem(cartKey)
       return
     }
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      prev.map((item) => (item.cartKey === cartKey ? { ...item, quantity } : item))
     )
   }
 

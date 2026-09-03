@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
+import { getBasePrice, getDefaultVariant } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, loading, error } = useProduct(id)
@@ -13,6 +14,7 @@ export default function ProductDetailPage({ id }) {
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
   const [justAdded, setJustAdded] = useState(false)
+  const [selectedVariantId, setSelectedVariantId] = useState(null)
 
   if (loading) {
     return (
@@ -37,8 +39,16 @@ export default function ProductDetailPage({ id }) {
     )
   }
 
-  const pickupPrice = getPickupPrice(product.prix_livraison)
-  const displayPrice = isPickup ? pickupPrice : product.prix_livraison
+  const hasVariants = product.variantes && product.variantes.length > 0
+  const defaultVariant = getDefaultVariant(product)
+  const selectedVariant = hasVariants
+    ? product.variantes.find((v) => v.id === selectedVariantId) || defaultVariant
+    : null
+  const referencePrice = selectedVariant ? selectedVariant.prix_livraison : product.prix_livraison
+  const displayWeight = selectedVariant ? selectedVariant.poids : product.poids
+  const basePrice = getBasePrice(product, referencePrice)
+  const pickupPrice = getPickupPrice(basePrice)
+  const displayPrice = isPickup ? pickupPrice : basePrice
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
@@ -80,8 +90,11 @@ export default function ProductDetailPage({ id }) {
             <h1 className="font-display text-4xl text-ink leading-tight mb-2">
               {product.nom}
             </h1>
-            {product.poids && (
-              <p className="font-tag text-sm text-muted mb-3">{product.poids}</p>
+            {product.poids && !hasVariants && (
+              <p className="font-tag text-sm text-muted mb-3">
+                {displayWeight}
+                {product.poids_variable && ' (poids selon arrivage)'}
+              </p>
             )}
 
             {tags.length > 0 && (
@@ -97,19 +110,54 @@ export default function ProductDetailPage({ id }) {
               </div>
             )}
 
+            {hasVariants && (
+              <div className="mb-4">
+                <p className="font-tag text-xs uppercase text-muted mb-2">Conditionnement</p>
+                <div className="flex gap-2 flex-wrap">
+                  {product.variantes.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVariantId(v.id)}
+                      className={`font-tag text-xs uppercase font-semibold px-3 py-2 border ${
+                        selectedVariant?.id === v.id
+                          ? 'border-ink bg-ink text-paper'
+                          : 'border-ink/30 text-ink hover:border-ink'
+                      }`}
+                    >
+                      {v.poids} — {v.prix_livraison.toFixed(2)} €
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-y border-ink/15 py-4 mb-4">
               {product.prix_par_kg && (
                 <p className="font-tag text-xs text-muted mb-1">{product.prix_par_kg}</p>
               )}
-              <div className="flex items-baseline gap-3">
-                {isPickup && (
+              <div className="flex items-baseline gap-3 flex-wrap">
+                {product.en_promo && (
                   <span className="font-tag text-sm text-muted line-through">
-                    {product.prix_livraison.toFixed(2)} €
+                    {referencePrice.toFixed(2)} €
                   </span>
                 )}
-                <span className="font-display text-4xl text-ink">
+                {isPickup && (
+                  <span className="font-tag text-sm text-muted line-through">
+                    {basePrice.toFixed(2)} €
+                  </span>
+                )}
+                <span
+                  className={`font-display text-4xl ${
+                    product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
+                  }`}
+                >
                   {displayPrice.toFixed(2)} €
                 </span>
+                {product.en_promo && (
+                  <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
+                    Promo -{product.taux_promo}%
+                  </span>
+                )}
                 {isPickup && (
                   <span className="font-tag text-xs uppercase font-semibold text-forest">
                     Retrait -{discountPercent}%
@@ -149,7 +197,7 @@ export default function ProductDetailPage({ id }) {
 
                   <button
                     onClick={() => {
-                      addItem(product, quantity)
+                      addItem(product, quantity, selectedVariant)
                       setJustAdded(true)
                       setTimeout(() => setJustAdded(false), 1500)
                     }}

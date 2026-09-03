@@ -1,8 +1,11 @@
 import { useSiteSettings } from '../hooks/useSiteSettings'
+import { useProducts } from '../hooks/useProducts'
 import CroppableImage from './CroppableImage'
 
 export default function Hero() {
   const { settings } = useSiteSettings()
+  const { products } = useProducts()
+  const promoCount = products.filter((p) => p.actif !== false && p.en_promo).length
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border-b border-ink/15">
@@ -20,10 +23,10 @@ export default function Hero() {
           {settings?.remise_retrait ?? 10}% sur chaque commande retirée sur place.
         </p>
         <a
-          href="#"
+          href={promoCount > 0 ? '#promo' : '#'}
           className="w-fit bg-rust text-paper font-tag text-sm font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-rust/90 transition-colors"
         >
-          Voir le catalogue
+          {promoCount > 0 ? 'Voir les promos' : 'Voir le catalogue'}
         </a>
       </div>
       <div className="relative bg-stone flex items-center justify-center min-h-[180px] md:min-h-[220px] overflow-hidden">

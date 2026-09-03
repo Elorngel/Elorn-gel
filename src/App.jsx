@@ -11,7 +11,7 @@ import AdminGate from './components/AdminGate'
 import ProductDetailPage from './pages/ProductDetailPage'
 import CartPage from './pages/CartPage'
 
-function Shop({ activeCategory, activeSubcategory, searchQuery }) {
+function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly }) {
   const { products, loading, error } = useProducts()
 
   const publishedProducts = products.filter((p) => p.actif !== false)
@@ -19,7 +19,10 @@ function Shop({ activeCategory, activeSubcategory, searchQuery }) {
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
 
-  if (searchQuery) {
+  if (promoOnly) {
+    visibleProducts = publishedProducts.filter((p) => p.en_promo)
+    title = 'Promotions'
+  } else if (searchQuery) {
     const q = searchQuery.toLowerCase()
     visibleProducts = publishedProducts.filter((p) => p.nom.toLowerCase().includes(q))
     title = `Résultats pour « ${searchQuery} »`
@@ -34,14 +37,13 @@ function Shop({ activeCategory, activeSubcategory, searchQuery }) {
     }
   }
 
-  const subcategoryOptions = activeCategory
-    ? subcategoriesByCategory[activeCategory] || []
-    : []
+  const subcategoryOptions =
+    activeCategory && !promoOnly ? subcategoriesByCategory[activeCategory] || [] : []
 
   return (
     <>
       <Header activeCategory={activeCategory} />
-      {!searchQuery && <Hero />}
+      {!searchQuery && !promoOnly && <Hero />}
 
       <main className="px-5 py-8 max-w-6xl mx-auto">
         <h2 className="font-display text-2xl text-ink mb-3">{title}</h2>
@@ -120,6 +122,7 @@ function App() {
   const produitMatch = route.match(/^#produit\/(.+)$/)
   const categorieMatch = route.match(/^#categorie\/([^/]+)(?:\/(.+))?$/)
   const rechercheMatch = route.match(/^#recherche\/(.+)$/)
+  const promoMatch = route === '#promo'
 
   const activeCategory = categorieMatch ? decodeURIComponent(categorieMatch[1]) : null
   const activeSubcategory =
@@ -138,6 +141,7 @@ function App() {
             activeCategory={activeCategory}
             activeSubcategory={activeSubcategory}
             searchQuery={searchQuery}
+            promoOnly={promoMatch}
           />
         )}
       </CartProvider>

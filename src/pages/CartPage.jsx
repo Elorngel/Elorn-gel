@@ -3,6 +3,7 @@ import { useCart } from '../context/CartContext'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { getAvailablePickupDates, getPickupTimeSlots } from '../lib/pickupSlots'
+import { getBasePrice } from '../lib/pricing'
 import Header from '../components/Header'
 import CroppableImage from '../components/CroppableImage'
 
@@ -22,8 +23,10 @@ export default function CartPage() {
   const [pickupSlot, setPickupSlot] = useState('')
   const [confirmedOrder, setConfirmedOrder] = useState(null)
 
-  const unitPrice = (item) =>
-    isPickup ? getPickupPrice(item.prix_livraison) : item.prix_livraison
+  const unitPrice = (item) => {
+    const base = getBasePrice(item)
+    return isPickup ? getPickupPrice(base) : base
+  }
 
   const total = items.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0)
 
@@ -103,7 +106,7 @@ export default function CartPage() {
             <div className="bg-paper border border-ink/15">
               {items.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.cartKey}
                   className="flex gap-3 p-3 border-b border-ink/10 last:border-b-0"
                 >
                   <a
@@ -137,14 +140,14 @@ export default function CartPage() {
 
                   <div className="flex flex-col items-end justify-between">
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.cartKey)}
                       className="font-tag text-[11px] uppercase text-muted hover:text-rust"
                     >
                       Retirer
                     </button>
                     <div className="flex items-center border border-ink/30">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.cartKey, item.quantity - 1)}
                         className="w-7 h-7 font-display text-base hover:bg-stone"
                         aria-label="Diminuer"
                       >
@@ -154,7 +157,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.cartKey, item.quantity + 1)}
                         className="w-7 h-7 font-display text-base hover:bg-stone"
                         aria-label="Augmenter"
                       >
