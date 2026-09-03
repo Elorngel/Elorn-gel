@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import RichTextEditor from './RichTextEditor'
 
 export default function ProductDetailsModal({
   product,
@@ -63,22 +64,18 @@ export default function ProductDetailsModal({
           <label className="block font-tag text-xs uppercase text-muted mb-1">
             Description
           </label>
-          <textarea
+          <RichTextEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="w-full border border-ink/20 p-2 font-body text-sm mb-4 focus:border-forest focus:outline-none"
+            onChange={setDescription}
             placeholder="Ex : Filets de cabillaud pêchés en Atlantique Nord, sans arêtes."
           />
 
           <label className="block font-tag text-xs uppercase text-muted mb-1">
             Détails du produit
           </label>
-          <textarea
+          <RichTextEditor
             value={ingredients}
-            onChange={(e) => setIngredients(e.target.value)}
-            rows={4}
-            className="w-full border border-ink/20 p-2 font-body text-sm mb-4 focus:border-forest focus:outline-none"
+            onChange={setIngredients}
             placeholder="Ex : Ingrédients, valeurs nutritionnelles, origine, conditionnement…"
           />
 

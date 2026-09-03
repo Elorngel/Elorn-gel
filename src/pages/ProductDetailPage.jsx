@@ -245,10 +245,18 @@ export default function ProductDetailPage({ id }) {
               Détails du produit
             </button>
           </div>
-          <div className="p-5 font-body text-sm text-ink leading-relaxed whitespace-pre-line">
-            {activeTab === 'description'
-              ? product.description || 'Description à venir.'
-              : product.ingredients || 'Détails du produit à venir.'}
+          <div className="p-5 font-body text-sm text-ink leading-relaxed">
+            {activeTab === 'description' ? (
+              product.description ? (
+                <div dangerouslySetInnerHTML={{ __html: product.description }} />
+              ) : (
+                'Description à venir.'
+              )
+            ) : product.ingredients ? (
+              <div dangerouslySetInnerHTML={{ __html: product.ingredients }} />
+            ) : (
+              'Détails du produit à venir.'
+            )}
           </div>
         </div>
 
