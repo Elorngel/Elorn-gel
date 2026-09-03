@@ -183,6 +183,7 @@ export default function AdminPage() {
   const [detailsProduct, setDetailsProduct] = useState(null)
   const [variantsProduct, setVariantsProduct] = useState(null)
   const [tab, setTab] = useState('produits') // 'produits' | 'commandes'
+  const [searchText, setSearchText] = useState('')
 
   const toggleStock = async (product) => {
     try {
@@ -199,6 +200,16 @@ export default function AdminPage() {
       alert(`Erreur : ${err.message}`)
     }
   }
+
+  const filteredProducts = searchText.trim()
+    ? products.filter((p) => {
+        const q = searchText.trim().toLowerCase()
+        return (
+          p.nom?.toLowerCase().includes(q) ||
+          p.code_article?.toLowerCase().includes(q)
+        )
+      })
+    : products
 
   if (loading) {
     return <div className="p-8 font-body text-sm text-muted">Chargement du catalogue…</div>
@@ -258,10 +269,30 @@ export default function AdminPage() {
           <OrdersPanel />
         ) : (
           <>
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Rechercher un produit (nom ou référence)…"
+                className="border border-ink/30 px-3 py-2 font-body text-sm w-full max-w-xs focus:border-forest focus:outline-none"
+              />
+              {searchText && (
+                <button
+                  onClick={() => setSearchText('')}
+                  className="font-tag text-xs uppercase text-muted hover:text-ink"
+                >
+                  Effacer
+                </button>
+              )}
+            </div>
+
             <p className="font-body text-sm text-muted mb-4">
-              {products.length} produits. Clique sur la photo pour la choisir et la régler
-              (molette pour zoomer, glisser pour recentrer). Les autres champs se
-              sauvegardent automatiquement quand tu cliques ailleurs.
+              {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''}
+              {searchText ? ` trouvé${filteredProducts.length !== 1 ? 's' : ''}` : ''}.
+              Clique sur la photo pour la choisir et la régler (molette pour zoomer,
+              glisser pour recentrer). Les autres champs se sauvegardent
+              automatiquement quand tu cliques ailleurs.
             </p>
 
         <div className="bg-paper border border-ink/15 overflow-x-auto">
@@ -284,7 +315,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr
                   key={product.id}
                   className={`border-b border-ink/10 ${

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { categories } from '../data/products'
+import { categories, subcategoriesByCategory } from '../data/products'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 
 export default function Header({ activeCategory }) {
@@ -10,6 +10,19 @@ export default function Header({ activeCategory }) {
   const { itemCount } = useCart()
   const [searchText, setSearchText] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [openCategory, setOpenCategory] = useState(null)
+  const [openMobileCategory, setOpenMobileCategory] = useState(null)
+  const navRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setOpenCategory(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -142,21 +155,54 @@ export default function Header({ activeCategory }) {
         </div>
       </div>
 
-      {/* Navigation catégories : sa propre ligne, pleine largeur, à partir de md */}
-      <nav className="hidden md:flex gap-5 text-sm px-4 md:px-5 pb-3 flex-wrap">
-        {categories.map((cat) => (
-          <a
-            key={cat}
-            href={`#categorie/${encodeURIComponent(cat)}`}
-            className={`font-body pb-0.5 border-b-2 transition-colors ${
-              activeCategory === cat
-                ? 'border-forest text-forest font-semibold'
-                : 'border-transparent text-ink hover:border-ink/30'
-            }`}
-          >
-            {cat}
-          </a>
-        ))}
+      {/* Navigation catégories avec sous-menus déroulants : à partir de md */}
+      <nav ref={navRef} className="hidden md:flex gap-5 text-sm px-4 md:px-5 pb-3 flex-wrap">
+        {categories.map((cat) => {
+          const subcats = subcategoriesByCategory[cat] || []
+          const isOpen = openCategory === cat
+
+          return (
+            <div key={cat} className="relative">
+              <button
+                onClick={() => setOpenCategory(isOpen ? null : cat)}
+                className={`flex items-center gap-1 font-body pb-0.5 border-b-2 transition-colors ${
+                  activeCategory === cat
+                    ? 'border-forest text-forest font-semibold'
+                    : 'border-transparent text-ink hover:border-ink/30'
+                }`}
+              >
+                {cat}
+                {subcats.length > 0 && (
+                  <span className={`text-[10px] transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                    ▾
+                  </span>
+                )}
+              </button>
+
+              {isOpen && subcats.length > 0 && (
+                <div className="absolute left-0 top-full mt-1 bg-paper border border-ink/20 shadow-sm z-30 min-w-[180px] py-1">
+                  <a
+                    href={`#categorie/${encodeURIComponent(cat)}`}
+                    onClick={() => setOpenCategory(null)}
+                    className="block px-3 py-2 font-tag text-xs uppercase font-semibold text-forest hover:bg-stone border-b border-ink/10"
+                  >
+                    Tout {cat.toLowerCase()}
+                  </a>
+                  {subcats.map((sub) => (
+                    <a
+                      key={sub}
+                      href={`#categorie/${encodeURIComponent(cat)}/${encodeURIComponent(sub)}`}
+                      onClick={() => setOpenCategory(null)}
+                      className="block px-3 py-2 font-body text-sm text-ink hover:bg-stone"
+                    >
+                      {sub}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </nav>
 
       {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
@@ -198,18 +244,51 @@ export default function Header({ activeCategory }) {
           </div>
 
           <nav className="flex flex-col divide-y divide-ink/10 border-t border-ink/10">
-            {categories.map((cat) => (
-              <a
-                key={cat}
-                href={`#categorie/${encodeURIComponent(cat)}`}
-                onClick={() => setMenuOpen(false)}
-                className={`py-3 font-body text-sm ${
-                  activeCategory === cat ? 'text-forest font-semibold' : 'text-ink'
-                }`}
-              >
-                {cat}
-              </a>
-            ))}
+            {categories.map((cat) => {
+              const subcats = subcategoriesByCategory[cat] || []
+              const isOpen = openMobileCategory === cat
+
+              return (
+                <div key={cat}>
+                  <div className="flex items-center justify-between py-3">
+                    <a
+                      href={`#categorie/${encodeURIComponent(cat)}`}
+                      onClick={() => setMenuOpen(false)}
+                      className={`font-body text-sm ${
+                        activeCategory === cat ? 'text-forest font-semibold' : 'text-ink'
+                      }`}
+                    >
+                      {cat}
+                    </a>
+                    {subcats.length > 0 && (
+                      <button
+                        onClick={() => setOpenMobileCategory(isOpen ? null : cat)}
+                        aria-label="Sous-catégories"
+                        className="w-8 h-8 flex items-center justify-center text-muted"
+                      >
+                        <span className={`text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                          ▾
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                  {isOpen && subcats.length > 0 && (
+                    <div className="pb-2 pl-3 flex flex-col gap-2">
+                      {subcats.map((sub) => (
+                        <a
+                          key={sub}
+                          href={`#categorie/${encodeURIComponent(cat)}/${encodeURIComponent(sub)}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="font-tag text-xs uppercase text-muted hover:text-ink"
+                        >
+                          {sub}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </nav>
 
           <a
