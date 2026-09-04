@@ -5,7 +5,7 @@ export function useOrder() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  const submitOrder = async ({ nomClient, telephone, email, mode, note, creneauRetrait, items, total }) => {
+  const submitOrder = async ({ nomClient, telephone, email, mode, note, creneauRetrait, creneauLivraison, items, total, fraisLivraison }) => {
     setSubmitting(true)
     setError(null)
 
@@ -19,7 +19,9 @@ export function useOrder() {
           mode,
           note: note || null,
           creneau_retrait: creneauRetrait || null,
+          creneau_livraison: creneauLivraison || null,
           total,
+          frais_livraison: fraisLivraison || 0,
         })
         .select()
         .single()

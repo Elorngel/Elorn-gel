@@ -100,7 +100,7 @@ export default function Header({ activeCategory }) {
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
-              Retrait -{discountPercent}%
+              Retrait{discountPercent > 0 ? ` -${discountPercent}%` : ''}
             </button>
           </div>
 
@@ -239,7 +239,7 @@ export default function Header({ activeCategory }) {
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
-              Retrait -{discountPercent}%
+              Retrait{discountPercent > 0 ? ` -${discountPercent}%` : ''}
             </button>
           </div>
 

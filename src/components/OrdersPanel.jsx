@@ -55,13 +55,18 @@ export default function OrdersPanel() {
             <span className="font-tag text-[11px] uppercase text-muted">
               {order.mode === 'retrait' ? 'Retrait' : 'Livraison'}
             </span>
-            {order.creneau_retrait && (
+            {(order.creneau_retrait || order.creneau_livraison) && (
               <span className="font-tag text-[11px] text-muted hidden sm:inline">
-                {order.creneau_retrait}
+                {order.creneau_retrait || order.creneau_livraison}
               </span>
             )}
-            <span className="font-display text-xl text-ink w-20 text-right shrink-0">
+            <span className="font-display text-xl text-ink w-24 text-right shrink-0">
               {order.total.toFixed(2)} €
+              {order.frais_livraison > 0 && (
+                <span className="block font-tag text-[10px] text-muted normal-case">
+                  dont {order.frais_livraison.toFixed(2)} € livr.
+                </span>
+              )}
             </span>
 
             <select

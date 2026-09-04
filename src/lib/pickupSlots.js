@@ -4,7 +4,7 @@ const MOIS = [
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
 ]
 
-// Dépôt ouvert 8h-18h en continu, tous les jours sauf dimanche.
+// Dépôt ouvert 8h-18h en continu, du lundi au vendredi (fermé samedi et dimanche).
 // Retrait disponible sous 24h : la première date proposée est demain.
 export function getAvailablePickupDates(count = 7) {
   const dates = []
@@ -12,7 +12,7 @@ export function getAvailablePickupDates(count = 7) {
   cursor.setDate(cursor.getDate() + 1)
 
   while (dates.length < count) {
-    if (cursor.getDay() !== 0) {
+    if (cursor.getDay() !== 0 && cursor.getDay() !== 6) {
       const label = `${JOURS[cursor.getDay()]} ${cursor.getDate()} ${MOIS[cursor.getMonth()]}`
       dates.push({
         value: cursor.toISOString().slice(0, 10),
@@ -37,4 +37,30 @@ export function getPickupTimeSlots() {
     slots.push(`${format(minutes)} - ${format(minutes + 30)}`)
   }
   return slots
+}
+
+// Dates de livraison : du lundi au vendredi (fermé samedi et dimanche).
+// Livraison disponible sous 24h : la première date proposée est demain.
+export function getAvailableDeliveryDates(count = 7) {
+  const dates = []
+  const cursor = new Date()
+  cursor.setDate(cursor.getDate() + 1)
+
+  while (dates.length < count) {
+    if (cursor.getDay() !== 0 && cursor.getDay() !== 6) {
+      const label = `${JOURS[cursor.getDay()]} ${cursor.getDate()} ${MOIS[cursor.getMonth()]}`
+      dates.push({
+        value: cursor.toISOString().slice(0, 10),
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      })
+    }
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  return dates
+}
+
+// Trois créneaux fixes pour la livraison : matin, midi, après-midi.
+export function getDeliveryTimeWindows() {
+  return ['9h00 - 12h00 (matin)', '12h00 - 14h00 (midi)', '14h00 - 18h00 (après-midi)']
 }

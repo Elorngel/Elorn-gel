@@ -11,16 +11,14 @@ export default function Hero() {
     <section className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border-b border-ink/15">
       <div className="bg-forest text-paper px-5 md:px-8 py-8 md:py-10 flex flex-col justify-center">
         <span className="font-tag text-xs uppercase tracking-widest text-stone/80 mb-2">
-          250 références
+          {settings?.hero_badge ?? '250 références'}
         </span>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.95] mb-4">
-          Le surgelé,
-          <br />
-          en livraison ou en retrait
+          {settings?.hero_titre ?? 'Le surgelé, en livraison ou en retrait'}
         </h1>
         <p className="font-body text-sm text-stone/90 max-w-md mb-6">
-          Commandez chez vous, récupérez en point de retrait et économisez{' '}
-          {settings?.remise_retrait ?? 10}% sur chaque commande retirée sur place.
+          {settings?.hero_sous_titre ??
+            `Commandez chez vous, récupérez en point de retrait et économisez ${settings?.remise_retrait ?? 10}% sur chaque commande retirée sur place.`}
         </p>
         <a
           href={promoCount > 0 ? '#promo' : '#'}

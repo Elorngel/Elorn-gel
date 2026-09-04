@@ -158,7 +158,7 @@ export default function ProductDetailPage({ id }) {
                     Promo -{product.taux_promo}%
                   </span>
                 )}
-                {isPickup && (
+                {isPickup && discountPercent > 0 && (
                   <span className="font-tag text-xs uppercase font-semibold text-forest">
                     Retrait -{discountPercent}%
                   </span>

@@ -2,18 +2,22 @@ import { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
-import { getAvailablePickupDates, getPickupTimeSlots } from '../lib/pickupSlots'
+import { useSiteSettings } from '../hooks/useSiteSettings'
+import { getAvailablePickupDates, getPickupTimeSlots, getAvailableDeliveryDates, getDeliveryTimeWindows } from '../lib/pickupSlots'
 import { getBasePrice } from '../lib/pricing'
 import Header from '../components/Header'
 import CroppableImage from '../components/CroppableImage'
 
 const pickupDates = getAvailablePickupDates()
 const pickupSlots = getPickupTimeSlots()
+const deliveryDates = getAvailableDeliveryDates()
+const deliveryWindows = getDeliveryTimeWindows()
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear } = useCart()
   const { mode, isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { submitOrder, submitting, error } = useOrder()
+  const { settings } = useSiteSettings()
 
   const [nomClient, setNomClient] = useState('')
   const [telephone, setTelephone] = useState('')
@@ -21,6 +25,8 @@ export default function CartPage() {
   const [note, setNote] = useState('')
   const [pickupDate, setPickupDate] = useState('')
   const [pickupSlot, setPickupSlot] = useState('')
+  const [deliveryDate, setDeliveryDate] = useState('')
+  const [deliveryWindow, setDeliveryWindow] = useState('')
   const [confirmedOrder, setConfirmedOrder] = useState(null)
 
   const unitPrice = (item) => {
@@ -28,10 +34,15 @@ export default function CartPage() {
     return isPickup ? getPickupPrice(base) : base
   }
 
-  const total = items.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0)
+  const subtotal = items.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0)
+  const deliveryFee = !isPickup ? settings?.frais_livraison ?? 7 : 0
+  const total = subtotal + deliveryFee
 
   const pickupDateLabel = (value) =>
     pickupDates.find((d) => d.value === value)?.label || value
+
+  const deliveryDateLabel = (value) =>
+    deliveryDates.find((d) => d.value === value)?.label || value
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -45,7 +56,9 @@ export default function CartPage() {
         mode,
         note,
         creneauRetrait: isPickup ? `${pickupDateLabel(pickupDate)} · ${pickupSlot}` : null,
+        creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDate)} · ${deliveryWindow}` : null,
         total,
+        fraisLivraison: deliveryFee,
         items: items.map((item) => ({
           id: item.id,
           nom: item.nom,
@@ -74,7 +87,7 @@ export default function CartPage() {
           <p className="font-body text-sm text-muted mb-6">
             {confirmedOrder.mode === 'retrait'
               ? `Rendez-vous au dépôt le ${confirmedOrder.creneau_retrait || 'créneau choisi'}.`
-              : 'Vous serez contacté pour organiser la livraison.'}{' '}
+              : `Livraison prévue le ${confirmedOrder.creneau_livraison || 'créneau choisi'}.`}{' '}
             Le paiement se fait sur place, à {confirmedOrder.mode === 'retrait' ? 'la récupération' : 'la livraison'}.
           </p>
           <a
@@ -173,9 +186,19 @@ export default function CartPage() {
               <div className="bg-paper border border-ink/15 p-4 mb-4">
                 <div className="flex justify-between font-tag text-xs uppercase text-muted mb-1">
                   <span>Mode</span>
-                  <span>{mode === 'retrait' ? `Retrait -${discountPercent}%` : 'Livraison'}</span>
+                  <span>{mode === 'retrait' ? `Retrait${discountPercent > 0 ? ` -${discountPercent}%` : ''}` : 'Livraison'}</span>
                 </div>
-                <div className="flex justify-between items-baseline pt-2 border-t border-ink/15">
+                <div className="flex justify-between font-body text-sm text-ink pt-2 border-t border-ink/15">
+                  <span>Sous-total</span>
+                  <span>{subtotal.toFixed(2)} €</span>
+                </div>
+                {deliveryFee > 0 && (
+                  <div className="flex justify-between font-body text-sm text-ink mt-1">
+                    <span>Frais de livraison</span>
+                    <span>{deliveryFee.toFixed(2)} €</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-ink/15">
                   <span className="font-tag text-xs uppercase text-muted">Total</span>
                   <span className="font-display text-3xl text-ink">
                     {total.toFixed(2)} €
@@ -220,7 +243,7 @@ export default function CartPage() {
                   className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                 />
 
-                {isPickup && (
+                {isPickup ? (
                   <div className="border-t border-ink/15 pt-3 mt-1">
                     <p className="font-tag text-[11px] uppercase text-forest font-semibold mb-2">
                       Commande disponible sous 24h au dépôt
@@ -260,6 +283,50 @@ export default function CartPage() {
                       {pickupSlots.map((slot) => (
                         <option key={slot} value={slot}>
                           {slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="border-t border-ink/15 pt-3 mt-1">
+                    <p className="font-tag text-[11px] uppercase text-forest font-semibold mb-2">
+                      Livraison disponible sous 24h
+                    </p>
+
+                    <label className="block font-tag text-[11px] uppercase text-muted mb-1">
+                      Jour de livraison
+                    </label>
+                    <select
+                      required
+                      value={deliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      className="w-full border border-ink/20 p-2 font-body text-sm mb-3 focus:border-forest focus:outline-none"
+                    >
+                      <option value="" disabled>
+                        — choisir un jour —
+                      </option>
+                      {deliveryDates.map((d) => (
+                        <option key={d.value} value={d.value}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    <label className="block font-tag text-[11px] uppercase text-muted mb-1">
+                      Créneau
+                    </label>
+                    <select
+                      required
+                      value={deliveryWindow}
+                      onChange={(e) => setDeliveryWindow(e.target.value)}
+                      className="w-full border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                    >
+                      <option value="" disabled>
+                        — choisir un créneau —
+                      </option>
+                      {deliveryWindows.map((w) => (
+                        <option key={w} value={w}>
+                          {w}
                         </option>
                       ))}
                     </select>

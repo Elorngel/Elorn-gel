@@ -9,13 +9,27 @@ import { adminLogout } from '../components/AdminGate'
 import OrdersPanel from '../components/OrdersPanel'
 import VariantsModal from '../components/VariantsModal'
 
-function EditableCell({ value, onSave, type = 'text', width = 'w-full' }) {
+function EditableCell({ value, onSave, type = 'text', width = 'w-full', multiline = false }) {
   const [draft, setDraft] = useState(value ?? '')
+
+  if (multiline) {
+    return (
+      <textarea
+        rows={2}
+        className={`${width} bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1 resize-none leading-snug`}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          if (draft !== value) onSave(draft)
+        }}
+      />
+    )
+  }
 
   return (
     <input
       type={type}
-      className={`${width} bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-sm py-1`}
+      className={`${width} bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1`}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => {
@@ -28,7 +42,7 @@ function EditableCell({ value, onSave, type = 'text', width = 'w-full' }) {
 function CategorySelect({ value, onSave }) {
   return (
     <select
-      className="w-full bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-sm py-1 cursor-pointer"
+      className="w-full bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1 cursor-pointer"
       value={value ?? ''}
       onChange={(e) => onSave(e.target.value)}
     >
@@ -53,7 +67,7 @@ function SubcategorySelect({ categorie, value, onSave }) {
 
   return (
     <select
-      className="w-full bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-sm py-1 cursor-pointer"
+      className="w-full bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1 cursor-pointer"
       value={value ?? ''}
       onChange={(e) => onSave(e.target.value)}
     >
@@ -71,10 +85,21 @@ function SiteSettingsPanel() {
   const { settings, loading, updateSettings, uploadSiteImage } = useSiteSettings()
   const [editing, setEditing] = useState(null) // 'hero' | 'logo' | null
   const [discountDraft, setDiscountDraft] = useState(null)
+  const [deliveryFeeDraft, setDeliveryFeeDraft] = useState(null)
+  const [badgeDraft, setBadgeDraft] = useState(null)
+  const [titreDraft, setTitreDraft] = useState(null)
+  const [sousTitreDraft, setSousTitreDraft] = useState(null)
 
   useEffect(() => {
     if (settings && discountDraft === null) {
       setDiscountDraft(settings.remise_retrait ?? 10)
+      setDeliveryFeeDraft(settings.frais_livraison ?? 7)
+      setBadgeDraft(settings.hero_badge ?? '250 références')
+      setTitreDraft(settings.hero_titre ?? 'Le surgelé, en livraison ou en retrait')
+      setSousTitreDraft(
+        settings.hero_sous_titre ??
+          `Commandez chez vous, récupérez en point de retrait et économisez ${settings.remise_retrait ?? 10}% sur chaque commande retirée sur place.`
+      )
     }
   }, [settings, discountDraft])
 
@@ -84,6 +109,25 @@ function SiteSettingsPanel() {
     const value = parseFloat(discountDraft)
     if (!isNaN(value) && value !== settings.remise_retrait) {
       updateSettings({ remise_retrait: value })
+    }
+  }
+
+  const saveDeliveryFee = () => {
+    const value = parseFloat(deliveryFeeDraft)
+    if (!isNaN(value) && value !== settings.frais_livraison) {
+      updateSettings({ frais_livraison: value })
+    }
+  }
+
+  const saveBadge = () => {
+    if (badgeDraft !== settings.hero_badge) updateSettings({ hero_badge: badgeDraft })
+  }
+  const saveTitre = () => {
+    if (titreDraft !== settings.hero_titre) updateSettings({ hero_titre: titreDraft })
+  }
+  const saveSousTitre = () => {
+    if (sousTitreDraft !== settings.hero_sous_titre) {
+      updateSettings({ hero_sous_titre: sousTitreDraft })
     }
   }
 
@@ -137,6 +181,70 @@ function SiteSettingsPanel() {
               />
               <span className="font-tag text-sm">%</span>
             </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 border border-ink/20 p-2">
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Frais de livraison
+            </label>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={deliveryFeeDraft ?? ''}
+                onChange={(e) => setDeliveryFeeDraft(e.target.value)}
+                onBlur={saveDeliveryFee}
+                className="w-16 border border-ink/20 p-1.5 font-body text-sm text-center focus:border-forest focus:outline-none"
+              />
+              <span className="font-tag text-sm">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-ink/15 mt-4 pt-4">
+        <p className="font-tag text-xs uppercase text-muted mb-2">
+          Texte de la bannière d'accueil
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Petit texte (ex : 250 références)
+            </label>
+            <input
+              type="text"
+              value={badgeDraft ?? ''}
+              onChange={(e) => setBadgeDraft(e.target.value)}
+              onBlur={saveBadge}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Grand titre
+            </label>
+            <input
+              type="text"
+              value={titreDraft ?? ''}
+              onChange={(e) => setTitreDraft(e.target.value)}
+              onBlur={saveTitre}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Sous-texte
+            </label>
+            <textarea
+              rows={2}
+              value={sousTitreDraft ?? ''}
+              onChange={(e) => setSousTitreDraft(e.target.value)}
+              onBlur={saveSousTitre}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
           </div>
         </div>
       </div>
@@ -299,19 +407,19 @@ export default function AdminPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-ink/15 font-tag text-xs uppercase text-muted">
-                <th className="p-3 w-20">Photo</th>
-                <th className="p-3 w-20">Réf.</th>
-                <th className="p-3">Désignation</th>
-                <th className="p-3">Catégorie</th>
-                <th className="p-3">Sous-catégorie</th>
-                <th className="p-3">Fournisseur</th>
-                <th className="p-3 w-28">Poids</th>
-                <th className="p-3 w-28">Prix livr.</th>
-                <th className="p-3 w-32">Prix / kg</th>
-                <th className="p-3 w-32">Stock</th>
-                <th className="p-3 w-28">Publié</th>
-                <th className="p-3 w-28">Promo</th>
-                <th className="p-3 w-20">Fiche</th>
+                <th className="p-2 w-20">Photo</th>
+                <th className="p-2 w-20">Réf.</th>
+                <th className="p-2 min-w-[200px]">Désignation</th>
+                <th className="p-2">Catégorie</th>
+                <th className="p-2">Sous-catégorie</th>
+                <th className="p-2">Fournisseur</th>
+                <th className="p-2 w-28">Poids</th>
+                <th className="p-2 w-28">Prix livr.</th>
+                <th className="p-2 w-32">Prix / kg</th>
+                <th className="p-2 w-32">Stock</th>
+                <th className="p-2 w-28">Publié</th>
+                <th className="p-2 w-28">Promo</th>
+                <th className="p-2 w-20">Fiche</th>
               </tr>
             </thead>
             <tbody>
@@ -322,7 +430,7 @@ export default function AdminPage() {
                     product.en_rupture || product.actif === false ? 'opacity-50' : ''
                   }`}
                 >
-                  <td className="p-3">
+                  <td className="p-2">
                     <button
                       onClick={() => setEditingProduct(product)}
                       className="block w-14 h-14 bg-stone border border-ink/15 overflow-hidden relative"
@@ -341,39 +449,40 @@ export default function AdminPage() {
                       )}
                     </button>
                   </td>
-                  <td className="p-3 font-tag text-xs text-muted">{product.code_article}</td>
-                  <td className="p-3">
+                  <td className="p-2 font-tag text-xs text-muted">{product.code_article}</td>
+                  <td className="p-2">
                     <EditableCell
                       value={product.nom}
                       onSave={(v) => updateProduct(product.id, { nom: v })}
+                      multiline
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <CategorySelect
                       value={product.categorie}
                       onSave={(v) => updateProduct(product.id, { categorie: v })}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <SubcategorySelect
                       categorie={product.categorie}
                       value={product.sous_categorie}
                       onSave={(v) => updateProduct(product.id, { sous_categorie: v })}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <EditableCell
                       value={product.fournisseur}
                       onSave={(v) => updateProduct(product.id, { fournisseur: v })}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <EditableCell
                       value={product.poids}
                       onSave={(v) => updateProduct(product.id, { poids: v })}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <EditableCell
                       type="number"
                       value={product.prix_livraison}
@@ -382,13 +491,13 @@ export default function AdminPage() {
                       }
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <EditableCell
                       value={product.prix_par_kg}
                       onSave={(v) => updateProduct(product.id, { prix_par_kg: v })}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <button
                       onClick={() => toggleStock(product)}
                       className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full ${
@@ -400,7 +509,7 @@ export default function AdminPage() {
                       {product.en_rupture ? 'Bientôt de retour' : 'En stock'}
                     </button>
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <button
                       onClick={() => toggleActive(product)}
                       className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
@@ -412,7 +521,7 @@ export default function AdminPage() {
                       {product.actif !== false ? 'Publié' : 'Masqué'}
                     </button>
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <div className="flex flex-col gap-1">
                       <button
                         onClick={() =>
@@ -441,7 +550,7 @@ export default function AdminPage() {
                       )}
                     </div>
                   </td>
-                  <td className="p-3">
+                  <td className="p-2">
                     <button
                       onClick={() => setDetailsProduct(product)}
                       className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border hover:bg-stone ${
