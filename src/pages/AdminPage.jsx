@@ -8,6 +8,7 @@ import ProductDetailsModal from '../components/ProductDetailsModal'
 import { adminLogout } from '../components/AdminGate'
 import OrdersPanel from '../components/OrdersPanel'
 import VariantsModal from '../components/VariantsModal'
+import { getPricePerUnitLabel } from '../lib/pricing'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full', multiline = false }) {
   const [draft, setDraft] = useState(value ?? '')
@@ -84,11 +85,16 @@ function SubcategorySelect({ categorie, value, onSave }) {
 function SiteSettingsPanel() {
   const { settings, loading, updateSettings, uploadSiteImage } = useSiteSettings()
   const [editing, setEditing] = useState(null) // 'hero' | 'logo' | null
+  const [expanded, setExpanded] = useState(false)
   const [discountDraft, setDiscountDraft] = useState(null)
   const [deliveryFeeDraft, setDeliveryFeeDraft] = useState(null)
   const [badgeDraft, setBadgeDraft] = useState(null)
   const [titreDraft, setTitreDraft] = useState(null)
   const [sousTitreDraft, setSousTitreDraft] = useState(null)
+  const [bandeauDraft, setBandeauDraft] = useState(null)
+  const [emailDraft, setEmailDraft] = useState(null)
+  const [telDraft, setTelDraft] = useState(null)
+  const [adresseDraft, setAdresseDraft] = useState(null)
 
   useEffect(() => {
     if (settings && discountDraft === null) {
@@ -100,6 +106,10 @@ function SiteSettingsPanel() {
         settings.hero_sous_titre ??
           `Commandez chez vous, récupérez en point de retrait et économisez ${settings.remise_retrait ?? 10}% sur chaque commande retirée sur place.`
       )
+      setBandeauDraft(settings.bandeau_haut ?? 'Retrait gratuit sous 24h à Plouédern')
+      setEmailDraft(settings.contact_email ?? 'logistique@elorngel.fr')
+      setTelDraft(settings.contact_telephone ?? '02 98 20 50 43')
+      setAdresseDraft(settings.adresse ?? 'ZI de Keriel Nord, 29800 Plouédern')
     }
   }, [settings, discountDraft])
 
@@ -119,6 +129,21 @@ function SiteSettingsPanel() {
     }
   }
 
+  const saveBandeau = () => {
+    if (bandeauDraft !== settings.bandeau_haut) updateSettings({ bandeau_haut: bandeauDraft })
+  }
+  const saveEmail = () => {
+    if (emailDraft !== settings.contact_email) updateSettings({ contact_email: emailDraft })
+  }
+  const saveTel = () => {
+    if (telDraft !== settings.contact_telephone) {
+      updateSettings({ contact_telephone: telDraft })
+    }
+  }
+  const saveAdresse = () => {
+    if (adresseDraft !== settings.adresse) updateSettings({ adresse: adresseDraft })
+  }
+
   const saveBadge = () => {
     if (badgeDraft !== settings.hero_badge) updateSettings({ hero_badge: badgeDraft })
   }
@@ -133,7 +158,18 @@ function SiteSettingsPanel() {
 
   return (
     <div className="bg-paper border border-ink/15 p-4 mb-6">
-      <h2 className="font-display text-xl text-ink mb-3">Réglages du site</h2>
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-2 w-full text-left"
+      >
+        <h2 className="font-display text-xl text-ink">Réglages du site</h2>
+        <span className={`text-sm transition-transform ${expanded ? 'rotate-180' : ''}`}>
+          ▾
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="mt-3">
       <div className="flex gap-4 flex-wrap">
         <button
           onClick={() => setEditing('hero')}
@@ -248,6 +284,64 @@ function SiteSettingsPanel() {
           </div>
         </div>
       </div>
+
+      <div className="border-t border-ink/15 mt-4 pt-4">
+        <p className="font-tag text-xs uppercase text-muted mb-2">
+          Bandeau du haut et coordonnées (bandeau, pied de page)
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl">
+          <div className="sm:col-span-2">
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Bandeau tout en haut du site
+            </label>
+            <input
+              type="text"
+              value={bandeauDraft ?? ''}
+              onChange={(e) => setBandeauDraft(e.target.value)}
+              onBlur={saveBandeau}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Téléphone
+            </label>
+            <input
+              type="text"
+              value={telDraft ?? ''}
+              onChange={(e) => setTelDraft(e.target.value)}
+              onBlur={saveTel}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Email de contact
+            </label>
+            <input
+              type="email"
+              value={emailDraft ?? ''}
+              onChange={(e) => setEmailDraft(e.target.value)}
+              onBlur={saveEmail}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Adresse (affichée en pied de page)
+            </label>
+            <input
+              type="text"
+              value={adresseDraft ?? ''}
+              onChange={(e) => setAdresseDraft(e.target.value)}
+              onBlur={saveAdresse}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+        </div>
+      )}
 
       {editing === 'hero' && (
         <PhotoEditorModal
@@ -493,10 +587,16 @@ export default function AdminPage() {
                     />
                   </td>
                   <td className="p-2">
-                    <EditableCell
-                      value={product.prix_par_kg}
-                      onSave={(v) => updateProduct(product.id, { prix_par_kg: v })}
-                    />
+                    {product.poids_reference ? (
+                      <span className="font-tag text-xs text-forest">
+                        {getPricePerUnitLabel(product, product.prix_livraison)}
+                      </span>
+                    ) : (
+                      <EditableCell
+                        value={product.prix_par_kg}
+                        onSave={(v) => updateProduct(product.id, { prix_par_kg: v })}
+                      />
+                    )}
                   </td>
                   <td className="p-2">
                     <button

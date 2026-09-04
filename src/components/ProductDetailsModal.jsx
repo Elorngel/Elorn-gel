@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import RichTextEditor from './RichTextEditor'
+import { getPricePerUnitLabel } from '../lib/pricing'
 
 export default function ProductDetailsModal({
   product,
@@ -17,6 +18,8 @@ export default function ProductDetailsModal({
   const [poidsVariable, setPoidsVariable] = useState(product.poids_variable)
   const [dispoLivraison, setDispoLivraison] = useState(product.dispo_livraison !== false)
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
+  const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
+  const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
 
   const handleSave = async () => {
     setSaving(true)
@@ -59,6 +62,16 @@ export default function ProductDetailsModal({
     const newValue = !dispoRetrait
     setDispoRetrait(newValue)
     updateProduct(product.id, { dispo_retrait: newValue })
+  }
+
+  const recomputePrixParUnite = (quantite, unite) => {
+    const q = parseFloat(quantite)
+    if (!isNaN(q) && q > 0) {
+      updateProduct(product.id, {
+        poids_reference: q,
+        unite_reference: unite,
+      })
+    }
   }
 
   return (
@@ -170,6 +183,54 @@ export default function ProductDetailsModal({
                   </div>
                 </div>
               </div>
+            )}
+          </div>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">
+              Prix au poids / au litre (calcul automatique)
+            </p>
+            <p className="font-body text-xs text-muted mb-2">
+              Indique le poids net (ou volume) du produit tel qu'il est vendu — le prix
+              au kg ou au litre affiché sur le site reste calculé en permanence à partir
+              du prix actuel, même si tu le modifies plus tard.
+            </p>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+                  Quantité nette
+                </label>
+                <input
+                  type="number"
+                  step="0.001"
+                  placeholder="Ex : 0.44"
+                  value={refQuantiteDraft}
+                  onChange={(e) => setRefQuantiteDraft(e.target.value)}
+                  onBlur={() => recomputePrixParUnite(refQuantiteDraft, refUnite)}
+                  className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                />
+              </div>
+              <div className="w-24">
+                <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+                  Unité
+                </label>
+                <select
+                  value={refUnite}
+                  onChange={(e) => {
+                    setRefUnite(e.target.value)
+                    recomputePrixParUnite(refQuantiteDraft, e.target.value)
+                  }}
+                  className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                >
+                  <option value="kg">kg</option>
+                  <option value="l">L</option>
+                </select>
+              </div>
+            </div>
+            {(product.poids_reference || product.prix_par_kg) && (
+              <p className="font-tag text-xs text-forest mt-2">
+                Affiché sur le site : {getPricePerUnitLabel(product, product.prix_livraison)}
+              </p>
             )}
           </div>
 

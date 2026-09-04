@@ -36,10 +36,15 @@ export default function Header({ activeCategory }) {
   return (
     <header className="bg-paper border-b border-ink/15 sticky top-0 z-20">
       <div className="bg-ink text-stone text-[11px] font-tag px-4 md:px-5 py-1.5 flex justify-between">
-        <span className="truncate">Retrait gratuit sous 24h à Plouédern</span>
+        <span className="truncate">
+          {settings?.bandeau_haut ?? 'Retrait gratuit sous 24h à Plouédern'}
+        </span>
         <div className="flex gap-4 shrink-0 ml-2">
-          <a href="tel:0298205043" className="hidden sm:inline">
-            02 98 20 50 43
+          <a
+            href={`tel:${(settings?.contact_telephone || '02 98 20 50 43').replace(/\s/g, '')}`}
+            className="hidden sm:inline"
+          >
+            {settings?.contact_telephone || '02 98 20 50 43'}
           </a>
           <a href="#admin" className="text-stone/60 hover:text-stone">
             Administration
@@ -292,10 +297,10 @@ export default function Header({ activeCategory }) {
           </nav>
 
           <a
-            href="tel:0298205043"
+            href={`tel:${(settings?.contact_telephone || '02 98 20 50 43').replace(/\s/g, '')}`}
             className="block mt-4 font-tag text-xs uppercase text-muted"
           >
-            Appeler le dépôt · 02 98 20 50 43
+            Appeler le dépôt · {settings?.contact_telephone || '02 98 20 50 43'}
           </a>
         </div>
       )}

@@ -6,7 +6,7 @@ import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, loading, error } = useProduct(id)
@@ -153,8 +153,10 @@ export default function ProductDetailPage({ id }) {
               </div>
             ) : (
               <div className="border-y border-ink/15 py-4 mb-4">
-                {product.prix_par_kg && (
-                  <p className="font-tag text-xs text-muted mb-1">{product.prix_par_kg}</p>
+                {getPricePerUnitLabel(product, basePrice) && (
+                  <p className="font-tag text-xs text-muted mb-1">
+                    {getPricePerUnitLabel(product, basePrice)}
+                  </p>
                 )}
                 <div className="flex items-baseline gap-3 flex-wrap">
                   {product.en_promo && (
@@ -162,7 +164,7 @@ export default function ProductDetailPage({ id }) {
                       {referencePrice.toFixed(2)} €
                     </span>
                   )}
-                  {isPickup && (
+                  {isPickup && discountPercent > 0 && (
                     <span className="font-tag text-sm text-muted line-through">
                       {basePrice.toFixed(2)} €
                     </span>

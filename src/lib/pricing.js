@@ -22,6 +22,19 @@ export function isProductAvailable(product, isPickup) {
   return isPickup ? product.dispo_retrait !== false : product.dispo_livraison !== false
 }
 
+// Prix au kg (ou au litre) affiché sous le produit. Se recalcule en
+// permanence à partir du prix actuel si un poids/volume de référence a
+// été renseigné ; sinon retombe sur le texte saisi à la main (produits
+// plus anciens n'utilisant pas encore ce système).
+export function getPricePerUnitLabel(product, referencePrice) {
+  if (product.poids_reference && product.poids_reference > 0) {
+    const price = referencePrice ?? product.prix_livraison
+    const perUnit = price / product.poids_reference
+    return `${perUnit.toFixed(2)} €/${product.unite_reference || 'kg'}`
+  }
+  return product.prix_par_kg || null
+}
+
 // Liste des conditionnements disponibles dans le mode courant.
 export function getAvailableVariants(product, isPickup) {
   if (!product.variantes) return []

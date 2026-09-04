@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useVariants } from '../hooks/useVariants'
+import { getPricePerUnitLabel } from '../lib/pricing'
 
 // Extrait un nombre depuis un texte comme "13,29 €/kg" -> 13.29
 function parsePricePerKg(text) {
@@ -29,7 +30,7 @@ export default function VariantsModal({ product, onClose }) {
   const [prixModifieManuellement, setPrixModifieManuellement] = useState(false)
   const [adding, setAdding] = useState(false)
 
-  const prixParKg = parsePricePerKg(product.prix_par_kg)
+  const prixParKg = parsePricePerKg(getPricePerUnitLabel(product, product.prix_livraison))
 
   const handlePoidsChange = (value) => {
     setNewPoids(value)

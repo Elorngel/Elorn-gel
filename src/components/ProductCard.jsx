@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
@@ -40,7 +40,7 @@ export default function ProductCard({ product }) {
         product.en_rupture ? 'opacity-60' : ''
       }`}
     >
-      <a href={`#produit/${product.id}`} className="relative h-36 bg-stone flex items-center justify-center overflow-hidden">
+      <a href={`#produit/${product.id}`} className="relative aspect-square bg-stone flex items-center justify-center overflow-hidden">
         {product.photo_url ? (
           <CroppableImage
             src={product.photo_url}
@@ -102,7 +102,7 @@ export default function ProductCard({ product }) {
 
         <div className="mt-auto">
           <p className="font-tag text-[10px] text-muted mb-0.5 text-right">
-            {product.prix_par_kg}
+            {getPricePerUnitLabel(product, basePrice)}
           </p>
 
           <div className="flex items-baseline justify-end gap-2 mb-3 flex-wrap">
@@ -111,7 +111,7 @@ export default function ProductCard({ product }) {
                 {referencePrice.toFixed(2)} €
               </span>
             )}
-            {isPickup ? (
+            {isPickup && discountPercent > 0 ? (
               <>
                 <span className="font-tag text-[11px] text-muted line-through">
                   {basePrice.toFixed(2)} €
@@ -123,7 +123,7 @@ export default function ProductCard({ product }) {
             ) : (
               <span
                 className={`font-display text-2xl leading-none ${
-                  product.en_promo ? 'text-rust' : 'text-ink'
+                  product.en_promo ? 'text-rust' : isPickup ? 'text-forest' : 'text-ink'
                 }`}
               >
                 {basePrice.toFixed(2)} €

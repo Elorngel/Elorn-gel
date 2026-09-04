@@ -35,7 +35,7 @@ export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange })
 
   if (!url) {
     return (
-      <div className="w-full h-56 bg-stone flex items-center justify-center font-tag text-xs text-muted">
+      <div className="w-full aspect-square max-h-72 mx-auto bg-stone flex items-center justify-center font-tag text-xs text-muted">
         Choisis d'abord une photo
       </div>
     )
@@ -45,7 +45,7 @@ export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange })
     <div>
       <div
         ref={containerRef}
-        className="relative w-full h-56 overflow-hidden bg-stone cursor-move select-none border border-ink/20"
+        className="relative w-full aspect-square max-h-72 mx-auto overflow-hidden bg-stone cursor-move select-none border border-ink/20"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
