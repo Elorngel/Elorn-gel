@@ -21,7 +21,7 @@ export default function Hero() {
             `Commandez chez vous, récupérez en point de retrait et économisez ${settings?.remise_retrait ?? 10}% sur chaque commande retirée sur place.`}
         </p>
         <a
-          href={promoCount > 0 ? '#promo' : '#'}
+          href={promoCount > 0 ? '#promo' : '#catalogue'}
           className="w-fit bg-rust text-paper font-tag text-sm font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-rust/90 transition-colors"
         >
           {promoCount > 0 ? 'Voir les promos' : 'Voir le catalogue'}

@@ -419,6 +419,7 @@ export default function AdminPage() {
                 <th className="p-2 w-32">Stock</th>
                 <th className="p-2 w-28">Publié</th>
                 <th className="p-2 w-28">Promo</th>
+                <th className="p-2 w-28">Accueil</th>
                 <th className="p-2 w-20">Fiche</th>
               </tr>
             </thead>
@@ -549,6 +550,20 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
+                  </td>
+                  <td className="p-2">
+                    <button
+                      onClick={() =>
+                        updateProduct(product.id, { mis_en_avant: !product.mis_en_avant })
+                      }
+                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
+                        product.mis_en_avant
+                          ? 'border-forest bg-forest text-paper'
+                          : 'border-ink/40 text-ink'
+                      }`}
+                    >
+                      {product.mis_en_avant ? 'En avant' : 'Standard'}
+                    </button>
                   </td>
                   <td className="p-2">
                     <button

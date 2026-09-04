@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
@@ -294,6 +295,7 @@ export default function ProductDetailPage({ id }) {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }

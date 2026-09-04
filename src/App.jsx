@@ -10,14 +10,18 @@ import AdminPage from './pages/AdminPage'
 import AdminGate from './components/AdminGate'
 import ProductDetailPage from './pages/ProductDetailPage'
 import CartPage from './pages/CartPage'
+import LegalPage from './pages/LegalPage'
+import Footer from './components/Footer'
+import { mentionsLegales, cgv, cgu } from './data/legalContent'
 
-function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly }) {
+function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog }) {
   const { products, loading, error } = useProducts()
 
   const publishedProducts = products.filter((p) => p.actif !== false)
 
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
+  const isHomepage = !promoOnly && !searchQuery && !activeCategory && !showFullCatalog
 
   if (promoOnly) {
     visibleProducts = publishedProducts.filter((p) => p.en_promo)
@@ -35,6 +39,9 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly }) {
       )
       title = `${activeCategory} — ${activeSubcategory}`
     }
+  } else if (isHomepage) {
+    visibleProducts = publishedProducts.filter((p) => p.mis_en_avant)
+    title = 'Notre sélection'
   }
 
   const subcategoryOptions =
@@ -46,7 +53,17 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly }) {
       {!searchQuery && !promoOnly && <Hero />}
 
       <main className="px-5 py-8 max-w-6xl mx-auto">
-        <h2 className="font-display text-2xl text-ink mb-3">{title}</h2>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <h2 className="font-display text-2xl text-ink">{title}</h2>
+          {isHomepage && (
+            <a
+              href="#catalogue"
+              className="font-tag text-xs uppercase font-semibold text-forest hover:underline"
+            >
+              Voir tout le catalogue →
+            </a>
+          )}
+        </div>
 
         {activeCategory && subcategoryOptions.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-5">
@@ -86,7 +103,17 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly }) {
           </p>
         )}
 
-        {!loading && !error && visibleProducts.length === 0 && (
+        {!loading && !error && visibleProducts.length === 0 && isHomepage && (
+          <p className="font-body text-sm text-muted">
+            Aucun produit mis en avant pour l'instant.{' '}
+            <a href="#catalogue" className="underline">
+              Voir tout le catalogue
+            </a>
+            .
+          </p>
+        )}
+
+        {!loading && !error && visibleProducts.length === 0 && !isHomepage && (
           <p className="font-body text-sm text-muted">Aucun produit trouvé.</p>
         )}
 
@@ -98,6 +125,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly }) {
           </div>
         )}
       </main>
+      <Footer />
     </>
   )
 }
@@ -123,6 +151,7 @@ function App() {
   const categorieMatch = route.match(/^#categorie\/([^/]+)(?:\/(.+))?$/)
   const rechercheMatch = route.match(/^#recherche\/(.+)$/)
   const promoMatch = route === '#promo'
+  const catalogueMatch = route === '#catalogue'
 
   const activeCategory = categorieMatch ? decodeURIComponent(categorieMatch[1]) : null
   const activeSubcategory =
@@ -132,7 +161,13 @@ function App() {
   return (
     <PriceModeProvider>
       <CartProvider>
-        {produitMatch ? (
+        {route === '#mentions-legales' ? (
+          <LegalPage title="Mentions légales" content={mentionsLegales} />
+        ) : route === '#cgv' ? (
+          <LegalPage title="Conditions générales de vente" content={cgv} />
+        ) : route === '#cgu' ? (
+          <LegalPage title="Conditions générales d'utilisation" content={cgu} />
+        ) : produitMatch ? (
           <ProductDetailPage id={produitMatch[1]} />
         ) : route === '#panier' ? (
           <CartPage />
@@ -142,6 +177,7 @@ function App() {
             activeSubcategory={activeSubcategory}
             searchQuery={searchQuery}
             promoOnly={promoMatch}
+            showFullCatalog={catalogueMatch}
           />
         )}
       </CartProvider>

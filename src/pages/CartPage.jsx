@@ -6,6 +6,7 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getAvailablePickupDates, getPickupTimeSlots, getAvailableDeliveryDates, getDeliveryTimeWindows } from '../lib/pickupSlots'
 import { getBasePrice } from '../lib/pricing'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import CroppableImage from '../components/CroppableImage'
 
 const pickupDates = getAvailablePickupDates()
@@ -97,6 +98,7 @@ export default function CartPage() {
             Retour au catalogue
           </a>
         </div>
+        <Footer />
       </div>
     )
   }
@@ -356,6 +358,7 @@ export default function CartPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }
