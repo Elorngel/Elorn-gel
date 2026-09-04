@@ -5,11 +5,11 @@ import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
-import { getBasePrice, getDefaultVariant } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, loading, error } = useProduct(id)
-  const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
+  const { isPickup, getPickupPrice, discountPercent, setMode } = usePriceMode()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
@@ -40,9 +40,15 @@ export default function ProductDetailPage({ id }) {
   }
 
   const hasVariants = product.variantes && product.variantes.length > 0
-  const defaultVariant = getDefaultVariant(product)
+  const availableVariants = hasVariants ? getAvailableVariants(product, isPickup) : []
+  const productAvailableNoVariants = !hasVariants && isProductAvailable(product, isPickup)
+  const isAvailableInMode = hasVariants ? availableVariants.length > 0 : productAvailableNoVariants
+
   const selectedVariant = hasVariants
-    ? product.variantes.find((v) => v.id === selectedVariantId) || defaultVariant
+    ? availableVariants.find((v) => v.id === selectedVariantId) ||
+      availableVariants.find((v) => v.est_defaut) ||
+      availableVariants[0] ||
+      null
     : null
   const referencePrice = selectedVariant ? selectedVariant.prix_livraison : product.prix_livraison
   const displayWeight = selectedVariant ? selectedVariant.poids : product.poids
@@ -110,11 +116,11 @@ export default function ProductDetailPage({ id }) {
               </div>
             )}
 
-            {hasVariants && (
+            {hasVariants && availableVariants.length > 0 && (
               <div className="mb-4">
                 <p className="font-tag text-xs uppercase text-muted mb-2">Conditionnement</p>
                 <div className="flex gap-2 flex-wrap">
-                  {product.variantes.map((v) => (
+                  {availableVariants.map((v) => (
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariantId(v.id)}
@@ -131,42 +137,57 @@ export default function ProductDetailPage({ id }) {
               </div>
             )}
 
-            <div className="border-y border-ink/15 py-4 mb-4">
-              {product.prix_par_kg && (
-                <p className="font-tag text-xs text-muted mb-1">{product.prix_par_kg}</p>
-              )}
-              <div className="flex items-baseline gap-3 flex-wrap">
-                {product.en_promo && (
-                  <span className="font-tag text-sm text-muted line-through">
-                    {referencePrice.toFixed(2)} €
-                  </span>
-                )}
-                {isPickup && (
-                  <span className="font-tag text-sm text-muted line-through">
-                    {basePrice.toFixed(2)} €
-                  </span>
-                )}
-                <span
-                  className={`font-display text-4xl ${
-                    product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
-                  }`}
+            {!isAvailableInMode ? (
+              <div className="border-y border-ink/15 py-4 mb-4">
+                <p className="font-body text-sm text-ink mb-2">
+                  Ce produit n'est disponible qu'en {isPickup ? 'livraison' : 'retrait'}
+                  {hasVariants && ' dans le conditionnement que tu recherches'}.
+                </p>
+                <button
+                  onClick={() => setMode(isPickup ? 'livraison' : 'retrait')}
+                  className="font-tag text-xs uppercase font-semibold text-forest underline"
                 >
-                  {displayPrice.toFixed(2)} €
-                </span>
-                {product.en_promo && (
-                  <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
-                    Promo -{product.taux_promo}%
-                  </span>
-                )}
-                {isPickup && discountPercent > 0 && (
-                  <span className="font-tag text-xs uppercase font-semibold text-forest">
-                    Retrait -{discountPercent}%
-                  </span>
-                )}
+                  Voir en mode {isPickup ? 'livraison' : 'retrait'}
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="border-y border-ink/15 py-4 mb-4">
+                {product.prix_par_kg && (
+                  <p className="font-tag text-xs text-muted mb-1">{product.prix_par_kg}</p>
+                )}
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  {product.en_promo && (
+                    <span className="font-tag text-sm text-muted line-through">
+                      {referencePrice.toFixed(2)} €
+                    </span>
+                  )}
+                  {isPickup && (
+                    <span className="font-tag text-sm text-muted line-through">
+                      {basePrice.toFixed(2)} €
+                    </span>
+                  )}
+                  <span
+                    className={`font-display text-4xl ${
+                      product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
+                    }`}
+                  >
+                    {displayPrice.toFixed(2)} €
+                  </span>
+                  {product.en_promo && (
+                    <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
+                      Promo -{product.taux_promo}%
+                    </span>
+                  )}
+                  {isPickup && discountPercent > 0 && (
+                    <span className="font-tag text-xs uppercase font-semibold text-forest">
+                      Retrait -{discountPercent}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
-            {!product.en_rupture ? (
+            {!product.en_rupture && isAvailableInMode ? (
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center border border-ink/40">
@@ -214,11 +235,11 @@ export default function ProductDetailPage({ id }) {
                   Disponible
                 </span>
               </>
-            ) : (
+            ) : product.en_rupture ? (
               <span className="inline-block font-tag text-[11px] uppercase font-semibold text-rust border border-rust px-2 py-1">
                 Bientôt de retour
               </span>
-            )}
+            ) : null}
           </div>
         </div>
 

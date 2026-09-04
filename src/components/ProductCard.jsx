@@ -1,14 +1,25 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
   const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState(false)
-  const defaultVariant = getDefaultVariant(product)
+
+  const hasVariants = product.variantes && product.variantes.length > 0
+  const availableVariants = hasVariants ? getAvailableVariants(product, isPickup) : []
+
+  // Produit sans variantes, indisponible dans ce mode : on ne l'affiche pas.
+  if (!hasVariants && !isProductAvailable(product, isPickup)) return null
+  // Produit avec variantes, mais aucune disponible dans ce mode : idem.
+  if (hasVariants && availableVariants.length === 0) return null
+
+  const defaultVariant = hasVariants
+    ? availableVariants.find((v) => v.est_defaut) || availableVariants[0]
+    : null
   const referencePrice = defaultVariant ? defaultVariant.prix_livraison : product.prix_livraison
   const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
   const basePrice = getBasePrice(product, referencePrice)

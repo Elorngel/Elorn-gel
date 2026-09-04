@@ -16,3 +16,16 @@ export function getDefaultVariant(product) {
   if (!product.variantes || product.variantes.length === 0) return null
   return product.variantes.find((v) => v.est_defaut) || product.variantes[0]
 }
+
+// Un produit (sans variantes) est-il disponible dans le mode courant ?
+export function isProductAvailable(product, isPickup) {
+  return isPickup ? product.dispo_retrait !== false : product.dispo_livraison !== false
+}
+
+// Liste des conditionnements disponibles dans le mode courant.
+export function getAvailableVariants(product, isPickup) {
+  if (!product.variantes) return []
+  return product.variantes.filter((v) =>
+    isPickup ? v.dispo_retrait !== false : v.dispo_livraison !== false
+  )
+}

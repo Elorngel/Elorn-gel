@@ -93,49 +93,72 @@ export default function VariantsModal({ product, onClose }) {
                 </p>
               )}
               {variants.map((v) => (
-                <div
-                  key={v.id}
-                  className="flex items-center gap-2 p-2 border-b border-ink/10 last:border-b-0"
-                >
-                  <input
-                    type="text"
-                    defaultValue={v.poids}
-                    onBlur={(e) => {
-                      if (e.target.value !== v.poids) {
-                        updateVariant(v.id, { poids: e.target.value })
-                      }
-                    }}
-                    className="flex-1 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    defaultValue={v.prix_livraison}
-                    onBlur={(e) => {
-                      const val = parseFloat(e.target.value)
-                      if (!isNaN(val) && val !== v.prix_livraison) {
-                        updateVariant(v.id, { prix_livraison: val })
-                      }
-                    }}
-                    className="w-20 border border-ink/20 p-1.5 font-body text-sm text-right focus:border-forest focus:outline-none"
-                  />
-                  <span className="font-tag text-xs text-muted">€</span>
-                  <button
-                    onClick={() => setDefault(v.id)}
-                    className={`font-tag text-[10px] uppercase font-semibold px-2 py-1.5 border shrink-0 ${
-                      v.est_defaut
-                        ? 'border-forest bg-forest text-paper'
-                        : 'border-ink/30 text-ink'
-                    }`}
-                  >
-                    {v.est_defaut ? 'Par défaut' : 'Choisir'}
-                  </button>
-                  <button
-                    onClick={() => deleteVariant(v.id)}
-                    className="font-tag text-[10px] uppercase text-rust px-2 py-1.5 shrink-0"
-                  >
-                    Suppr.
-                  </button>
+                <div key={v.id} className="p-2 border-b border-ink/10 last:border-b-0">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <input
+                      type="text"
+                      defaultValue={v.poids}
+                      onBlur={(e) => {
+                        if (e.target.value !== v.poids) {
+                          updateVariant(v.id, { poids: e.target.value })
+                        }
+                      }}
+                      className="flex-1 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                    />
+                    <input
+                      type="number"
+                      step="0.01"
+                      defaultValue={v.prix_livraison}
+                      onBlur={(e) => {
+                        const val = parseFloat(e.target.value)
+                        if (!isNaN(val) && val !== v.prix_livraison) {
+                          updateVariant(v.id, { prix_livraison: val })
+                        }
+                      }}
+                      className="w-20 border border-ink/20 p-1.5 font-body text-sm text-right focus:border-forest focus:outline-none"
+                    />
+                    <span className="font-tag text-xs text-muted">€</span>
+                    <button
+                      onClick={() => setDefault(v.id)}
+                      className={`font-tag text-[10px] uppercase font-semibold px-2 py-1.5 border shrink-0 ${
+                        v.est_defaut
+                          ? 'border-forest bg-forest text-paper'
+                          : 'border-ink/30 text-ink'
+                      }`}
+                    >
+                      {v.est_defaut ? 'Par défaut' : 'Choisir'}
+                    </button>
+                    <button
+                      onClick={() => deleteVariant(v.id)}
+                      className="font-tag text-[10px] uppercase text-rust px-2 py-1.5 shrink-0"
+                    >
+                      Suppr.
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-4 pl-1">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={v.dispo_livraison !== false}
+                        onChange={(e) =>
+                          updateVariant(v.id, { dispo_livraison: e.target.checked })
+                        }
+                        className="w-3.5 h-3.5"
+                      />
+                      <span className="font-tag text-[11px] text-muted">Livraison</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={v.dispo_retrait !== false}
+                        onChange={(e) =>
+                          updateVariant(v.id, { dispo_retrait: e.target.checked })
+                        }
+                        className="w-3.5 h-3.5"
+                      />
+                      <span className="font-tag text-[11px] text-muted">Retrait</span>
+                    </label>
+                  </div>
                 </div>
               ))}
             </div>

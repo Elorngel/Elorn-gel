@@ -15,6 +15,8 @@ export default function ProductDetailsModal({
   const [prixKgDraft, setPrixKgDraft] = useState(product.prix_kg_ref ?? '')
   const [poidsDraft, setPoidsDraft] = useState(product.poids_kg ?? '')
   const [poidsVariable, setPoidsVariable] = useState(product.poids_variable)
+  const [dispoLivraison, setDispoLivraison] = useState(product.dispo_livraison !== false)
+  const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
 
   const handleSave = async () => {
     setSaving(true)
@@ -47,6 +49,18 @@ export default function ProductDetailsModal({
     updateProduct(product.id, { poids_variable: newValue })
   }
 
+  const toggleDispoLivraison = () => {
+    const newValue = !dispoLivraison
+    setDispoLivraison(newValue)
+    updateProduct(product.id, { dispo_livraison: newValue })
+  }
+
+  const toggleDispoRetrait = () => {
+    const newValue = !dispoRetrait
+    setDispoRetrait(newValue)
+    updateProduct(product.id, { dispo_retrait: newValue })
+  }
+
   return (
     <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4">
       <div className="bg-paper w-full max-w-lg border border-ink/20 max-h-[90vh] overflow-y-auto">
@@ -61,6 +75,25 @@ export default function ProductDetailsModal({
         </div>
 
         <div className="p-4">
+          <label className="flex items-center gap-2 mb-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={dispoLivraison}
+              onChange={toggleDispoLivraison}
+              className="w-4 h-4"
+            />
+            <span className="font-body text-sm">Disponible en livraison</span>
+          </label>
+          <label className="flex items-center gap-2 mb-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={dispoRetrait}
+              onChange={toggleDispoRetrait}
+              className="w-4 h-4"
+            />
+            <span className="font-body text-sm">Disponible en retrait</span>
+          </label>
+
           <label className="block font-tag text-xs uppercase text-muted mb-1">
             Description
           </label>
