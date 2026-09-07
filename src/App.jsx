@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PriceModeProvider } from './context/PriceModeContext'
 import { CartProvider } from './context/CartContext'
-import { subcategoriesByCategory } from './data/products'
+import { useCategories } from './hooks/useCategories'
 import { useProducts } from './hooks/useProducts'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -16,6 +16,7 @@ import { mentionsLegales, cgv, cgu } from './data/legalContent'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog }) {
   const { products, loading, error } = useProducts()
+  const { subcategoriesByCategory } = useCategories()
 
   const publishedProducts = products.filter((p) => p.actif !== false)
 

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useProducts } from '../hooks/useProducts'
 import { useSiteSettings } from '../hooks/useSiteSettings'
-import { categories, subcategoriesByCategory } from '../data/products'
+import { useCategories } from '../hooks/useCategories'
 import CroppableImage from '../components/CroppableImage'
 import PhotoEditorModal from '../components/PhotoEditorModal'
 import ProductDetailsModal from '../components/ProductDetailsModal'
 import { adminLogout } from '../components/AdminGate'
 import OrdersPanel from '../components/OrdersPanel'
 import VariantsModal from '../components/VariantsModal'
+import CategoriesPanel from '../components/CategoriesPanel'
+import NewProductModal from '../components/NewProductModal'
 import { getPricePerUnitLabel } from '../lib/pricing'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full', multiline = false }) {
@@ -40,7 +42,7 @@ function EditableCell({ value, onSave, type = 'text', width = 'w-full', multilin
   )
 }
 
-function CategorySelect({ value, onSave }) {
+function CategorySelect({ value, onSave, categories }) {
   return (
     <select
       className="w-full bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1 cursor-pointer"
@@ -59,7 +61,7 @@ function CategorySelect({ value, onSave }) {
   )
 }
 
-function SubcategorySelect({ categorie, value, onSave }) {
+function SubcategorySelect({ categorie, value, onSave, subcategoriesByCategory }) {
   const options = subcategoriesByCategory[categorie] || []
 
   if (options.length === 0) {
@@ -380,12 +382,28 @@ function SiteSettingsPanel() {
 }
 
 export default function AdminPage() {
-  const { products, loading, error, updateProduct, uploadPhotoOnly, refetch } = useProducts()
+  const { products, loading, error, updateProduct, uploadPhotoOnly, refetch, createProduct, deleteProduct } = useProducts()
+  const { categories, subcategoriesByCategory } = useCategories()
   const [editingProduct, setEditingProduct] = useState(null)
   const [detailsProduct, setDetailsProduct] = useState(null)
   const [variantsProduct, setVariantsProduct] = useState(null)
-  const [tab, setTab] = useState('produits') // 'produits' | 'commandes'
+  const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories'
   const [searchText, setSearchText] = useState('')
+  const [showNewProductModal, setShowNewProductModal] = useState(false)
+
+  const handleDeleteProduct = async (product) => {
+    if (
+      confirm(
+        `Supprimer définitivement "${product.nom}" ? Cette action est irréversible.`
+      )
+    ) {
+      try {
+        await deleteProduct(product.id)
+      } catch (err) {
+        alert(`Erreur : ${err.message}`)
+      }
+    }
+  }
 
   const toggleStock = async (product) => {
     try {
@@ -465,10 +483,20 @@ export default function AdminPage() {
           >
             Commandes
           </button>
+          <button
+            onClick={() => setTab('categories')}
+            className={`px-4 py-2 border-l border-ink/40 ${
+              tab === 'categories' ? 'bg-ink text-paper' : 'text-ink'
+            }`}
+          >
+            Catégories
+          </button>
         </div>
 
         {tab === 'commandes' ? (
           <OrdersPanel />
+        ) : tab === 'categories' ? (
+          <CategoriesPanel />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -487,6 +515,12 @@ export default function AdminPage() {
                   Effacer
                 </button>
               )}
+              <button
+                onClick={() => setShowNewProductModal(true)}
+                className="bg-ink text-paper font-tag text-xs font-semibold uppercase px-3 py-2 hover:bg-forest ml-auto"
+              >
+                + Nouveau produit
+              </button>
             </div>
 
             <p className="font-body text-sm text-muted mb-4">
@@ -544,7 +578,13 @@ export default function AdminPage() {
                       )}
                     </button>
                   </td>
-                  <td className="p-2 font-tag text-xs text-muted">{product.code_article}</td>
+                  <td className="p-2">
+                    <EditableCell
+                      value={product.code_article}
+                      onSave={(v) => updateProduct(product.id, { code_article: v })}
+                      width="w-16"
+                    />
+                  </td>
                   <td className="p-2">
                     <EditableCell
                       value={product.nom}
@@ -556,6 +596,7 @@ export default function AdminPage() {
                     <CategorySelect
                       value={product.categorie}
                       onSave={(v) => updateProduct(product.id, { categorie: v })}
+                      categories={categories}
                     />
                   </td>
                   <td className="p-2">
@@ -563,6 +604,7 @@ export default function AdminPage() {
                       categorie={product.categorie}
                       value={product.sous_categorie}
                       onSave={(v) => updateProduct(product.id, { sous_categorie: v })}
+                      subcategoriesByCategory={subcategoriesByCategory}
                     />
                   </td>
                   <td className="p-2">
@@ -676,6 +718,12 @@ export default function AdminPage() {
                     >
                       Fiche
                     </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product)}
+                      className="font-tag text-[10px] uppercase text-rust mt-1 w-full hover:underline"
+                    >
+                      Suppr. définitivement
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -726,6 +774,15 @@ export default function AdminPage() {
             setVariantsProduct(null)
             refetch()
           }}
+        />
+      )}
+
+      {showNewProductModal && (
+        <NewProductModal
+          categories={categories}
+          subcategoriesByCategory={subcategoriesByCategory}
+          onCreate={(values) => createProduct(values)}
+          onClose={() => setShowNewProductModal(false)}
         />
       )}
     </div>

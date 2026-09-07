@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { categories, subcategoriesByCategory } from '../data/products'
 import { useSiteSettings } from '../hooks/useSiteSettings'
+import { useCategories } from '../hooks/useCategories'
 
 export default function Header({ activeCategory }) {
   const { mode, setMode, discountPercent } = usePriceMode()
   const { settings } = useSiteSettings()
+  const { categories, subcategoriesByCategory } = useCategories()
   const { itemCount } = useCart()
   const [searchText, setSearchText] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)

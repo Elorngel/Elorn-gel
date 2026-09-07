@@ -78,5 +78,38 @@ export function useProducts() {
     return data.publicUrl
   }, [])
 
-  return { products, loading, error, refetch: fetchProducts, updateProduct, uploadPhoto, uploadPhotoOnly }
+  const createProduct = useCallback(async (defaults = {}) => {
+    const { data, error } = await supabase
+      .from('produits')
+      .insert({
+        nom: 'Nouveau produit',
+        prix_livraison: 0,
+        actif: false,
+        ...defaults,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    await fetchProducts()
+    return data
+  }, [fetchProducts])
+
+  const deleteProduct = useCallback(async (id) => {
+    const { error } = await supabase.from('produits').delete().eq('id', id)
+    if (error) throw error
+    setProducts((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  return {
+    products,
+    loading,
+    error,
+    refetch: fetchProducts,
+    updateProduct,
+    uploadPhoto,
+    uploadPhotoOnly,
+    createProduct,
+    deleteProduct,
+  }
 }
