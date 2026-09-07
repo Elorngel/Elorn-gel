@@ -12,6 +12,7 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import CartPage from './pages/CartPage'
 import LegalPage from './pages/LegalPage'
 import Footer from './components/Footer'
+import Breadcrumb from './components/Breadcrumb'
 import { mentionsLegales, cgv, cgu } from './data/legalContent'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog }) {
@@ -51,9 +52,27 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
   return (
     <>
       <Header activeCategory={activeCategory} />
-      {!searchQuery && !promoOnly && <Hero />}
+      {isHomepage && <Hero />}
 
       <main className="px-5 py-8 max-w-6xl mx-auto">
+        {!isHomepage && !searchQuery && (
+          <Breadcrumb
+            items={[
+              { label: 'Accueil', href: '#' },
+              ...(promoOnly
+                ? [{ label: 'Promotions' }]
+                : showFullCatalog
+                  ? [{ label: 'Tout le catalogue' }]
+                  : activeSubcategory
+                    ? [
+                        { label: activeCategory, href: `#categorie/${encodeURIComponent(activeCategory)}` },
+                        { label: activeSubcategory },
+                      ]
+                    : [{ label: activeCategory }]),
+            ]}
+          />
+        )}
+
         <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
           <h2 className="font-display text-2xl text-ink">{title}</h2>
           {isHomepage && (

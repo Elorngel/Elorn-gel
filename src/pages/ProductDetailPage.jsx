@@ -6,6 +6,7 @@ import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import Breadcrumb from '../components/Breadcrumb'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
@@ -64,10 +65,23 @@ export default function ProductDetailPage({ id }) {
     <div className="min-h-screen bg-stone">
       <Header activeCategory={product.categorie} />
       <div className="max-w-5xl mx-auto px-5 py-6">
-        <a href="#" className="font-tag text-xs uppercase text-muted hover:text-ink">
-          ‹ Retour au catalogue
-        </a>
-
+        <Breadcrumb
+          items={[
+            { label: 'Accueil', href: '#' },
+            ...(product.categorie
+              ? [{ label: product.categorie, href: `#categorie/${encodeURIComponent(product.categorie)}` }]
+              : []),
+            ...(product.sous_categorie
+              ? [
+                  {
+                    label: product.sous_categorie,
+                    href: `#categorie/${encodeURIComponent(product.categorie)}/${encodeURIComponent(product.sous_categorie)}`,
+                  },
+                ]
+              : []),
+            { label: product.nom },
+          ]}
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
           <div className="relative bg-paper border border-ink/15 overflow-hidden aspect-square">
             {product.photo_url ? (

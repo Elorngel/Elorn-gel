@@ -383,7 +383,8 @@ function SiteSettingsPanel() {
 
 export default function AdminPage() {
   const { products, loading, error, updateProduct, uploadPhotoOnly, refetch, createProduct, deleteProduct } = useProducts()
-  const { categories, subcategoriesByCategory } = useCategories()
+  const categoriesHook = useCategories()
+  const { categories, subcategoriesByCategory } = categoriesHook
   const [editingProduct, setEditingProduct] = useState(null)
   const [detailsProduct, setDetailsProduct] = useState(null)
   const [variantsProduct, setVariantsProduct] = useState(null)
@@ -496,7 +497,7 @@ export default function AdminPage() {
         {tab === 'commandes' ? (
           <OrdersPanel />
         ) : tab === 'categories' ? (
-          <CategoriesPanel />
+          <CategoriesPanel {...categoriesHook} />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-4 flex-wrap">

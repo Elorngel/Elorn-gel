@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useCategories } from '../hooks/useCategories'
 
 function EditableName({ value, onSave }) {
   const [draft, setDraft] = useState(value)
@@ -16,19 +15,17 @@ function EditableName({ value, onSave }) {
   )
 }
 
-export default function CategoriesPanel() {
-  const {
-    categoriesFull,
-    subcategoriesFull,
-    loading,
-    addCategory,
-    renameCategory,
-    deleteCategory,
-    addSubcategory,
-    renameSubcategory,
-    deleteSubcategory,
-  } = useCategories()
-
+export default function CategoriesPanel({
+  categoriesFull,
+  subcategoriesFull,
+  loading,
+  addCategory,
+  renameCategory,
+  deleteCategory,
+  addSubcategory,
+  renameSubcategory,
+  deleteSubcategory,
+}) {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newSubcategoryDrafts, setNewSubcategoryDrafts] = useState({})
 
