@@ -280,7 +280,7 @@ export default function ProductDetailPage({ id }) {
                   : 'border-transparent text-muted'
               }`}
             >
-              Détails du produit
+              Ingrédients
             </button>
           </div>
           <div className="p-5 font-body text-sm text-ink leading-relaxed">

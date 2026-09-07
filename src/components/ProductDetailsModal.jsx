@@ -117,7 +117,7 @@ export default function ProductDetailsModal({
           />
 
           <label className="block font-tag text-xs uppercase text-muted mb-1">
-            Détails du produit
+            Ingrédients
           </label>
           <RichTextEditor
             value={ingredients}
