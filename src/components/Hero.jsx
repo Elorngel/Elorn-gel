@@ -1,13 +1,16 @@
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
+import { usePriceMode } from '../context/PriceModeContext'
 import CroppableImage from './CroppableImage'
 
 export default function Hero() {
   const { settings } = useSiteSettings()
   const { products } = useProducts()
+  const { mode, setMode } = usePriceMode()
   const promoCount = products.filter((p) => p.actif !== false && p.en_promo).length
 
   return (
+    <>
     <section className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border-b border-ink/15">
       <div className="bg-forest text-paper px-5 md:px-8 py-8 md:py-10 flex flex-col justify-center">
         <span className="font-tag text-xs uppercase tracking-widest text-stone/80 mb-2">
@@ -43,5 +46,21 @@ export default function Hero() {
         )}
       </div>
     </section>
+
+    {mode === 'livraison' && (
+      <div className="bg-stone border-b border-ink/15 px-5 py-3 flex items-center justify-center gap-3 flex-wrap text-center">
+        <p className="font-body text-sm text-ink">
+          📦 Vous commandez régulièrement ? En mode <strong>Retrait</strong>, retrouvez
+          des conditionnements plus petits, adaptés aux commandes fréquentes.
+        </p>
+        <button
+          onClick={() => setMode('retrait')}
+          className="font-tag text-xs uppercase font-semibold text-forest hover:underline shrink-0"
+        >
+          Passer en Retrait →
+        </button>
+      </div>
+    )}
+    </>
   )
 }

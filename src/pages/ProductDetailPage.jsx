@@ -293,7 +293,7 @@ export default function ProductDetailPage({ id }) {
             ) : product.ingredients ? (
               <div dangerouslySetInnerHTML={{ __html: product.ingredients }} />
             ) : (
-              'Détails du produit à venir.'
+              'Ingrédients à venir.'
             )}
           </div>
         </div>
