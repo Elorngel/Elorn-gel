@@ -765,6 +765,7 @@ export default function AdminPage() {
             setDetailsProduct(null)
           }}
           onClose={() => setDetailsProduct(null)}
+          allProducts={products}
         />
       )}
 

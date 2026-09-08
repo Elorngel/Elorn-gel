@@ -10,7 +10,7 @@ import Breadcrumb from '../components/Breadcrumb'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
-  const { product, related, loading, error } = useProduct(id)
+  const { product, related, associatedProduct, loading, error } = useProduct(id)
   const { isPickup, getPickupPrice, discountPercent, setMode } = usePriceMode()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -257,6 +257,44 @@ export default function ProductDetailPage({ id }) {
                 Bientôt de retour
               </span>
             ) : null}
+
+            {associatedProduct && (
+              <div className="mt-6 pt-5 border-t border-ink/15">
+                <p className="font-tag text-xs uppercase text-muted mb-2">
+                  {product.produit_associe_label || 'Idéal en accompagnement'}
+                </p>
+                <div className="flex items-center gap-3 bg-paper border border-ink/15 p-2">
+                  <a
+                    href={`#produit/${associatedProduct.id}`}
+                    className="relative w-14 h-14 shrink-0 bg-stone overflow-hidden"
+                  >
+                    {associatedProduct.photo_url && (
+                      <CroppableImage
+                        src={associatedProduct.photo_url}
+                        alt={associatedProduct.nom}
+                        zoom={associatedProduct.photo_zoom ?? 1}
+                        posX={associatedProduct.photo_pos_x ?? 50}
+                        posY={associatedProduct.photo_pos_y ?? 50}
+                      />
+                    )}
+                  </a>
+                  <a href={`#produit/${associatedProduct.id}`} className="flex-1 min-w-0">
+                    <p className="font-body text-sm font-semibold truncate">
+                      {associatedProduct.nom}
+                    </p>
+                    <p className="font-display text-base text-ink">
+                      {getBasePrice(associatedProduct).toFixed(2)} €
+                    </p>
+                  </a>
+                  <button
+                    onClick={() => addItem(associatedProduct, 1)}
+                    className="font-tag text-[11px] uppercase font-semibold bg-ink text-paper px-3 py-2 hover:bg-forest shrink-0"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

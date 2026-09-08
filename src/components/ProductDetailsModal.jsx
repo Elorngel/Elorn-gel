@@ -8,6 +8,7 @@ export default function ProductDetailsModal({
   updateProduct,
   onOpenVariants,
   onClose,
+  allProducts = [],
 }) {
   const [description, setDescription] = useState(product.description || '')
   const [ingredients, setIngredients] = useState(product.ingredients || '')
@@ -20,6 +21,40 @@ export default function ProductDetailsModal({
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
+  const [associeSearch, setAssocieSearch] = useState('')
+  const [associeId, setAssocieId] = useState(product.produit_associe_id || null)
+  const [labelDraft, setLabelDraft] = useState(
+    product.produit_associe_label || 'Idéal en accompagnement'
+  )
+
+  const associeActuel = allProducts.find((p) => p.id === associeId)
+
+  const associeResults = associeSearch.trim()
+    ? allProducts
+        .filter(
+          (p) =>
+            p.id !== product.id &&
+            p.nom.toLowerCase().includes(associeSearch.trim().toLowerCase())
+        )
+        .slice(0, 8)
+    : []
+
+  const choisirAssocie = (p) => {
+    setAssocieId(p.id)
+    updateProduct(product.id, { produit_associe_id: p.id })
+    setAssocieSearch('')
+  }
+
+  const retirerAssocie = () => {
+    setAssocieId(null)
+    updateProduct(product.id, { produit_associe_id: null })
+  }
+
+  const saveLabel = () => {
+    if (labelDraft !== product.produit_associe_label) {
+      updateProduct(product.id, { produit_associe_label: labelDraft })
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -250,6 +285,62 @@ export default function ProductDetailsModal({
                 ? `Gérer les ${product.variantes.length} tailles`
                 : 'Ajouter des conditionnements'}
             </button>
+          </div>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">
+              Suggestion d'accompagnement (affiché sous "Ajouter au panier")
+            </p>
+
+            {associeActuel ? (
+              <div className="flex items-center justify-between bg-stone p-2 mb-2">
+                <span className="font-body text-sm">{associeActuel.nom}</span>
+                <button
+                  onClick={retirerAssocie}
+                  className="font-tag text-[10px] uppercase text-rust"
+                >
+                  Retirer
+                </button>
+              </div>
+            ) : (
+              <p className="font-body text-xs text-muted mb-2">Aucune suggestion pour l'instant.</p>
+            )}
+
+            <input
+              type="text"
+              placeholder="Chercher un produit à suggérer…"
+              value={associeSearch}
+              onChange={(e) => setAssocieSearch(e.target.value)}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm mb-1 focus:border-forest focus:outline-none"
+            />
+            {associeResults.length > 0 && (
+              <div className="border border-ink/15 mb-2 max-h-40 overflow-y-auto">
+                {associeResults.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => choisirAssocie(p)}
+                    className="block w-full text-left px-2 py-1.5 font-body text-sm hover:bg-stone border-b border-ink/10 last:border-b-0"
+                  >
+                    {p.nom}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {associeActuel && (
+              <div>
+                <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+                  Texte affiché au-dessus
+                </label>
+                <input
+                  type="text"
+                  value={labelDraft}
+                  onChange={(e) => setLabelDraft(e.target.value)}
+                  onBlur={saveLabel}
+                  className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

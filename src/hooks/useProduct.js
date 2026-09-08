@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 export function useProduct(id) {
   const [product, setProduct] = useState(null)
   const [related, setRelated] = useState([])
+  const [associatedProduct, setAssociatedProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -34,6 +35,18 @@ export function useProduct(id) {
 
       setProduct({ ...productData, variantes: variantesData || [] })
 
+      if (productData.produit_associe_id) {
+        const { data: associeData } = await supabase
+          .from('produits')
+          .select('*')
+          .eq('id', productData.produit_associe_id)
+          .eq('actif', true)
+          .single()
+        if (!cancelled) setAssociatedProduct(associeData || null)
+      } else {
+        setAssociatedProduct(null)
+      }
+
       const { data: relatedData } = await supabase
         .from('produits')
         .select('*')
@@ -54,5 +67,5 @@ export function useProduct(id) {
     }
   }, [id])
 
-  return { product, related, loading, error }
+  return { product, related, associatedProduct, loading, error }
 }
