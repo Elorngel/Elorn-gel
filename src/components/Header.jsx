@@ -110,6 +110,15 @@ export default function Header({ activeCategory }) {
             </button>
           </div>
 
+          {mode === 'retrait' && (
+            <a
+              href="#petits-formats"
+              className="border border-forest bg-forest/10 text-forest px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-forest hover:text-paper transition-colors"
+            >
+              Petits formats
+            </a>
+          )}
+
           <a
             href="#panier"
             className="relative border border-ink/40 px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-stone"
@@ -296,6 +305,16 @@ export default function Header({ activeCategory }) {
               )
             })}
           </nav>
+
+          {mode === 'retrait' && (
+            <a
+              href="#petits-formats"
+              onClick={() => setMenuOpen(false)}
+              className="block mt-4 font-tag text-xs uppercase font-semibold text-forest"
+            >
+              🎁 Petits formats — exclusif retrait
+            </a>
+          )}
 
           <a
             href={`tel:${(settings?.contact_telephone || '02 98 20 50 43').replace(/\s/g, '')}`}

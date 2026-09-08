@@ -15,19 +15,30 @@ import Footer from './components/Footer'
 import Breadcrumb from './components/Breadcrumb'
 import { mentionsLegales, cgv, cgu } from './data/legalContent'
 
-function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog }) {
+function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading, error } = useProducts()
   const { subcategoriesByCategory } = useCategories()
 
   const publishedProducts = products.filter((p) => p.actif !== false)
 
+  const isExclusiveRetrait = (p) => {
+    if (p.variantes && p.variantes.length > 0) {
+      return p.variantes.some((v) => v.dispo_retrait !== false && v.dispo_livraison === false)
+    }
+    return p.dispo_retrait !== false && p.dispo_livraison === false
+  }
+
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
-  const isHomepage = !promoOnly && !searchQuery && !activeCategory && !showFullCatalog
+  const isHomepage =
+    !promoOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
 
   if (promoOnly) {
     visibleProducts = publishedProducts.filter((p) => p.en_promo)
     title = 'Promotions'
+  } else if (petitsFormatsOnly) {
+    visibleProducts = publishedProducts.filter(isExclusiveRetrait)
+    title = 'Petits formats — exclusif retrait'
   } else if (searchQuery) {
     const q = searchQuery.toLowerCase()
     visibleProducts = publishedProducts.filter((p) => p.nom.toLowerCase().includes(q))
@@ -61,7 +72,9 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
               { label: 'Accueil', href: '#' },
               ...(promoOnly
                 ? [{ label: 'Promotions' }]
-                : showFullCatalog
+                : petitsFormatsOnly
+                  ? [{ label: 'Petits formats' }]
+                  : showFullCatalog
                   ? [{ label: 'Tout le catalogue' }]
                   : activeSubcategory
                     ? [
@@ -134,7 +147,11 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
         )}
 
         {!loading && !error && visibleProducts.length === 0 && !isHomepage && (
-          <p className="font-body text-sm text-muted">Aucun produit trouvé.</p>
+          <p className="font-body text-sm text-muted">
+            {petitsFormatsOnly
+              ? "Aucun format exclusif retrait pour l'instant."
+              : 'Aucun produit trouvé.'}
+          </p>
         )}
 
         {!loading && !error && visibleProducts.length > 0 && (
@@ -172,6 +189,7 @@ function App() {
   const rechercheMatch = route.match(/^#recherche\/(.+)$/)
   const promoMatch = route === '#promo'
   const catalogueMatch = route === '#catalogue'
+  const petitsFormatsMatch = route === '#petits-formats'
 
   const activeCategory = categorieMatch ? decodeURIComponent(categorieMatch[1]) : null
   const activeSubcategory =
@@ -198,6 +216,7 @@ function App() {
             searchQuery={searchQuery}
             promoOnly={promoMatch}
             showFullCatalog={catalogueMatch}
+            petitsFormatsOnly={petitsFormatsMatch}
           />
         )}
       </CartProvider>
