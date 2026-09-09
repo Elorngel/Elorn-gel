@@ -107,7 +107,7 @@ export default function ProductDetailPage({ id }) {
             )}
           </div>
 
-          <div>
+          <div className="flex flex-col h-full">
             <h1 className="font-display text-4xl text-ink leading-tight mb-2">
               {product.nom}
             </h1>
@@ -259,14 +259,14 @@ export default function ProductDetailPage({ id }) {
             ) : null}
 
             {associatedProduct && (
-              <div className="mt-6 pt-5 border-t border-ink/15">
+              <div className="mt-auto pt-5 border-t border-ink/15">
                 <p className="font-tag text-xs uppercase text-muted mb-2">
                   {product.produit_associe_label || 'Idéal en accompagnement'}
                 </p>
                 <div className="flex items-center gap-3 bg-paper border border-ink/15 p-2">
                   <a
                     href={`#produit/${associatedProduct.id}`}
-                    className="relative w-14 h-14 shrink-0 bg-stone overflow-hidden"
+                    className="relative w-24 h-24 shrink-0 bg-stone overflow-hidden"
                   >
                     {associatedProduct.photo_url && (
                       <CroppableImage
@@ -279,7 +279,7 @@ export default function ProductDetailPage({ id }) {
                     )}
                   </a>
                   <a href={`#produit/${associatedProduct.id}`} className="flex-1 min-w-0">
-                    <p className="font-body text-sm font-semibold truncate">
+                    <p className="font-body text-sm font-semibold leading-snug">
                       {associatedProduct.nom}
                     </p>
                     <p className="font-display text-base text-ink">
