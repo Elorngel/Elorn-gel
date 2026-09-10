@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useOrders } from '../hooks/useOrders'
+import { printBonDeCommande } from '../lib/printOrder'
 
 const STATUTS = [
   { value: 'nouvelle', label: 'Nouvelle' },
@@ -135,6 +136,13 @@ export default function OrdersPanel() {
                   ))}
                 </tbody>
               </table>
+
+              <button
+                onClick={() => printBonDeCommande(order, order.lignes)}
+                className="mt-3 font-tag text-xs uppercase font-semibold border border-ink/40 px-3 py-2 hover:bg-stone"
+              >
+                Imprimer le bon
+              </button>
             </div>
           )}
         </div>

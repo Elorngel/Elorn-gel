@@ -39,6 +39,32 @@ export function useOrder() {
       const { error: lignesError } = await supabase.from('commande_lignes').insert(lignes)
       if (lignesError) throw lignesError
 
+      // L'envoi d'email ne doit jamais faire échouer la commande elle-même :
+      // si Resend est mal configuré ou indisponible, la commande reste
+      // enregistrée normalement, seul l'email manquera.
+      try {
+        await supabase.functions.invoke('send-order-emails', {
+          body: {
+            nomClient,
+            telephone,
+            email,
+            mode,
+            note,
+            creneauRetrait,
+            creneauLivraison,
+            total,
+            fraisLivraison,
+            lignes: items.map((item) => ({
+              nom: item.nom,
+              quantite: item.quantity,
+              prix_unitaire: item.unitPrice,
+            })),
+          },
+        })
+      } catch (emailErr) {
+        console.error('Email de confirmation non envoyé :', emailErr)
+      }
+
       return commande
     } catch (err) {
       setError(err.message)

@@ -5,6 +5,7 @@ import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getAvailablePickupDates, getPickupTimeSlots, getAvailableDeliveryDates, getDeliveryTimeWindows } from '../lib/pickupSlots'
 import { getBasePrice } from '../lib/pricing'
+import { printBonDeCommande } from '../lib/printOrder'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import CroppableImage from '../components/CroppableImage'
@@ -29,6 +30,7 @@ export default function CartPage() {
   const [deliveryDate, setDeliveryDate] = useState('')
   const [deliveryWindow, setDeliveryWindow] = useState('')
   const [confirmedOrder, setConfirmedOrder] = useState(null)
+  const [confirmedLignes, setConfirmedLignes] = useState([])
 
   const unitPrice = (item) => {
     const base = getBasePrice(item)
@@ -49,6 +51,12 @@ export default function CartPage() {
     e.preventDefault()
     if (items.length === 0) return
 
+    const lignesPourRecap = items.map((item) => ({
+      nom: item.nom,
+      unitPrice: unitPrice(item),
+      quantity: item.quantity,
+    }))
+
     try {
       const commande = await submitOrder({
         nomClient,
@@ -60,14 +68,10 @@ export default function CartPage() {
         creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDate)} · ${deliveryWindow}` : null,
         total,
         fraisLivraison: deliveryFee,
-        items: items.map((item) => ({
-          id: item.id,
-          nom: item.nom,
-          unitPrice: unitPrice(item),
-          quantity: item.quantity,
-        })),
+        items: lignesPourRecap,
       })
       setConfirmedOrder(commande)
+      setConfirmedLignes(lignesPourRecap)
       clear()
     } catch {
       // l'erreur est déjà exposée via le hook useOrder
@@ -78,25 +82,72 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-stone">
         <Header activeCategory={null} />
-        <div className="max-w-2xl mx-auto px-5 py-16 text-center">
-          <h1 className="font-display text-4xl text-forest mb-3">
-            Commande enregistrée
-          </h1>
-          <p className="font-body text-sm text-ink mb-1">
-            Merci {confirmedOrder.nom_client}, on prépare tout ça.
-          </p>
-          <p className="font-body text-sm text-muted mb-6">
-            {confirmedOrder.mode === 'retrait'
-              ? `Rendez-vous au dépôt le ${confirmedOrder.creneau_retrait || 'créneau choisi'}.`
-              : `Livraison prévue le ${confirmedOrder.creneau_livraison || 'créneau choisi'}.`}{' '}
-            Le paiement se fait sur place, à {confirmedOrder.mode === 'retrait' ? 'la récupération' : 'la livraison'}.
-          </p>
-          <a
-            href="#"
-            className="inline-block bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-forest transition-colors"
-          >
-            Retour au catalogue
-          </a>
+        <div className="max-w-2xl mx-auto px-5 py-12">
+          <div className="text-center mb-6">
+            <h1 className="font-display text-4xl text-forest mb-3">
+              Commande enregistrée
+            </h1>
+            <p className="font-body text-sm text-ink mb-1">
+              Merci {confirmedOrder.nom_client}, on prépare tout ça.
+            </p>
+            <p className="font-body text-sm text-muted">
+              {confirmedOrder.mode === 'retrait'
+                ? `Rendez-vous au dépôt le ${confirmedOrder.creneau_retrait || 'créneau choisi'}.`
+                : `Livraison prévue le ${confirmedOrder.creneau_livraison || 'créneau choisi'}.`}{' '}
+              Le paiement se fait sur place, à {confirmedOrder.mode === 'retrait' ? 'la récupération' : 'la livraison'}.
+            </p>
+          </div>
+
+          <div className="bg-paper border border-ink/15 p-4 mb-6">
+            <h2 className="font-display text-xl text-ink mb-3">Récapitulatif</h2>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="font-tag text-[11px] uppercase text-muted border-b border-ink/15">
+                  <th className="text-left py-1.5">Produit</th>
+                  <th className="text-right py-1.5">Qté</th>
+                  <th className="text-right py-1.5">Prix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {confirmedLignes.map((l, i) => (
+                  <tr key={i} className="border-b border-ink/10 last:border-b-0">
+                    <td className="py-1.5 font-body">{l.nom}</td>
+                    <td className="py-1.5 text-right font-tag">{l.quantity}</td>
+                    <td className="py-1.5 text-right font-tag">
+                      {(l.unitPrice * l.quantity).toFixed(2)} €
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {confirmedOrder.frais_livraison > 0 && (
+              <div className="flex justify-between font-body text-sm mt-2 pt-2 border-t border-ink/10">
+                <span>Frais de livraison</span>
+                <span>{confirmedOrder.frais_livraison.toFixed(2)} €</span>
+              </div>
+            )}
+            <div className="flex justify-between items-baseline mt-2 pt-2 border-t border-ink/15">
+              <span className="font-tag text-xs uppercase text-muted">Total</span>
+              <span className="font-display text-2xl text-ink">
+                {confirmedOrder.total.toFixed(2)} €
+              </span>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-center flex-wrap">
+            <button
+              onClick={() => printBonDeCommande(confirmedOrder, confirmedLignes)}
+              className="border border-ink/40 font-tag text-xs font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-stone transition-colors"
+            >
+              Imprimer le bon de commande
+            </button>
+            <a
+              href="#"
+              className="inline-block bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-forest transition-colors"
+            >
+              Retour au catalogue
+            </a>
+          </div>
         </div>
         <Footer />
       </div>
@@ -231,8 +282,9 @@ export default function CartPage() {
                   className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                 />
                 <input
+                  required
                   type="email"
-                  placeholder="Email (optionnel)"
+                  placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
