@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 export function useProduct(id) {
   const [product, setProduct] = useState(null)
   const [related, setRelated] = useState([])
-  const [associatedProduct, setAssociatedProduct] = useState(null)
+  const [associatedProducts, setAssociatedProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -35,16 +35,29 @@ export function useProduct(id) {
 
       setProduct({ ...productData, variantes: variantesData || [] })
 
-      if (productData.produit_associe_id) {
-        const { data: associeData } = await supabase
+      const { data: accompRows } = await supabase
+        .from('produits_accompagnements')
+        .select('*')
+        .eq('produit_id', id)
+        .order('ordre', { ascending: true })
+
+      const associeIds = (accompRows || []).map((r) => r.produit_associe_id)
+
+      if (associeIds.length > 0) {
+        const { data: assocData } = await supabase
           .from('produits')
           .select('*')
-          .eq('id', productData.produit_associe_id)
+          .in('id', associeIds)
           .eq('actif', true)
-          .single()
-        if (!cancelled) setAssociatedProduct(associeData || null)
-      } else {
-        setAssociatedProduct(null)
+
+        if (!cancelled) {
+          const ordered = associeIds
+            .map((aid) => (assocData || []).find((p) => p.id === aid))
+            .filter(Boolean)
+          setAssociatedProducts(ordered)
+        }
+      } else if (!cancelled) {
+        setAssociatedProducts([])
       }
 
       const { data: relatedData } = await supabase
@@ -67,5 +80,5 @@ export function useProduct(id) {
     }
   }, [id])
 
-  return { product, related, associatedProduct, loading, error }
+  return { product, related, associatedProducts, loading, error }
 }

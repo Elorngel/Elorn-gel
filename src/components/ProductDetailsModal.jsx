@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import RichTextEditor from './RichTextEditor'
 import { getPricePerUnitLabel } from '../lib/pricing'
+import { useAccompagnements } from '../hooks/useAccompagnements'
 
 export default function ProductDetailsModal({
   product,
@@ -22,32 +23,43 @@ export default function ProductDetailsModal({
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
   const [associeSearch, setAssocieSearch] = useState('')
-  const [associeId, setAssocieId] = useState(product.produit_associe_id || null)
+  const { items: accompItems, addAssociation, removeAssociation } = useAccompagnements(product.id)
   const [labelDraft, setLabelDraft] = useState(
     product.produit_associe_label || 'Idéal en accompagnement'
   )
 
-  const associeActuel = allProducts.find((p) => p.id === associeId)
+  const MAX_ACCOMPAGNEMENTS = 3
+
+  const accompProducts = accompItems
+    .map((row) => ({ row, produit: allProducts.find((p) => p.id === row.produit_associe_id) }))
+    .filter((x) => x.produit)
 
   const associeResults = associeSearch.trim()
     ? allProducts
         .filter(
           (p) =>
             p.id !== product.id &&
+            !accompItems.some((row) => row.produit_associe_id === p.id) &&
             p.nom.toLowerCase().includes(associeSearch.trim().toLowerCase())
         )
         .slice(0, 8)
     : []
 
-  const choisirAssocie = (p) => {
-    setAssocieId(p.id)
-    updateProduct(product.id, { produit_associe_id: p.id })
-    setAssocieSearch('')
+  const choisirAssocie = async (p) => {
+    try {
+      await addAssociation(p.id)
+      setAssocieSearch('')
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    }
   }
 
-  const retirerAssocie = () => {
-    setAssocieId(null)
-    updateProduct(product.id, { produit_associe_id: null })
+  const retirerAssocie = async (rowId) => {
+    try {
+      await removeAssociation(rowId)
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    }
   }
 
   const saveLabel = () => {
@@ -289,45 +301,58 @@ export default function ProductDetailsModal({
 
           <div className="border-t border-ink/15 mt-5 pt-5">
             <p className="font-tag text-xs uppercase text-muted mb-2">
-              Suggestion d'accompagnement (affiché sous "Ajouter au panier")
+              Suggestions d'accompagnement (2-3 max, affiché sous "Ajouter au panier")
             </p>
 
-            {associeActuel ? (
-              <div className="flex items-center justify-between bg-stone p-2 mb-2">
-                <span className="font-body text-sm">{associeActuel.nom}</span>
-                <button
-                  onClick={retirerAssocie}
-                  className="font-tag text-[10px] uppercase text-rust"
-                >
-                  Retirer
-                </button>
+            {accompProducts.length > 0 ? (
+              <div className="flex flex-col gap-1 mb-2">
+                {accompProducts.map(({ row, produit }) => (
+                  <div key={row.id} className="flex items-center justify-between bg-stone p-2">
+                    <span className="font-body text-sm">{produit.nom}</span>
+                    <button
+                      onClick={() => retirerAssocie(row.id)}
+                      className="font-tag text-[10px] uppercase text-rust shrink-0"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="font-body text-xs text-muted mb-2">Aucune suggestion pour l'instant.</p>
             )}
 
-            <input
-              type="text"
-              placeholder="Chercher un produit à suggérer…"
-              value={associeSearch}
-              onChange={(e) => setAssocieSearch(e.target.value)}
-              className="w-full border border-ink/20 p-1.5 font-body text-sm mb-1 focus:border-forest focus:outline-none"
-            />
-            {associeResults.length > 0 && (
-              <div className="border border-ink/15 mb-2 max-h-40 overflow-y-auto">
-                {associeResults.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => choisirAssocie(p)}
-                    className="block w-full text-left px-2 py-1.5 font-body text-sm hover:bg-stone border-b border-ink/10 last:border-b-0"
-                  >
-                    {p.nom}
-                  </button>
-                ))}
-              </div>
+            {accompProducts.length < MAX_ACCOMPAGNEMENTS ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="Chercher un produit à suggérer…"
+                  value={associeSearch}
+                  onChange={(e) => setAssocieSearch(e.target.value)}
+                  className="w-full border border-ink/20 p-1.5 font-body text-sm mb-1 focus:border-forest focus:outline-none"
+                />
+                {associeResults.length > 0 && (
+                  <div className="border border-ink/15 mb-2 max-h-40 overflow-y-auto">
+                    {associeResults.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => choisirAssocie(p)}
+                        className="block w-full text-left px-2 py-1.5 font-body text-sm hover:bg-stone border-b border-ink/10 last:border-b-0"
+                      >
+                        {p.nom}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="font-tag text-[11px] text-muted mb-2">
+                Maximum de {MAX_ACCOMPAGNEMENTS} suggestions atteint — retire-en une pour en
+                ajouter une autre.
+              </p>
             )}
 
-            {associeActuel && (
+            {accompProducts.length > 0 && (
               <div>
                 <label className="block font-tag text-[10px] uppercase text-muted mb-1">
                   Texte affiché au-dessus
