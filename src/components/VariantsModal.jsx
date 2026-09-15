@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useVariants } from '../hooks/useVariants'
-import { getPricePerUnitLabel } from '../lib/pricing'
+import { getPricePerUnitLabel, parseWeightToKg } from '../lib/pricing'
 
 // Extrait un nombre depuis un texte comme "13,29 €/kg" -> 13.29
 function parsePricePerKg(text) {
@@ -9,17 +9,6 @@ function parsePricePerKg(text) {
   if (!match) return null
   const value = parseFloat(match[1])
   return isNaN(value) ? null : value
-}
-
-// Extrait un poids en kg depuis un texte comme "500 g", "500g", "1 kg" -> 0.5, 1
-function parseWeightToKg(text) {
-  if (!text) return null
-  const cleaned = String(text).toLowerCase().replace(',', '.')
-  const match = cleaned.match(/([\d.]+)\s*(kg|g)?/)
-  if (!match) return null
-  const value = parseFloat(match[1])
-  if (isNaN(value)) return null
-  return match[2] === 'g' ? value / 1000 : value
 }
 
 export default function VariantsModal({ product, onClose }) {

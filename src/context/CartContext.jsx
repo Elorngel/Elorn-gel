@@ -23,7 +23,7 @@ export function CartProvider({ children }) {
     }
   }, [items])
 
-  const addItem = (product, quantity = 1, variant = null) => {
+  const addItem = (product, quantity = 1, variant = null, displayName = null) => {
     const cartKey = variant ? `${product.id}::${variant.id}` : product.id
 
     setItems((prev) => {
@@ -40,7 +40,7 @@ export function CartProvider({ children }) {
         {
           cartKey,
           id: product.id,
-          nom: product.nom,
+          nom: displayName || product.nom,
           prix_livraison: variant ? variant.prix_livraison : product.prix_livraison,
           prix_par_kg: product.prix_par_kg,
           en_promo: product.en_promo,

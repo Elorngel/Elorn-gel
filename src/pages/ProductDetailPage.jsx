@@ -7,7 +7,7 @@ import ProductCard from '../components/ProductCard'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, associatedProducts, loading, error } = useProduct(id)
@@ -54,9 +54,14 @@ export default function ProductDetailPage({ id }) {
     : null
   const referencePrice = selectedVariant ? selectedVariant.prix_livraison : product.prix_livraison
   const displayWeight = selectedVariant ? selectedVariant.poids : product.poids
+  // Le poids du conditionnement choisi (s'il y en a un) doit servir de base
+  // au calcul du prix au kg — sinon ça reste calé sur le poids du produit
+  // de base, faux dès qu'on change de taille.
+  const variantWeightKg = selectedVariant ? parseWeightToKg(selectedVariant.poids) : null
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
   const displayPrice = isPickup ? pickupPrice : basePrice
+  const displayName = getDisplayName(product, isPickup)
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
@@ -79,7 +84,7 @@ export default function ProductDetailPage({ id }) {
                   },
                 ]
               : []),
-            { label: product.nom },
+            { label: displayName },
           ]}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
@@ -109,7 +114,7 @@ export default function ProductDetailPage({ id }) {
 
           <div className="flex flex-col h-full">
             <h1 className="font-display text-4xl text-ink leading-tight mb-2">
-              {product.nom}
+              {displayName}
             </h1>
             {product.poids && !hasVariants && (
               <p className="font-tag text-sm text-muted mb-3">
@@ -167,9 +172,9 @@ export default function ProductDetailPage({ id }) {
               </div>
             ) : (
               <div className="border-y border-ink/15 py-4 mb-4">
-                {getPricePerUnitLabel(product, basePrice) && (
+                {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
                   <p className="font-tag text-xs text-muted mb-1">
-                    {getPricePerUnitLabel(product, basePrice)}
+                    {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
                   </p>
                 )}
                 <div className="flex items-baseline gap-3 flex-wrap">
@@ -235,7 +240,7 @@ export default function ProductDetailPage({ id }) {
 
                   <button
                     onClick={() => {
-                      addItem(product, quantity, selectedVariant)
+                      addItem(product, quantity, selectedVariant, displayName)
                       setJustAdded(true)
                       setTimeout(() => setJustAdded(false), 1500)
                     }}
@@ -285,14 +290,14 @@ export default function ProductDetailPage({ id }) {
                       </a>
                       <a href={`#produit/${assoc.id}`} className="flex-1 min-w-0">
                         <p className="font-body text-sm font-semibold leading-snug">
-                          {assoc.nom}
+                          {getDisplayName(assoc, isPickup)}
                         </p>
                         <p className="font-display text-base text-ink">
                           {getBasePrice(assoc).toFixed(2)} €
                         </p>
                       </a>
                       <button
-                        onClick={() => addItem(assoc, 1)}
+                        onClick={() => addItem(assoc, 1, null, getDisplayName(assoc, isPickup))}
                         className="font-tag text-[11px] uppercase font-semibold bg-ink text-paper px-3 py-2 hover:bg-forest shrink-0"
                       >
                         Ajouter

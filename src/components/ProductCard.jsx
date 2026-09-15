@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product }) {
@@ -22,14 +22,16 @@ export default function ProductCard({ product }) {
     : null
   const referencePrice = defaultVariant ? defaultVariant.prix_livraison : product.prix_livraison
   const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
+  const variantWeightKg = defaultVariant ? parseWeightToKg(defaultVariant.poids) : null
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
+  const displayName = getDisplayName(product, isPickup)
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
 
   const handleAddToCart = () => {
-    addItem(product, 1, defaultVariant)
+    addItem(product, 1, defaultVariant, displayName)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1200)
   }
@@ -82,7 +84,7 @@ export default function ProductCard({ product }) {
       <div className="p-3 flex flex-col grow">
         <a href={`#produit/${product.id}`}>
           <h3 className="font-body font-semibold text-sm leading-snug mb-1.5 hover:underline">
-            {product.nom}
+            {displayName}
           </h3>
         </a>
         <p className="font-tag text-[11px] text-muted mb-1.5">{displayWeight}</p>
@@ -102,7 +104,7 @@ export default function ProductCard({ product }) {
 
         <div className="mt-auto">
           <p className="font-tag text-[10px] text-muted mb-0.5 text-right">
-            {getPricePerUnitLabel(product, basePrice)}
+            {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
           </p>
 
           <div className="flex items-baseline justify-end gap-2 mb-3 flex-wrap">

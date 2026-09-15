@@ -22,6 +22,7 @@ export default function ProductDetailsModal({
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
+  const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
   const [associeSearch, setAssocieSearch] = useState('')
   const { items: accompItems, addAssociation, removeAssociation } = useAccompagnements(product.id)
   const [labelDraft, setLabelDraft] = useState(
@@ -121,6 +122,13 @@ export default function ProductDetailsModal({
     }
   }
 
+  const saveNomRetrait = () => {
+    const value = nomRetraitDraft.trim()
+    if (value !== (product.nom_retrait || '')) {
+      updateProduct(product.id, { nom_retrait: value || null })
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4">
       <div className="bg-paper w-full max-w-lg border border-ink/20 max-h-[90vh] overflow-y-auto">
@@ -153,6 +161,18 @@ export default function ProductDetailsModal({
             />
             <span className="font-body text-sm">Disponible en retrait</span>
           </label>
+
+          <label className="block font-tag text-xs uppercase text-muted mb-1">
+            Désignation en mode retrait (optionnel)
+          </label>
+          <input
+            type="text"
+            value={nomRetraitDraft}
+            onChange={(e) => setNomRetraitDraft(e.target.value)}
+            onBlur={saveNomRetrait}
+            placeholder={`Laisser vide pour garder "${product.nom}" partout`}
+            className="w-full border border-ink/20 p-1.5 font-body text-sm mb-4 focus:border-forest focus:outline-none"
+          />
 
           <label className="block font-tag text-xs uppercase text-muted mb-1">
             Description
