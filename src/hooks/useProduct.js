@@ -5,6 +5,7 @@ export function useProduct(id) {
   const [product, setProduct] = useState(null)
   const [related, setRelated] = useState([])
   const [associatedProducts, setAssociatedProducts] = useState([])
+  const [supplierLogo, setSupplierLogo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -34,6 +35,17 @@ export function useProduct(id) {
         .order('ordre', { ascending: true })
 
       setProduct({ ...productData, variantes: variantesData || [] })
+
+      if (productData.fournisseur) {
+        const { data: fournisseurData } = await supabase
+          .from('fournisseurs')
+          .select('*')
+          .ilike('nom', productData.fournisseur.trim())
+          .maybeSingle()
+        if (!cancelled) setSupplierLogo(fournisseurData?.logo_url ? fournisseurData : null)
+      } else if (!cancelled) {
+        setSupplierLogo(null)
+      }
 
       const { data: accompRows } = await supabase
         .from('produits_accompagnements')
@@ -80,5 +92,5 @@ export function useProduct(id) {
     }
   }, [id])
 
-  return { product, related, associatedProducts, loading, error }
+  return { product, related, associatedProducts, supplierLogo, loading, error }
 }

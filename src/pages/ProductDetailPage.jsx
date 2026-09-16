@@ -10,7 +10,7 @@ import Breadcrumb from '../components/Breadcrumb'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
-  const { product, related, associatedProducts, loading, error } = useProduct(id)
+  const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
   const { isPickup, getPickupPrice, discountPercent, setMode } = usePriceMode()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -113,9 +113,23 @@ export default function ProductDetailPage({ id }) {
           </div>
 
           <div className="flex flex-col h-full">
-            <h1 className="font-display text-4xl text-ink leading-tight mb-2">
-              {displayName}
-            </h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="font-display text-4xl text-ink leading-tight mb-2">
+                {displayName}
+              </h1>
+              {supplierLogo?.logo_url && (
+                <div className="relative w-16 h-16 shrink-0 overflow-hidden">
+                  <CroppableImage
+                    src={supplierLogo.logo_url}
+                    alt={supplierLogo.nom}
+                    zoom={supplierLogo.logo_zoom ?? 1}
+                    posX={supplierLogo.logo_pos_x ?? 50}
+                    posY={supplierLogo.logo_pos_y ?? 50}
+                    fit="contain"
+                  />
+                </div>
+              )}
+            </div>
             {product.poids && !hasVariants && (
               <p className="font-tag text-sm text-muted mb-3">
                 {displayWeight}

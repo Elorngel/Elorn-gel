@@ -2,6 +2,7 @@ import { useState } from 'react'
 import RichTextEditor from './RichTextEditor'
 import { getPricePerUnitLabel } from '../lib/pricing'
 import { useAccompagnements } from '../hooks/useAccompagnements'
+import { useSuppliers } from '../hooks/useSuppliers'
 
 export default function ProductDetailsModal({
   product,
@@ -23,6 +24,8 @@ export default function ProductDetailsModal({
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
   const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
+  const { suppliers, addSupplier } = useSuppliers()
+  const [fournisseurSearch, setFournisseurSearch] = useState('')
   const [associeSearch, setAssocieSearch] = useState('')
   const { items: accompItems, addAssociation, removeAssociation } = useAccompagnements(product.id)
   const [labelDraft, setLabelDraft] = useState(
@@ -129,6 +132,36 @@ export default function ProductDetailsModal({
     }
   }
 
+  const fournisseurResults = fournisseurSearch.trim()
+    ? suppliers.filter((s) =>
+        s.nom.toLowerCase().includes(fournisseurSearch.trim().toLowerCase())
+      )
+    : []
+
+  const fournisseurExisteDeja = suppliers.some(
+    (s) => s.nom.toLowerCase() === fournisseurSearch.trim().toLowerCase()
+  )
+
+  const choisirFournisseur = (nom) => {
+    updateProduct(product.id, { fournisseur: nom })
+    setFournisseurSearch('')
+  }
+
+  const creerEtChoisirFournisseur = async () => {
+    const nom = fournisseurSearch.trim()
+    if (!nom) return
+    try {
+      await addSupplier(nom)
+      choisirFournisseur(nom)
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    }
+  }
+
+  const retirerFournisseur = () => {
+    updateProduct(product.id, { fournisseur: null })
+  }
+
   return (
     <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4">
       <div className="bg-paper w-full max-w-lg border border-ink/20 max-h-[90vh] overflow-y-auto">
@@ -199,6 +232,55 @@ export default function ProductDetailsModal({
           >
             {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">
+              Fournisseur (affiche son logo sur la fiche produit, si renseigné)
+            </p>
+
+            {product.fournisseur ? (
+              <div className="flex items-center justify-between bg-stone p-2 mb-2">
+                <span className="font-body text-sm">{product.fournisseur}</span>
+                <button
+                  onClick={retirerFournisseur}
+                  className="font-tag text-[10px] uppercase text-rust shrink-0"
+                >
+                  Retirer
+                </button>
+              </div>
+            ) : (
+              <p className="font-body text-xs text-muted mb-2">Aucun fournisseur associé.</p>
+            )}
+
+            <input
+              type="text"
+              placeholder="Chercher ou créer un fournisseur…"
+              value={fournisseurSearch}
+              onChange={(e) => setFournisseurSearch(e.target.value)}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm mb-1 focus:border-forest focus:outline-none"
+            />
+            {fournisseurSearch.trim() && (
+              <div className="border border-ink/15 mb-2 max-h-40 overflow-y-auto">
+                {fournisseurResults.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => choisirFournisseur(s.nom)}
+                    className="block w-full text-left px-2 py-1.5 font-body text-sm hover:bg-stone border-b border-ink/10 last:border-b-0"
+                  >
+                    {s.nom}
+                  </button>
+                ))}
+                {!fournisseurExisteDeja && (
+                  <button
+                    onClick={creerEtChoisirFournisseur}
+                    className="block w-full text-left px-2 py-1.5 font-tag text-xs uppercase font-semibold text-forest hover:bg-stone"
+                  >
+                    + Créer "{fournisseurSearch.trim()}" et l'associer
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="border-t border-ink/15 mt-5 pt-5">
             <p className="font-tag text-xs uppercase text-muted mb-2">

@@ -9,6 +9,7 @@ import { adminLogout } from '../components/AdminGate'
 import OrdersPanel from '../components/OrdersPanel'
 import VariantsModal from '../components/VariantsModal'
 import CategoriesPanel from '../components/CategoriesPanel'
+import SuppliersPanel from '../components/SuppliersPanel'
 import NewProductModal from '../components/NewProductModal'
 import { getPricePerUnitLabel } from '../lib/pricing'
 
@@ -388,7 +389,7 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [detailsProduct, setDetailsProduct] = useState(null)
   const [variantsProduct, setVariantsProduct] = useState(null)
-  const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories'
+  const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories' | 'fournisseurs'
   const [searchText, setSearchText] = useState('')
   const [showNewProductModal, setShowNewProductModal] = useState(false)
 
@@ -492,12 +493,22 @@ export default function AdminPage() {
           >
             Catégories
           </button>
+          <button
+            onClick={() => setTab('fournisseurs')}
+            className={`px-4 py-2 border-l border-ink/40 ${
+              tab === 'fournisseurs' ? 'bg-ink text-paper' : 'text-ink'
+            }`}
+          >
+            Fournisseurs
+          </button>
         </div>
 
         {tab === 'commandes' ? (
           <OrdersPanel />
         ) : tab === 'categories' ? (
           <CategoriesPanel {...categoriesHook} />
+        ) : tab === 'fournisseurs' ? (
+          <SuppliersPanel />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-4 flex-wrap">
