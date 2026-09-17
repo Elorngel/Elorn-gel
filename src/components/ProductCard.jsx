@@ -109,7 +109,11 @@ export default function ProductCard({ product, supplierLogo }) {
 
           <div className="flex items-end justify-between gap-2 mb-3">
             {supplierLogo?.logo_url ? (
-              <div className="relative w-9 h-9 shrink-0 overflow-hidden">
+              <div
+                className={`relative w-9 h-9 shrink-0 overflow-hidden ${
+                  supplierLogo.fond_blanc ? 'bg-white p-0.5' : ''
+                }`}
+              >
                 <CroppableImage
                   src={supplierLogo.logo_url}
                   alt={supplierLogo.nom}

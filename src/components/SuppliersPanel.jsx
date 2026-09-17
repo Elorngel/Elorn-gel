@@ -80,6 +80,17 @@ export default function SuppliersPanel() {
               )}
             </button>
             <p className="font-body text-sm font-semibold truncate mb-1">{s.nom}</p>
+            <label className="flex items-center gap-1.5 mb-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={s.fond_blanc || false}
+                onChange={() => updateSupplier(s.id, { fond_blanc: !s.fond_blanc })}
+                className="w-3.5 h-3.5"
+              />
+              <span className="font-tag text-[10px] uppercase text-muted">
+                Fond blanc derrière le logo
+              </span>
+            </label>
             <button
               onClick={() => handleDelete(s)}
               className="font-tag text-[10px] uppercase text-rust"

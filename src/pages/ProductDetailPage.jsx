@@ -5,6 +5,7 @@ import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
+import { getCookingIcon, COOKING_MODES } from '../components/CookingIcon'
 import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -68,6 +69,10 @@ export default function ProductDetailPage({ id }) {
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
+  const cookingModes = COOKING_MODES.map((mode) => ({
+    ...mode,
+    temps: product[`temps_${mode.key}`],
+  })).filter((mode) => mode.temps)
 
   return (
     <div className="min-h-screen bg-stone">
@@ -121,7 +126,11 @@ export default function ProductDetailPage({ id }) {
                 {displayName}
               </h1>
               {supplierLogo?.logo_url && (
-                <div className="relative w-16 h-16 shrink-0 overflow-hidden">
+                <div
+                  className={`relative w-20 h-20 shrink-0 overflow-hidden ${
+                    supplierLogo.fond_blanc ? 'bg-white p-1' : ''
+                  }`}
+                >
                   <CroppableImage
                     src={supplierLogo.logo_url}
                     alt={supplierLogo.nom}
@@ -189,38 +198,62 @@ export default function ProductDetailPage({ id }) {
               </div>
             ) : (
               <div className="border-y border-ink/15 py-4 mb-4">
-                {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
-                  <p className="font-tag text-xs text-muted mb-1">
-                    {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
-                  </p>
-                )}
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  {product.en_promo && (
-                    <span className="font-tag text-sm text-muted line-through">
-                      {referencePrice.toFixed(2)} €
-                    </span>
-                  )}
-                  {isPickup && discountPercent > 0 && (
-                    <span className="font-tag text-sm text-muted line-through">
-                      {basePrice.toFixed(2)} €
-                    </span>
-                  )}
-                  <span
-                    className={`font-display text-4xl ${
-                      product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
-                    }`}
-                  >
-                    {displayPrice.toFixed(2)} €
-                  </span>
-                  {product.en_promo && (
-                    <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
-                      Promo -{product.taux_promo}%
-                    </span>
-                  )}
-                  {isPickup && discountPercent > 0 && (
-                    <span className="font-tag text-xs uppercase font-semibold text-forest">
-                      Retrait -{discountPercent}%
-                    </span>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
+                      <p className="font-tag text-xs text-muted mb-1">
+                        {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
+                      </p>
+                    )}
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      {product.en_promo && (
+                        <span className="font-tag text-sm text-muted line-through">
+                          {referencePrice.toFixed(2)} €
+                        </span>
+                      )}
+                      {isPickup && discountPercent > 0 && (
+                        <span className="font-tag text-sm text-muted line-through">
+                          {basePrice.toFixed(2)} €
+                        </span>
+                      )}
+                      <span
+                        className={`font-display text-4xl ${
+                          product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
+                        }`}
+                      >
+                        {displayPrice.toFixed(2)} €
+                      </span>
+                      {product.en_promo && (
+                        <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
+                          Promo -{product.taux_promo}%
+                        </span>
+                      )}
+                      {isPickup && discountPercent > 0 && (
+                        <span className="font-tag text-xs uppercase font-semibold text-forest">
+                          Retrait -{discountPercent}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {cookingModes.length > 0 && (
+                    <div className="flex flex-wrap justify-end gap-4 shrink-0">
+                      {cookingModes.map((mode) => {
+                        const Icon = getCookingIcon(mode.key)
+                        return (
+                          <div key={mode.key} className="flex items-center gap-2">
+                            <Icon className="w-9 h-9 text-rust shrink-0" />
+                            <div className="leading-tight">
+                              <p className="font-tag text-[10px] uppercase text-muted">
+                                {mode.label}
+                              </p>
+                              <p className="font-body text-sm text-ink whitespace-nowrap">
+                                {mode.temps}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
                 </div>
               </div>
@@ -279,6 +312,15 @@ export default function ProductDetailPage({ id }) {
                 Bientôt de retour
               </span>
             ) : null}
+
+            {product.necessite_decongelation && (
+              <div className="border-t border-ink/15 mt-4 pt-4">
+                <p className="font-body text-xs text-muted">
+                  ❄️ Décongélation préalable nécessaire
+                  {product.temps_decongelation && ` — ${product.temps_decongelation}`}
+                </p>
+              </div>
+            )}
 
             {associatedProducts.length > 0 && (
               <div className="mt-auto pt-5 border-t border-ink/15">
