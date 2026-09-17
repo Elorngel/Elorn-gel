@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, supplierLogo }) {
   const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState(false)
@@ -107,30 +107,47 @@ export default function ProductCard({ product }) {
             {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
           </p>
 
-          <div className="flex items-baseline justify-end gap-2 mb-3 flex-wrap">
-            {product.en_promo && (
-              <span className="font-tag text-[11px] text-muted line-through">
-                {referencePrice.toFixed(2)} €
-              </span>
+          <div className="flex items-end justify-between gap-2 mb-3">
+            {supplierLogo?.logo_url ? (
+              <div className="relative w-9 h-9 shrink-0 overflow-hidden">
+                <CroppableImage
+                  src={supplierLogo.logo_url}
+                  alt={supplierLogo.nom}
+                  zoom={supplierLogo.logo_zoom ?? 1}
+                  posX={supplierLogo.logo_pos_x ?? 50}
+                  posY={supplierLogo.logo_pos_y ?? 50}
+                  fit="contain"
+                />
+              </div>
+            ) : (
+              <span />
             )}
-            {isPickup && discountPercent > 0 ? (
-              <>
+
+            <div className="flex items-baseline justify-end gap-2 flex-wrap">
+              {product.en_promo && (
                 <span className="font-tag text-[11px] text-muted line-through">
+                  {referencePrice.toFixed(2)} €
+                </span>
+              )}
+              {isPickup && discountPercent > 0 ? (
+                <>
+                  <span className="font-tag text-[11px] text-muted line-through">
+                    {basePrice.toFixed(2)} €
+                  </span>
+                  <span className="font-display text-2xl text-forest leading-none">
+                    {pickupPrice.toFixed(2)} €
+                  </span>
+                </>
+              ) : (
+                <span
+                  className={`font-display text-2xl leading-none ${
+                    product.en_promo ? 'text-rust' : isPickup ? 'text-forest' : 'text-ink'
+                  }`}
+                >
                   {basePrice.toFixed(2)} €
                 </span>
-                <span className="font-display text-2xl text-forest leading-none">
-                  {pickupPrice.toFixed(2)} €
-                </span>
-              </>
-            ) : (
-              <span
-                className={`font-display text-2xl leading-none ${
-                  product.en_promo ? 'text-rust' : isPickup ? 'text-forest' : 'text-ink'
-                }`}
-              >
-                {basePrice.toFixed(2)} €
-              </span>
-            )}
+              )}
+            </div>
           </div>
         </div>
 

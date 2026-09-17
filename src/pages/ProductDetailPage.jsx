@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useProduct } from '../hooks/useProduct'
+import { useSuppliers } from '../hooks/useSuppliers'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
+import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
@@ -11,6 +13,7 @@ import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVarian
 
 export default function ProductDetailPage({ id }) {
   const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
+  const { suppliers } = useSuppliers()
   const { isPickup, getPickupPrice, discountPercent, setMode } = usePriceMode()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -113,8 +116,8 @@ export default function ProductDetailPage({ id }) {
           </div>
 
           <div className="flex flex-col h-full">
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="font-display text-4xl text-ink leading-tight mb-2">
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h1 className="font-display text-4xl text-ink leading-tight">
                 {displayName}
               </h1>
               {supplierLogo?.logo_url && (
@@ -131,7 +134,7 @@ export default function ProductDetailPage({ id }) {
               )}
             </div>
             {product.poids && !hasVariants && (
-              <p className="font-tag text-sm text-muted mb-3">
+              <p className="font-tag text-sm text-muted mt-1 mb-3">
                 {displayWeight}
                 {product.poids_variable && ' (poids selon arrivage)'}
               </p>
@@ -267,12 +270,12 @@ export default function ProductDetailPage({ id }) {
                     {justAdded ? 'Ajouté au panier ✓' : 'Ajouter au panier'}
                   </button>
                 </div>
-                <span className="inline-block font-tag text-[11px] uppercase font-semibold text-forest border border-forest px-2 py-1">
+                <span className="self-start inline-block font-tag text-[11px] uppercase font-semibold text-forest border border-forest px-2 py-1">
                   Disponible
                 </span>
               </>
             ) : product.en_rupture ? (
-              <span className="inline-block font-tag text-[11px] uppercase font-semibold text-rust border border-rust px-2 py-1">
+              <span className="self-start inline-block font-tag text-[11px] uppercase font-semibold text-rust border border-rust px-2 py-1">
                 Bientôt de retour
               </span>
             ) : null}
@@ -369,7 +372,11 @@ export default function ProductDetailPage({ id }) {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  supplierLogo={getSupplierLogo(suppliers, p.fournisseur)}
+                />
               ))}
             </div>
           </div>

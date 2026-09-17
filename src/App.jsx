@@ -3,6 +3,8 @@ import { PriceModeProvider } from './context/PriceModeContext'
 import { CartProvider } from './context/CartContext'
 import { useCategories } from './hooks/useCategories'
 import { useProducts } from './hooks/useProducts'
+import { useSuppliers } from './hooks/useSuppliers'
+import { getSupplierLogo } from './lib/suppliers'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
@@ -18,6 +20,7 @@ import { mentionsLegales, cgv, cgu } from './data/legalContent'
 function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading, error } = useProducts()
   const { subcategoriesByCategory } = useCategories()
+  const { suppliers } = useSuppliers()
 
   const publishedProducts = products.filter((p) => p.actif !== false)
 
@@ -157,7 +160,11 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
         {!loading && !error && visibleProducts.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {visibleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                supplierLogo={getSupplierLogo(suppliers, product.fournisseur)}
+              />
             ))}
           </div>
         )}
