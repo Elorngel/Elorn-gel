@@ -2,6 +2,9 @@ import { useState } from 'react'
 import RichTextEditor from './RichTextEditor'
 import { getPricePerUnitLabel } from '../lib/pricing'
 import { useAccompagnements } from '../hooks/useAccompagnements'
+import { useSuppliers } from '../hooks/useSuppliers'
+import { COOKING_MODES } from './CookingIcon'
+import { parseCuissonValue, composeCuissonValue } from '../lib/cuisson'
 
 export default function ProductDetailsModal({
   product,
@@ -23,6 +26,19 @@ export default function ProductDetailsModal({
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
   const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
+  const [cuissonDraft, setCuissonDraft] = useState(
+    Object.fromEntries(
+      COOKING_MODES.map((m) => [m.key, parseCuissonValue(product[`temps_${m.key}`])])
+    )
+  )
+  const [necessiteDecongelation, setNecessiteDecongelation] = useState(
+    product.necessite_decongelation || false
+  )
+  const [tempsDecongelationDraft, setTempsDecongelationDraft] = useState(
+    product.temps_decongelation || ''
+  )
+  const { suppliers, addSupplier } = useSuppliers()
+  const [fournisseurSearch, setFournisseurSearch] = useState('')
   const [associeSearch, setAssocieSearch] = useState('')
   const { items: accompItems, addAssociation, removeAssociation } = useAccompagnements(product.id)
   const [labelDraft, setLabelDraft] = useState(
@@ -129,6 +145,61 @@ export default function ProductDetailsModal({
     }
   }
 
+  const saveCuisson = (key) => {
+    const value = composeCuissonValue(cuissonDraft[key].min, cuissonDraft[key].temp)
+    const field = `temps_${key}`
+    if (value !== (product[field] || '')) {
+      updateProduct(product.id, { [field]: value || null })
+    }
+  }
+
+  const toggleNecessiteDecongelation = () => {
+    const newValue = !necessiteDecongelation
+    setNecessiteDecongelation(newValue)
+    updateProduct(product.id, {
+      necessite_decongelation: newValue,
+      ...(newValue ? {} : { temps_decongelation: null }),
+    })
+    if (!newValue) setTempsDecongelationDraft('')
+  }
+
+  const saveTempsDecongelation = () => {
+    const value = tempsDecongelationDraft.trim()
+    if (value !== (product.temps_decongelation || '')) {
+      updateProduct(product.id, { temps_decongelation: value || null })
+    }
+  }
+
+  const fournisseurResults = fournisseurSearch.trim()
+    ? suppliers.filter((s) =>
+        s.nom.toLowerCase().includes(fournisseurSearch.trim().toLowerCase())
+      )
+    : []
+
+  const fournisseurExisteDeja = suppliers.some(
+    (s) => s.nom.toLowerCase() === fournisseurSearch.trim().toLowerCase()
+  )
+
+  const choisirFournisseur = (nom) => {
+    updateProduct(product.id, { fournisseur: nom })
+    setFournisseurSearch('')
+  }
+
+  const creerEtChoisirFournisseur = async () => {
+    const nom = fournisseurSearch.trim()
+    if (!nom) return
+    try {
+      await addSupplier(nom)
+      choisirFournisseur(nom)
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    }
+  }
+
+  const retirerFournisseur = () => {
+    updateProduct(product.id, { fournisseur: null })
+  }
+
   return (
     <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4">
       <div className="bg-paper w-full max-w-lg border border-ink/20 max-h-[90vh] overflow-y-auto">
@@ -199,6 +270,55 @@ export default function ProductDetailsModal({
           >
             {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">
+              Fournisseur (affiche son logo sur la fiche produit, si renseigné)
+            </p>
+
+            {product.fournisseur ? (
+              <div className="flex items-center justify-between bg-stone p-2 mb-2">
+                <span className="font-body text-sm">{product.fournisseur}</span>
+                <button
+                  onClick={retirerFournisseur}
+                  className="font-tag text-[10px] uppercase text-rust shrink-0"
+                >
+                  Retirer
+                </button>
+              </div>
+            ) : (
+              <p className="font-body text-xs text-muted mb-2">Aucun fournisseur associé.</p>
+            )}
+
+            <input
+              type="text"
+              placeholder="Chercher ou créer un fournisseur…"
+              value={fournisseurSearch}
+              onChange={(e) => setFournisseurSearch(e.target.value)}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm mb-1 focus:border-forest focus:outline-none"
+            />
+            {fournisseurSearch.trim() && (
+              <div className="border border-ink/15 mb-2 max-h-40 overflow-y-auto">
+                {fournisseurResults.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => choisirFournisseur(s.nom)}
+                    className="block w-full text-left px-2 py-1.5 font-body text-sm hover:bg-stone border-b border-ink/10 last:border-b-0"
+                  >
+                    {s.nom}
+                  </button>
+                ))}
+                {!fournisseurExisteDeja && (
+                  <button
+                    onClick={creerEtChoisirFournisseur}
+                    className="block w-full text-left px-2 py-1.5 font-tag text-xs uppercase font-semibold text-forest hover:bg-stone"
+                  >
+                    + Créer "{fournisseurSearch.trim()}" et l'associer
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="border-t border-ink/15 mt-5 pt-5">
             <p className="font-tag text-xs uppercase text-muted mb-2">
@@ -317,6 +437,77 @@ export default function ProductDetailsModal({
                 ? `Gérer les ${product.variantes.length} tailles`
                 : 'Ajouter des conditionnements'}
             </button>
+          </div>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">
+              Cuisson (laisser vide pour ne pas afficher le mode)
+            </p>
+            <div className="flex flex-col gap-2">
+              {COOKING_MODES.map((mode) => (
+                <div key={mode.key} className="flex items-center gap-1.5 flex-wrap">
+                  <span className="w-20 shrink-0 font-tag text-xs uppercase text-muted">
+                    {mode.label}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="20"
+                    value={cuissonDraft[mode.key].min}
+                    onChange={(e) =>
+                      setCuissonDraft((prev) => ({
+                        ...prev,
+                        [mode.key]: { ...prev[mode.key], min: e.target.value },
+                      }))
+                    }
+                    onBlur={() => saveCuisson(mode.key)}
+                    className="w-14 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                  />
+                  <span className="font-body text-sm text-muted shrink-0">min à</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="180"
+                    value={cuissonDraft[mode.key].temp}
+                    onChange={(e) =>
+                      setCuissonDraft((prev) => ({
+                        ...prev,
+                        [mode.key]: { ...prev[mode.key], temp: e.target.value },
+                      }))
+                    }
+                    onBlur={() => saveCuisson(mode.key)}
+                    className="w-14 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                  />
+                  <span className="font-body text-sm text-muted shrink-0">°C</span>
+                </div>
+              ))}
+            </div>
+            <p className="font-body text-xs text-muted mt-2">
+              Laisse le °C vide si le mode ne demande qu'un temps (ex : Airfryer 10 min).
+            </p>
+          </div>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">Décongélation</p>
+            <label className="flex items-center gap-2 mb-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={necessiteDecongelation}
+                onChange={toggleNecessiteDecongelation}
+                className="w-4 h-4"
+              />
+              <span className="font-body text-sm">Décongélation préalable nécessaire</span>
+            </label>
+            {necessiteDecongelation && (
+              <input
+                type="text"
+                placeholder="Ex : 24h au réfrigérateur"
+                value={tempsDecongelationDraft}
+                onChange={(e) => setTempsDecongelationDraft(e.target.value)}
+                onBlur={saveTempsDecongelation}
+                className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+              />
+            )}
           </div>
 
           <div className="border-t border-ink/15 mt-5 pt-5">

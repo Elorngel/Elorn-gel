@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import { useProduct } from '../hooks/useProduct'
+import { useSuppliers } from '../hooks/useSuppliers'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
+import { getCookingIcon, COOKING_MODES } from '../components/CookingIcon'
+import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
-  const { product, related, associatedProducts, loading, error } = useProduct(id)
+  const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
+  const { suppliers } = useSuppliers()
   const { isPickup, getPickupPrice, discountPercent, setMode } = usePriceMode()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -65,6 +69,10 @@ export default function ProductDetailPage({ id }) {
   const tags = product.tags
     ? product.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : []
+  const cookingModes = COOKING_MODES.map((mode) => ({
+    ...mode,
+    temps: product[`temps_${mode.key}`],
+  })).filter((mode) => mode.temps)
 
   return (
     <div className="min-h-screen bg-stone">
@@ -113,11 +121,29 @@ export default function ProductDetailPage({ id }) {
           </div>
 
           <div className="flex flex-col h-full">
-            <h1 className="font-display text-4xl text-ink leading-tight mb-2">
-              {displayName}
-            </h1>
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h1 className="font-display text-4xl text-ink leading-tight">
+                {displayName}
+              </h1>
+              {supplierLogo?.logo_url && (
+                <div
+                  className={`relative w-20 h-20 shrink-0 overflow-hidden ${
+                    supplierLogo.fond_blanc ? 'bg-white p-1' : ''
+                  }`}
+                >
+                  <CroppableImage
+                    src={supplierLogo.logo_url}
+                    alt={supplierLogo.nom}
+                    zoom={supplierLogo.logo_zoom ?? 1}
+                    posX={supplierLogo.logo_pos_x ?? 50}
+                    posY={supplierLogo.logo_pos_y ?? 50}
+                    fit="contain"
+                  />
+                </div>
+              )}
+            </div>
             {product.poids && !hasVariants && (
-              <p className="font-tag text-sm text-muted mb-3">
+              <p className="font-tag text-sm text-muted mt-1 mb-3">
                 {displayWeight}
                 {product.poids_variable && ' (poids selon arrivage)'}
               </p>
@@ -172,38 +198,62 @@ export default function ProductDetailPage({ id }) {
               </div>
             ) : (
               <div className="border-y border-ink/15 py-4 mb-4">
-                {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
-                  <p className="font-tag text-xs text-muted mb-1">
-                    {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
-                  </p>
-                )}
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  {product.en_promo && (
-                    <span className="font-tag text-sm text-muted line-through">
-                      {referencePrice.toFixed(2)} €
-                    </span>
-                  )}
-                  {isPickup && discountPercent > 0 && (
-                    <span className="font-tag text-sm text-muted line-through">
-                      {basePrice.toFixed(2)} €
-                    </span>
-                  )}
-                  <span
-                    className={`font-display text-4xl ${
-                      product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
-                    }`}
-                  >
-                    {displayPrice.toFixed(2)} €
-                  </span>
-                  {product.en_promo && (
-                    <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
-                      Promo -{product.taux_promo}%
-                    </span>
-                  )}
-                  {isPickup && discountPercent > 0 && (
-                    <span className="font-tag text-xs uppercase font-semibold text-forest">
-                      Retrait -{discountPercent}%
-                    </span>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
+                      <p className="font-tag text-xs text-muted mb-1">
+                        {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
+                      </p>
+                    )}
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      {product.en_promo && (
+                        <span className="font-tag text-sm text-muted line-through">
+                          {referencePrice.toFixed(2)} €
+                        </span>
+                      )}
+                      {isPickup && discountPercent > 0 && (
+                        <span className="font-tag text-sm text-muted line-through">
+                          {basePrice.toFixed(2)} €
+                        </span>
+                      )}
+                      <span
+                        className={`font-display text-4xl ${
+                          product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
+                        }`}
+                      >
+                        {displayPrice.toFixed(2)} €
+                      </span>
+                      {product.en_promo && (
+                        <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
+                          Promo -{product.taux_promo}%
+                        </span>
+                      )}
+                      {isPickup && discountPercent > 0 && (
+                        <span className="font-tag text-xs uppercase font-semibold text-forest">
+                          Retrait -{discountPercent}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {cookingModes.length > 0 && (
+                    <div className="flex flex-wrap justify-end gap-4 shrink-0">
+                      {cookingModes.map((mode) => {
+                        const Icon = getCookingIcon(mode.key)
+                        return (
+                          <div key={mode.key} className="flex items-center gap-2">
+                            <Icon className="w-9 h-9 text-rust shrink-0" />
+                            <div className="leading-tight">
+                              <p className="font-tag text-[10px] uppercase text-muted">
+                                {mode.label}
+                              </p>
+                              <p className="font-body text-sm text-ink whitespace-nowrap">
+                                {mode.temps}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
                 </div>
               </div>
@@ -253,15 +303,24 @@ export default function ProductDetailPage({ id }) {
                     {justAdded ? 'Ajouté au panier ✓' : 'Ajouter au panier'}
                   </button>
                 </div>
-                <span className="inline-block font-tag text-[11px] uppercase font-semibold text-forest border border-forest px-2 py-1">
+                <span className="self-start inline-block font-tag text-[11px] uppercase font-semibold text-forest border border-forest px-2 py-1">
                   Disponible
                 </span>
               </>
             ) : product.en_rupture ? (
-              <span className="inline-block font-tag text-[11px] uppercase font-semibold text-rust border border-rust px-2 py-1">
+              <span className="self-start inline-block font-tag text-[11px] uppercase font-semibold text-rust border border-rust px-2 py-1">
                 Bientôt de retour
               </span>
             ) : null}
+
+            {product.necessite_decongelation && (
+              <div className="border-t border-ink/15 mt-4 pt-4">
+                <p className="font-body text-xs text-muted">
+                  ❄️ Décongélation préalable nécessaire
+                  {product.temps_decongelation && ` — ${product.temps_decongelation}`}
+                </p>
+              </div>
+            )}
 
             {associatedProducts.length > 0 && (
               <div className="mt-auto pt-5 border-t border-ink/15">
@@ -355,7 +414,11 @@ export default function ProductDetailPage({ id }) {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  supplierLogo={getSupplierLogo(suppliers, p.fournisseur)}
+                />
               ))}
             </div>
           </div>
