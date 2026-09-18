@@ -3,9 +3,11 @@ import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useCategories } from '../hooks/useCategories'
+import { useConseil } from '../context/ConseilContext'
 
 export default function Header({ activeCategory }) {
   const { mode, setMode, discountPercent } = usePriceMode()
+  const { open: openConseil } = useConseil()
   const { settings } = useSiteSettings()
   const { categories, subcategoriesByCategory } = useCategories()
   const { itemCount } = useCart()
@@ -218,11 +220,27 @@ export default function Header({ activeCategory }) {
             </div>
           )
         })}
+        <button
+          onClick={openConseil}
+          className="md:ml-auto font-tag text-xs uppercase font-semibold text-forest border border-forest px-3 py-1 hover:bg-forest hover:text-paper transition-colors"
+        >
+          Besoin d'un conseil ?
+        </button>
       </nav>
 
       {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
       {menuOpen && (
         <div className="md:hidden border-t border-ink/15 bg-paper px-4 py-4">
+          <button
+            onClick={() => {
+              setMenuOpen(false)
+              openConseil()
+            }}
+            className="w-full mb-4 font-tag text-xs uppercase font-semibold text-forest border border-forest py-2.5 hover:bg-forest hover:text-paper transition-colors"
+          >
+            Besoin d'un conseil ?
+          </button>
+
           <form onSubmit={handleSearch} className="flex border border-ink/40 mb-4">
             <input
               type="text"
