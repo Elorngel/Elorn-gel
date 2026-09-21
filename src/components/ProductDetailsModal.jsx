@@ -4,7 +4,13 @@ import { getPricePerUnitLabel } from '../lib/pricing'
 import { useAccompagnements } from '../hooks/useAccompagnements'
 import { useSuppliers } from '../hooks/useSuppliers'
 import { COOKING_MODES } from './CookingIcon'
-import { parseCuissonValue, composeCuissonValue } from '../lib/cuisson'
+import {
+  CUISSON_REGLAGE,
+  REGLAGE_INFO,
+  FEUX_SUGGERES,
+  parseCuisson,
+  composeCuisson,
+} from '../lib/cuisson'
 
 export default function ProductDetailsModal({
   product,
@@ -28,11 +34,14 @@ export default function ProductDetailsModal({
   const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
   const [cuissonDraft, setCuissonDraft] = useState(
     Object.fromEntries(
-      COOKING_MODES.map((m) => [m.key, parseCuissonValue(product[`temps_${m.key}`])])
+      COOKING_MODES.map((m) => [m.key, parseCuisson(product[`temps_${m.key}`], m.key)])
     )
   )
   const [necessiteDecongelation, setNecessiteDecongelation] = useState(
     product.necessite_decongelation || false
+  )
+  const [sansDecongelation, setSansDecongelation] = useState(
+    product.sans_decongelation || false
   )
   const [tempsDecongelationDraft, setTempsDecongelationDraft] = useState(
     product.temps_decongelation || ''
@@ -145,22 +154,60 @@ export default function ProductDetailsModal({
     }
   }
 
-  const saveCuisson = (key) => {
-    const value = composeCuissonValue(cuissonDraft[key].min, cuissonDraft[key].temp)
+  // Sauvegarde le mode de cuisson dès qu'on quitte un champ. "etapes" permet de
+  // sauvegarder une liste qui vient d'être modifiée (ex : étape supprimée).
+  const saveCuisson = (key, etapes = cuissonDraft[key]) => {
+    const value = composeCuisson(etapes, key)
     const field = `temps_${key}`
     if (value !== (product[field] || '')) {
       updateProduct(product.id, { [field]: value || null })
     }
   }
 
+  const setEtape = (key, index, champ, valeur) => {
+    setCuissonDraft((prev) => ({
+      ...prev,
+      [key]: prev[key].map((e, i) => (i === index ? { ...e, [champ]: valeur } : e)),
+    }))
+  }
+
+  const addEtape = (key) => {
+    setCuissonDraft((prev) => ({
+      ...prev,
+      [key]: [...prev[key], { duree: '', reglage: '' }],
+    }))
+  }
+
+  const removeEtape = (key, index) => {
+    const restantes = cuissonDraft[key].filter((_, i) => i !== index)
+    const etapes = restantes.length > 0 ? restantes : [{ duree: '', reglage: '' }]
+    setCuissonDraft((prev) => ({ ...prev, [key]: etapes }))
+    saveCuisson(key, etapes)
+  }
+
+  // "Décongélation nécessaire" et "Sans décongélation" s'excluent l'une l'autre.
   const toggleNecessiteDecongelation = () => {
     const newValue = !necessiteDecongelation
     setNecessiteDecongelation(newValue)
+    if (newValue) setSansDecongelation(false)
     updateProduct(product.id, {
       necessite_decongelation: newValue,
-      ...(newValue ? {} : { temps_decongelation: null }),
+      ...(newValue ? { sans_decongelation: false } : { temps_decongelation: null }),
     })
     if (!newValue) setTempsDecongelationDraft('')
+  }
+
+  const toggleSansDecongelation = () => {
+    const newValue = !sansDecongelation
+    setSansDecongelation(newValue)
+    if (newValue) {
+      setNecessiteDecongelation(false)
+      setTempsDecongelationDraft('')
+    }
+    updateProduct(product.id, {
+      sans_decongelation: newValue,
+      ...(newValue ? { necessite_decongelation: false, temps_decongelation: null } : {}),
+    })
   }
 
   const saveTempsDecongelation = () => {
@@ -443,47 +490,88 @@ export default function ProductDetailsModal({
             <p className="font-tag text-xs uppercase text-muted mb-2">
               Cuisson (laisser vide pour ne pas afficher le mode)
             </p>
-            <div className="flex flex-col gap-2">
-              {COOKING_MODES.map((mode) => (
-                <div key={mode.key} className="flex items-center gap-1.5 flex-wrap">
-                  <span className="w-20 shrink-0 font-tag text-xs uppercase text-muted">
-                    {mode.label}
-                  </span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="20"
-                    value={cuissonDraft[mode.key].min}
-                    onChange={(e) =>
-                      setCuissonDraft((prev) => ({
-                        ...prev,
-                        [mode.key]: { ...prev[mode.key], min: e.target.value },
-                      }))
-                    }
-                    onBlur={() => saveCuisson(mode.key)}
-                    className="w-14 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
-                  />
-                  <span className="font-body text-sm text-muted shrink-0">min à</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="180"
-                    value={cuissonDraft[mode.key].temp}
-                    onChange={(e) =>
-                      setCuissonDraft((prev) => ({
-                        ...prev,
-                        [mode.key]: { ...prev[mode.key], temp: e.target.value },
-                      }))
-                    }
-                    onBlur={() => saveCuisson(mode.key)}
-                    className="w-14 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
-                  />
-                  <span className="font-body text-sm text-muted shrink-0">°C</span>
-                </div>
+            <datalist id="feux-suggeres">
+              {FEUX_SUGGERES.map((feu) => (
+                <option key={feu} value={feu} />
               ))}
+            </datalist>
+            <div className="flex flex-col gap-3">
+              {COOKING_MODES.map((mode) => {
+                const info = REGLAGE_INFO[CUISSON_REGLAGE[mode.key]]
+                const etapes = cuissonDraft[mode.key]
+                return (
+                  <div key={mode.key} className="flex gap-1.5">
+                    <span className="w-20 shrink-0 pt-2 font-tag text-xs uppercase text-muted">
+                      {mode.label}
+                    </span>
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      {etapes.map((etape, i) => (
+                        <div key={i} className="flex items-center gap-1.5 flex-wrap">
+                          {i > 0 && (
+                            <span className="font-tag text-xs uppercase text-muted shrink-0">
+                              puis
+                            </span>
+                          )}
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="10-15"
+                            aria-label={`${mode.label} : durée en minutes`}
+                            value={etape.duree}
+                            onChange={(e) => setEtape(mode.key, i, 'duree', e.target.value)}
+                            onBlur={() => saveCuisson(mode.key)}
+                            className="w-16 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                          />
+                          <span className="font-body text-sm text-muted shrink-0">min à</span>
+                          <input
+                            type="text"
+                            list={info.suffixe ? undefined : 'feux-suggeres'}
+                            placeholder={info.placeholder}
+                            aria-label={`${mode.label} : réglage`}
+                            value={etape.reglage}
+                            onChange={(e) => setEtape(mode.key, i, 'reglage', e.target.value)}
+                            onBlur={() => saveCuisson(mode.key)}
+                            className={`${
+                              info.suffixe ? 'w-16' : 'w-32'
+                            } border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none`}
+                          />
+                          {info.suffixe && (
+                            <span className="font-body text-sm text-muted shrink-0">
+                              {info.suffixe}
+                            </span>
+                          )}
+                          {etapes.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeEtape(mode.key, i)}
+                              aria-label="Supprimer cette étape"
+                              className="font-tag text-xs uppercase text-rust shrink-0 px-1"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {etapes[etapes.length - 1].duree.trim() !== '' && (
+                        <button
+                          type="button"
+                          onClick={() => addEtape(mode.key)}
+                          className="self-start font-tag text-[11px] uppercase text-forest hover:underline"
+                        >
+                          + Ajouter une étape
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
             <p className="font-body text-xs text-muted mt-2">
-              Laisse le °C vide si le mode ne demande qu'un temps (ex : Airfryer 10 min).
+              La durée peut être une plage (ex : 10-15). Four, Airfryer et Friteuse : le réglage
+              est la température (°C) ; Micro-ondes : la puissance (W) ; Poêle : le feu, en
+              texte (feu doux, feu moyen, feu vif…). Laisse le réglage vide si seul le temps
+              compte. Pour enchaîner deux réglages (ex : 5 min à feu vif puis 10 min à feu
+              moyen), clique sur « Ajouter une étape ».
             </p>
           </div>
 
@@ -505,9 +593,18 @@ export default function ProductDetailsModal({
                 value={tempsDecongelationDraft}
                 onChange={(e) => setTempsDecongelationDraft(e.target.value)}
                 onBlur={saveTempsDecongelation}
-                className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                className="w-full border border-ink/20 p-1.5 font-body text-sm mb-2 focus:border-forest focus:outline-none"
               />
             )}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={sansDecongelation}
+                onChange={toggleSansDecongelation}
+                className="w-4 h-4"
+              />
+              <span className="font-body text-sm">Sans décongélation préalable</span>
+            </label>
           </div>
 
           <div className="border-t border-ink/15 mt-5 pt-5">

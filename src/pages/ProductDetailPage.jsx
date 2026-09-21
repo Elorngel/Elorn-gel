@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext'
 import CroppableImage from '../components/CroppableImage'
 import ProductCard from '../components/ProductCard'
 import { getCookingIcon, COOKING_MODES } from '../components/CookingIcon'
+import { splitCuissonEtapes } from '../lib/cuisson'
 import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -198,7 +199,7 @@ export default function ProductDetailPage({ id }) {
               </div>
             ) : (
               <div className="border-y border-ink/15 py-4 mb-4">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
                       <p className="font-tag text-xs text-muted mb-1">
@@ -236,7 +237,7 @@ export default function ProductDetailPage({ id }) {
                     </div>
                   </div>
                   {cookingModes.length > 0 && (
-                    <div className="flex flex-wrap justify-end gap-4 shrink-0">
+                    <div className="flex flex-wrap justify-start md:justify-end gap-x-4 gap-y-3">
                       {cookingModes.map((mode) => {
                         const Icon = getCookingIcon(mode.key)
                         return (
@@ -246,9 +247,14 @@ export default function ProductDetailPage({ id }) {
                               <p className="font-tag text-[10px] uppercase text-muted">
                                 {mode.label}
                               </p>
-                              <p className="font-body text-sm text-ink whitespace-nowrap">
-                                {mode.temps}
-                              </p>
+                              {splitCuissonEtapes(mode.temps).map((ligne) => (
+                                <p
+                                  key={ligne}
+                                  className="font-body text-sm text-ink whitespace-nowrap"
+                                >
+                                  {ligne}
+                                </p>
+                              ))}
                             </div>
                           </div>
                         )
@@ -313,13 +319,21 @@ export default function ProductDetailPage({ id }) {
               </span>
             ) : null}
 
-            {product.necessite_decongelation && (
+            {product.necessite_decongelation ? (
               <div className="border-t border-ink/15 mt-4 pt-4">
                 <p className="font-body text-xs text-muted">
                   ❄️ Décongélation préalable nécessaire
                   {product.temps_decongelation && ` — ${product.temps_decongelation}`}
                 </p>
               </div>
+            ) : (
+              product.sans_decongelation && (
+                <div className="border-t border-ink/15 mt-4 pt-4">
+                  <p className="font-body text-xs text-forest font-semibold">
+                    ✓ Sans décongélation préalable
+                  </p>
+                </div>
+              )
             )}
 
             {associatedProducts.length > 0 && (

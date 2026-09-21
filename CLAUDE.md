@@ -40,8 +40,11 @@ vert forêt / pierre / brique, coins carrés, typographie condensée façon
 **Fait** : catalogue complet, double prix livraison/retrait, créneaux,
 panier + commande sans paiement en ligne, promotions, variantes de
 conditionnement, logos fournisseurs (avec option fond blanc par fournisseur),
-modes de cuisson (Four/Poêle/Airfryer/Friteuse/Micro-ondes avec temps au
-format "X min à Y°C"), admin complet, **comptes clients** (Supabase Auth,
+modes de cuisson (Four/Poêle/Airfryer/Friteuse/Micro-ondes : durée en plage
+possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
+(micro-ondes) ou en texte "feu doux/moyen/vif" (poêle), plusieurs étapes
+possibles "5 min à feu vif puis 10 min à feu moyen" ; cases "Décongélation
+préalable nécessaire" / "Sans décongélation préalable"), admin complet, **comptes clients** (Supabase Auth,
 email+mot de passe, historique de commandes sur `#mes-commandes`, panier
 toujours utilisable sans compte).
 
