@@ -46,6 +46,9 @@ export default function ProductDetailsModal({
   const [tempsDecongelationDraft, setTempsDecongelationDraft] = useState(
     product.temps_decongelation || ''
   )
+  const [noteSansDecongelationDraft, setNoteSansDecongelationDraft] = useState(
+    product.note_sans_decongelation || ''
+  )
   const { suppliers, addSupplier } = useSuppliers()
   const [fournisseurSearch, setFournisseurSearch] = useState('')
   const [associeSearch, setAssocieSearch] = useState('')
@@ -189,31 +192,48 @@ export default function ProductDetailsModal({
   const toggleNecessiteDecongelation = () => {
     const newValue = !necessiteDecongelation
     setNecessiteDecongelation(newValue)
-    if (newValue) setSansDecongelation(false)
     updateProduct(product.id, {
       necessite_decongelation: newValue,
-      ...(newValue ? { sans_decongelation: false } : { temps_decongelation: null }),
+      ...(newValue
+        ? { sans_decongelation: false, note_sans_decongelation: null }
+        : { temps_decongelation: null }),
     })
-    if (!newValue) setTempsDecongelationDraft('')
+    if (newValue) {
+      setSansDecongelation(false)
+      setNoteSansDecongelationDraft('')
+    } else {
+      setTempsDecongelationDraft('')
+    }
   }
 
   const toggleSansDecongelation = () => {
     const newValue = !sansDecongelation
     setSansDecongelation(newValue)
+    updateProduct(product.id, {
+      sans_decongelation: newValue,
+      ...(newValue
+        ? { necessite_decongelation: false, temps_decongelation: null }
+        : { note_sans_decongelation: null }),
+    })
     if (newValue) {
       setNecessiteDecongelation(false)
       setTempsDecongelationDraft('')
+    } else {
+      setNoteSansDecongelationDraft('')
     }
-    updateProduct(product.id, {
-      sans_decongelation: newValue,
-      ...(newValue ? { necessite_decongelation: false, temps_decongelation: null } : {}),
-    })
   }
 
   const saveTempsDecongelation = () => {
     const value = tempsDecongelationDraft.trim()
     if (value !== (product.temps_decongelation || '')) {
       updateProduct(product.id, { temps_decongelation: value || null })
+    }
+  }
+
+  const saveNoteSansDecongelation = () => {
+    const value = noteSansDecongelationDraft.trim()
+    if (value !== (product.note_sans_decongelation || '')) {
+      updateProduct(product.id, { note_sans_decongelation: value || null })
     }
   }
 
@@ -596,7 +616,7 @@ export default function ProductDetailsModal({
                 className="w-full border border-ink/20 p-1.5 font-body text-sm mb-2 focus:border-forest focus:outline-none"
               />
             )}
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 mb-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={sansDecongelation}
@@ -605,6 +625,16 @@ export default function ProductDetailsModal({
               />
               <span className="font-body text-sm">Sans décongélation préalable</span>
             </label>
+            {sansDecongelation && (
+              <input
+                type="text"
+                placeholder="Ex : à cuire directement à la poêle"
+                value={noteSansDecongelationDraft}
+                onChange={(e) => setNoteSansDecongelationDraft(e.target.value)}
+                onBlur={saveNoteSansDecongelation}
+                className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+              />
+            )}
           </div>
 
           <div className="border-t border-ink/15 mt-5 pt-5">

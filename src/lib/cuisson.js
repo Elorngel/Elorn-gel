@@ -97,11 +97,40 @@ export function composeCuisson(etapes, key) {
     .join(' puis ')
 }
 
-// Pour l'affichage sur la fiche : une ligne par étape.
+// Affichage d'une durée à l'heure passé 60 min : 75 -> "1h15", 60 -> "1h".
+// En dessous de 60 min, inchangé ("45 min").
+function formatMinutes(n) {
+  if (n < 60) return `${n} min`
+  const h = Math.floor(n / 60)
+  const m = n % 60
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`
+}
+
+// "75" -> "1h15" ; "10-15" (toujours < 1h) -> "10-15 min" ; "45-75" -> "45 min-1h15"
+function formatDuree(duree) {
+  const bornes = duree.split('-').map((b) => parseInt(b, 10))
+  if (bornes.every((b) => b < 60)) return `${duree} min`
+  return bornes.map(formatMinutes).join('-')
+}
+
+const DUREE_RE = /^(\d+(?:-\d+)?)\s*min\b(.*)$/i
+
+// Admin saisit toujours des minutes ("75", "10-15") ; c'est seulement à
+// l'affichage sur la fiche qu'on repasse en heures au-delà de 60 min, pour
+// ne pas imposer ce format à la saisie.
+function formatEtapeAffichage(etape) {
+  const m = etape.match(DUREE_RE)
+  return m ? `${formatDuree(m[1])}${m[2]}` : etape
+}
+
+// Pour l'affichage sur la fiche : une ligne par étape, durée reformatée à
+// l'heure au-delà de 60 min.
+// "75 min à 180°C" -> ["1h15 à 180°C"]
 // "5 min à feu vif puis 10 min à feu moyen" -> ["5 min à feu vif", "puis 10 min à feu moyen"]
 export function splitCuissonEtapes(value) {
   return (value || '')
     .split(SEPARATEUR)
-    .map((etape, i) => (i === 0 ? etape.trim() : `puis ${etape.trim()}`))
+    .map((etape) => formatEtapeAffichage(etape.trim()))
+    .map((ligne, i) => (i === 0 ? ligne : `puis ${ligne}`))
     .filter(Boolean)
 }

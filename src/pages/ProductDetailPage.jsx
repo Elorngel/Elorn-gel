@@ -331,6 +331,7 @@ export default function ProductDetailPage({ id }) {
                 <div className="border-t border-ink/15 mt-4 pt-4">
                   <p className="font-body text-xs text-forest font-semibold">
                     ✓ Sans décongélation préalable
+                    {product.note_sans_decongelation && ` — ${product.note_sans_decongelation}`}
                   </p>
                 </div>
               )
