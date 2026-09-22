@@ -319,22 +319,21 @@ export default function ProductDetailPage({ id }) {
               </span>
             ) : null}
 
-            {product.necessite_decongelation ? (
-              <div className="border-t border-ink/15 mt-4 pt-4">
-                <p className="font-body text-xs text-muted">
-                  ❄️ Décongélation préalable nécessaire
-                  {product.temps_decongelation && ` — ${product.temps_decongelation}`}
-                </p>
-              </div>
-            ) : (
-              product.sans_decongelation && (
-                <div className="border-t border-ink/15 mt-4 pt-4">
+            {(product.necessite_decongelation || product.sans_decongelation) && (
+              <div className="border-t border-ink/15 mt-4 pt-4 flex flex-col gap-1">
+                {product.necessite_decongelation && (
+                  <p className="font-body text-xs text-muted">
+                    ❄️ Décongélation préalable nécessaire
+                    {product.temps_decongelation && ` — ${product.temps_decongelation}`}
+                  </p>
+                )}
+                {product.sans_decongelation && (
                   <p className="font-body text-xs text-forest font-semibold">
                     ✓ Sans décongélation préalable
                     {product.note_sans_decongelation && ` — ${product.note_sans_decongelation}`}
                   </p>
-                </div>
-              )
+                )}
+              </div>
             )}
 
             {associatedProducts.length > 0 && (

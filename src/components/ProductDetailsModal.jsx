@@ -188,22 +188,16 @@ export default function ProductDetailsModal({
     saveCuisson(key, etapes)
   }
 
-  // "Décongélation nécessaire" et "Sans décongélation" s'excluent l'une l'autre.
+  // Les deux cases sont indépendantes : certains produits se préparent des
+  // deux façons (ex : décongelé pour une cuisson, ou tel quel pour une autre).
   const toggleNecessiteDecongelation = () => {
     const newValue = !necessiteDecongelation
     setNecessiteDecongelation(newValue)
     updateProduct(product.id, {
       necessite_decongelation: newValue,
-      ...(newValue
-        ? { sans_decongelation: false, note_sans_decongelation: null }
-        : { temps_decongelation: null }),
+      ...(newValue ? {} : { temps_decongelation: null }),
     })
-    if (newValue) {
-      setSansDecongelation(false)
-      setNoteSansDecongelationDraft('')
-    } else {
-      setTempsDecongelationDraft('')
-    }
+    if (!newValue) setTempsDecongelationDraft('')
   }
 
   const toggleSansDecongelation = () => {
@@ -211,16 +205,9 @@ export default function ProductDetailsModal({
     setSansDecongelation(newValue)
     updateProduct(product.id, {
       sans_decongelation: newValue,
-      ...(newValue
-        ? { necessite_decongelation: false, temps_decongelation: null }
-        : { note_sans_decongelation: null }),
+      ...(newValue ? {} : { note_sans_decongelation: null }),
     })
-    if (newValue) {
-      setNecessiteDecongelation(false)
-      setTempsDecongelationDraft('')
-    } else {
-      setNoteSansDecongelationDraft('')
-    }
+    if (!newValue) setNoteSansDecongelationDraft('')
   }
 
   const saveTempsDecongelation = () => {
