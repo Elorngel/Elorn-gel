@@ -15,6 +15,7 @@ export const CUISSON_REGLAGE = {
   friteuse: 'temp',
   micro_ondes: 'watts',
   poele: 'feu',
+  cocotte: 'feu',
 }
 
 // Libellés et aides pour le formulaire admin, par type de réglage.

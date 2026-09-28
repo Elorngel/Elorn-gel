@@ -67,6 +67,20 @@ function FriteuseIcon(props) {
   )
 }
 
+function CocotteIcon(props) {
+  return (
+    <svg {...common} {...props}>
+      <rect x="13.5" y="2" width="5" height="2.3" rx="0.7" />
+      <path d="M8 9.5Q16 3.3 24 9.5" />
+      <rect x="3" y="9.5" width="26" height="4.5" rx="2.2" />
+      <rect x="6" y="13.5" width="20" height="13.5" rx="2.5" />
+      <rect x="12.5" y="17.3" width="7" height="6.2" rx="1" />
+      <line x1="14" y1="19.3" x2="17.5" y2="19.3" />
+      <line x1="14" y1="21.7" x2="17.5" y2="21.7" />
+    </svg>
+  )
+}
+
 function MicroOndesIcon(props) {
   return (
     <svg {...common} {...props}>
@@ -91,6 +105,7 @@ function FlameIcon(props) {
 const ICONS = {
   four: FourIcon,
   poele: PoeleIcon,
+  cocotte: CocotteIcon,
   airfryer: AirfryerIcon,
   friteuse: FriteuseIcon,
   micro_ondes: MicroOndesIcon,
@@ -105,6 +120,7 @@ export function getCookingIcon(key) {
 export const COOKING_MODES = [
   { key: 'four', label: 'Four' },
   { key: 'poele', label: 'Poêle' },
+  { key: 'cocotte', label: 'Cocotte' },
   { key: 'airfryer', label: 'Airfryer' },
   { key: 'friteuse', label: 'Friteuse' },
   { key: 'micro_ondes', label: 'Micro-ondes' },
