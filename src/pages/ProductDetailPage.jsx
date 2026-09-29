@@ -364,7 +364,7 @@ export default function ProductDetailPage({ id }) {
                     )}
                   </a>
                   <a href={`#produit/${assoc.id}`} className="flex-1 min-w-0">
-                    <p className="font-body text-sm font-semibold leading-snug">
+                    <p className="font-body text-xs font-semibold leading-snug">
                       {getDisplayName(assoc, isPickup)}
                     </p>
                     <p className="font-display text-base text-ink">
@@ -373,7 +373,7 @@ export default function ProductDetailPage({ id }) {
                   </a>
                   <button
                     onClick={() => addItem(assoc, 1, null, getDisplayName(assoc, isPickup))}
-                    className="font-tag text-[11px] uppercase font-semibold bg-ink text-paper px-3 py-2 hover:bg-forest shrink-0"
+                    className="font-tag text-[10px] uppercase font-semibold bg-ink text-paper px-2 py-1.5 hover:bg-forest shrink-0"
                   >
                     Ajouter
                   </button>
