@@ -335,53 +335,53 @@ export default function ProductDetailPage({ id }) {
                 )}
               </div>
             )}
-
-            {associatedProducts.length > 0 && (
-              <div className="mt-auto pt-5 border-t border-ink/15">
-                <p className="font-tag text-xs uppercase text-muted mb-2">
-                  {product.produit_associe_label || 'Idéal en accompagnement'}
-                </p>
-                <div className="flex flex-col gap-2">
-                  {associatedProducts.map((assoc) => (
-                    <div
-                      key={assoc.id}
-                      className="flex items-center gap-3 bg-paper border border-ink/15 p-2"
-                    >
-                      <a
-                        href={`#produit/${assoc.id}`}
-                        className="relative w-24 h-24 shrink-0 bg-stone overflow-hidden"
-                      >
-                        {assoc.photo_url && (
-                          <CroppableImage
-                            src={assoc.photo_url}
-                            alt={assoc.nom}
-                            zoom={assoc.photo_zoom ?? 1}
-                            posX={assoc.photo_pos_x ?? 50}
-                            posY={assoc.photo_pos_y ?? 50}
-                          />
-                        )}
-                      </a>
-                      <a href={`#produit/${assoc.id}`} className="flex-1 min-w-0">
-                        <p className="font-body text-sm font-semibold leading-snug">
-                          {getDisplayName(assoc, isPickup)}
-                        </p>
-                        <p className="font-display text-base text-ink">
-                          {getBasePrice(assoc).toFixed(2)} €
-                        </p>
-                      </a>
-                      <button
-                        onClick={() => addItem(assoc, 1, null, getDisplayName(assoc, isPickup))}
-                        className="font-tag text-[11px] uppercase font-semibold bg-ink text-paper px-3 py-2 hover:bg-forest shrink-0"
-                      >
-                        Ajouter
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {associatedProducts.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-ink/15">
+            <p className="font-tag text-xs uppercase text-muted mb-3 text-center">
+              {product.produit_associe_label || 'Idéal en accompagnement'}
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              {associatedProducts.map((assoc) => (
+                <div
+                  key={assoc.id}
+                  className="flex items-center gap-3 bg-paper border border-ink/15 p-2 w-full sm:w-72"
+                >
+                  <a
+                    href={`#produit/${assoc.id}`}
+                    className="relative w-24 h-24 shrink-0 bg-stone overflow-hidden"
+                  >
+                    {assoc.photo_url && (
+                      <CroppableImage
+                        src={assoc.photo_url}
+                        alt={assoc.nom}
+                        zoom={assoc.photo_zoom ?? 1}
+                        posX={assoc.photo_pos_x ?? 50}
+                        posY={assoc.photo_pos_y ?? 50}
+                      />
+                    )}
+                  </a>
+                  <a href={`#produit/${assoc.id}`} className="flex-1 min-w-0">
+                    <p className="font-body text-sm font-semibold leading-snug">
+                      {getDisplayName(assoc, isPickup)}
+                    </p>
+                    <p className="font-display text-base text-ink">
+                      {getBasePrice(assoc).toFixed(2)} €
+                    </p>
+                  </a>
+                  <button
+                    onClick={() => addItem(assoc, 1, null, getDisplayName(assoc, isPickup))}
+                    className="font-tag text-[11px] uppercase font-semibold bg-ink text-paper px-3 py-2 hover:bg-forest shrink-0"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-10 border border-ink/15 bg-paper">
           <div className="flex border-b border-ink/15">
