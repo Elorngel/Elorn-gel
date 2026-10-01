@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { resizeImageFile } from '../lib/imageResize'
+
+// Extrait le nom de fichier du bucket "photos-produits" à partir d'une URL
+// publique, pour pouvoir supprimer l'ancienne photo quand on la remplace.
+function storageFileName(url) {
+  if (!url) return null
+  const marker = '/photos-produits/'
+  const i = url.indexOf(marker)
+  return i === -1 ? null : decodeURIComponent(url.slice(i + marker.length))
+}
 
 export function useProducts() {
   const [products, setProducts] = useState([])
@@ -36,20 +46,38 @@ export function useProducts() {
   }, [fetchProducts])
 
   const updateProduct = useCallback(async (id, changes) => {
+    // Si la photo change, on retient l'ancienne pour la supprimer du stockage
+    // une fois le changement confirmé — sinon elle reste coincée pour toujours
+    // (c'est ce qui a fait gonfler le stockage avant le ménage du 01/10/2026).
+    let previousPhotoUrl = null
+    if (changes.photo_url !== undefined) {
+      const { data } = await supabase.from('produits').select('photo_url').eq('id', id).single()
+      previousPhotoUrl = data?.photo_url ?? null
+    }
+
     const { error } = await supabase.from('produits').update(changes).eq('id', id)
     if (error) throw error
     setProducts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, ...changes } : p))
     )
+
+    if (previousPhotoUrl && previousPhotoUrl !== changes.photo_url) {
+      const oldName = storageFileName(previousPhotoUrl)
+      if (oldName) {
+        // Best-effort : un échec ici ne doit jamais faire échouer la sauvegarde du produit.
+        supabase.storage.from('photos-produits').remove([oldName]).catch(() => {})
+      }
+    }
   }, [])
 
   const uploadPhoto = useCallback(async (id, file) => {
-    const fileExt = file.name.split('.').pop()
+    const toSend = await resizeImageFile(file)
+    const fileExt = toSend.name.split('.').pop()
     const filePath = `${id}-${Date.now()}.${fileExt}`
 
     const { error: uploadError } = await supabase.storage
       .from('photos-produits')
-      .upload(filePath, file, { upsert: true })
+      .upload(filePath, toSend, { upsert: true })
 
     if (uploadError) throw uploadError
 
@@ -62,12 +90,13 @@ export function useProducts() {
   }, [updateProduct])
 
   const uploadPhotoOnly = useCallback(async (id, file) => {
-    const fileExt = file.name.split('.').pop()
+    const toSend = await resizeImageFile(file)
+    const fileExt = toSend.name.split('.').pop()
     const filePath = `${id}-${Date.now()}.${fileExt}`
 
     const { error: uploadError } = await supabase.storage
       .from('photos-produits')
-      .upload(filePath, file, { upsert: true })
+      .upload(filePath, toSend, { upsert: true })
 
     if (uploadError) throw uploadError
 
@@ -96,9 +125,16 @@ export function useProducts() {
   }, [fetchProducts])
 
   const deleteProduct = useCallback(async (id) => {
+    const { data: produit } = await supabase.from('produits').select('photo_url').eq('id', id).single()
+
     const { error } = await supabase.from('produits').delete().eq('id', id)
     if (error) throw error
     setProducts((prev) => prev.filter((p) => p.id !== id))
+
+    const oldName = storageFileName(produit?.photo_url)
+    if (oldName) {
+      supabase.storage.from('photos-produits').remove([oldName]).catch(() => {})
+    }
   }, [])
 
   return {
