@@ -8,8 +8,10 @@ export function PriceModeProvider({ children }) {
   const { settings } = useSiteSettings()
 
   // Le pourcentage de remise se règle dans l'admin (Réglages du site).
-  // 10 par défaut tant que la base ne renvoie rien.
-  const discountPercent = settings?.remise_retrait ?? 10
+  // 0 par défaut tant que les réglages ne sont pas encore chargés, pour ne
+  // jamais afficher un "-X%" qui ne correspond à rien (sinon un court flash
+  // apparaît au chargement de la page, avant que la vraie valeur n'arrive).
+  const discountPercent = settings?.remise_retrait ?? 0
 
   const getPickupPrice = (priceLivraison) =>
     priceLivraison * (1 - discountPercent / 100)
