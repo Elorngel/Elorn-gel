@@ -11,7 +11,7 @@ import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
@@ -63,6 +63,7 @@ export default function ProductDetailPage({ id }) {
   // au calcul du prix au kg — sinon ça reste calé sur le poids du produit
   // de base, faux dès qu'on change de taille.
   const variantWeightKg = selectedVariant ? parseWeightToKg(selectedVariant.poids) : null
+  const variantUnit = selectedVariant ? parseWeightUnit(selectedVariant.poids) : null
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
   const displayPrice = isPickup ? pickupPrice : basePrice
@@ -201,9 +202,9 @@ export default function ProductDetailPage({ id }) {
               <div className="border-y border-ink/15 py-4 mb-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    {getPricePerUnitLabel(product, basePrice, variantWeightKg) && (
+                    {getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit) && (
                       <p className="font-tag text-xs text-muted mb-1">
-                        {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
+                        {getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit)}
                       </p>
                     )}
                     <div className="flex items-baseline gap-3 flex-wrap">

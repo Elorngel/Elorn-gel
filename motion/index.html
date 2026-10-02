@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bontin — motion 9:16</title>
+<!--
+  Motion design vertical 9:16 (1080 × 1920), 15 secondes, aux couleurs du site.
+  · Aperçu : ouvrir ce fichier dans Chrome → l'animation tourne en boucle.
+    (ajouter ?t=7.5 à la fin de l'adresse pour figer l'image à 7,5 s)
+  · Vidéo MP4 : dans le Terminal, depuis le dossier motion/ → npm run render
+  · L'adresse affichée à la fin se change dans CONFIG.url (en bas du fichier).
+-->
+<style>
+  @font-face { font-family: 'Bebas Neue'; font-weight: 400; src: url(assets/fonts/bebas-neue-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 500; src: url(assets/fonts/public-sans-latin-500-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 600; src: url(assets/fonts/public-sans-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 700; src: url(assets/fonts/public-sans-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 800; src: url(assets/fonts/public-sans-latin-800-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Condensed'; font-weight: 600; src: url(assets/fonts/roboto-condensed-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Condensed'; font-weight: 700; src: url(assets/fonts/roboto-condensed-latin-700-normal.woff2) format('woff2'); }
+
+  /* Palette du site (src/index.css) */
+  :root {
+    --ink: #1b231a;
+    --forest: #23422b;
+    --forest-light: #3c6b46;
+    --stone: #e7e2d3;
+    --paper: #fbfaf6;
+    --rust: #a34428;
+    --muted: #6b7264;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #0e130e; overflow: hidden; }
+
+  #stage {
+    position: absolute; left: 50%; top: 50%;
+    width: 1080px; height: 1920px; overflow: hidden;
+    background: var(--forest); color: var(--ink);
+    font-family: 'Public Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.render #stage { left: 0; top: 0; transform: none !important; }
+
+  .scene { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  .abs { position: absolute; }
+  .shade { position: absolute; inset: 0; background: var(--ink); opacity: 0; z-index: 50; }
+  /* Bande de couleur qui précède chaque écran quand il monte */
+  .lead { position: absolute; left: 0; top: -90px; width: 100%; height: 90px; }
+
+  .display {
+    font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+    line-height: .86; text-transform: uppercase; white-space: nowrap;
+  }
+  .tag {
+    font-family: 'Roboto Condensed', sans-serif; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .14em; white-space: nowrap;
+  }
+  /* Masque pour faire monter le texte ligne par ligne (marge haute pour les accents) */
+  .mask { display: block; overflow: hidden; padding: .16em 0 .04em; margin: -.16em 0 -.04em; }
+  .mask > .in { display: block; }
+
+  .ph { overflow: hidden; background: var(--stone); flex: none; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Étiquette « 01 | LE CATALOGUE » */
+  .chip {
+    display: flex; height: 66px;
+    font-family: 'Roboto Condensed', sans-serif; font-weight: 700; font-size: 34px;
+    letter-spacing: .14em; text-transform: uppercase; white-space: nowrap;
+  }
+  .chip .n { background: var(--ink); color: var(--paper); padding: 0 16px 0 20px; display: flex; align-items: center; }
+  .chip .t { border: 3px solid var(--ink); border-left: 0; color: var(--ink); padding: 0 18px 0 22px; display: flex; align-items: center; }
+  .chip.inv .n { background: var(--paper); color: var(--ink); }
+  .chip.inv .t { border-color: var(--paper); color: var(--paper); }
+
+  /* Étiquette papier qui porte le logo */
+  .label { background: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .label::after { content: ''; position: absolute; inset: 10px; border: 2px solid rgba(27, 35, 26, .16); }
+  .label img { display: block; }
+
+  /* Tampon brique incliné, même forme que le badge « retrait » des fiches */
+  .stamp {
+    background: var(--rust); color: var(--paper); text-align: center;
+    clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%);
+  }
+
+  .check { fill: none; stroke: currentColor; stroke-width: 3.4; stroke-linecap: square; stroke-linejoin: miter; stroke-dasharray: 100 102; }
+  .tap { width: 150px; height: 150px; border: 6px solid var(--rust); opacity: 0; }
+
+  /* ---------- 1. Accroche ---------- */
+  #s1 { background: var(--forest); }
+  .opt { width: 936px; height: 216px; }
+  .opt-frame { position: absolute; inset: 0; border: 4px solid rgba(251, 250, 246, .45); }
+  .opt-label { position: absolute; left: 40px; top: 0; height: 100%; display: flex; align-items: center; font-size: 178px; color: var(--paper); padding-top: 10px; }
+  .opt-fill { position: absolute; inset: 0; background: var(--paper); clip-path: inset(0 100% 0 0); }
+  .opt-fill .opt-label { color: var(--forest); }
+  #s1-stamp { padding: 22px 58px 22px; z-index: 5; }
+  #s1-stamp b { display: block; font-family: 'Bebas Neue'; font-weight: 400; font-size: 112px; line-height: .86; padding-top: 8px; }
+  #s1-stamp i { display: block; font-style: normal; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 32px; letter-spacing: .22em; margin-top: 8px; text-transform: uppercase; }
+  .strip { display: flex; gap: 22px; }
+  .strip .ph { width: 400px; height: 400px; }
+
+  /* ---------- 2. Catalogue ---------- */
+  #s2 { background: var(--stone); }
+  .num { display: flex; font-size: 520px; line-height: 1; color: var(--ink); }
+  .num .mask { padding: 0; margin: .06em 0 0; height: .77em; }
+  .num .mask .in { margin-top: -.06em; }
+  .odo { height: .77em; margin-top: .06em; overflow: hidden; }
+  .odo .win { display: block; height: 1em; margin-top: -.06em; }
+  .odo .roll span { display: block; height: 1em; text-align: center; }
+  .band { left: -80px; width: 1240px; height: 108px; background: var(--ink); overflow: hidden; transform: rotate(-4deg); }
+  .band-track {
+    display: flex; align-items: center; height: 100%; white-space: nowrap;
+    font-family: 'Bebas Neue'; font-size: 76px; line-height: 1; color: var(--paper); padding-top: 8px;
+  }
+  .band-track .sq { display: inline-block; width: 22px; height: 22px; background: var(--rust); margin: -8px 34px 0; flex: none; }
+  .wall { overflow: hidden; }
+  .col { position: absolute; top: 0; width: 296px; display: flex; flex-direction: column; gap: 24px; }
+  .col .ph { width: 296px; height: 296px; position: relative; }
+  .mini-badge {
+    position: absolute; left: 14px; top: 14px; background: var(--ink); color: var(--paper);
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 26px; padding: 6px 12px;
+  }
+
+  /* ---------- 3. Créneaux ---------- */
+  #s3 { background: var(--paper); }
+  .day { width: 170px; height: 150px; border: 3px solid var(--ink); }
+  .day span, .day-fill span {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue'; font-size: 82px; line-height: 1; padding-top: 10px;
+  }
+  .day-fill { position: absolute; inset: -3px; background: var(--ink); color: var(--paper); clip-path: inset(0 100% 0 0); }
+  .day-fill span { inset: 3px; }
+  .slot { width: 936px; height: 118px; border: 3px solid var(--ink); }
+  .slot-row { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 118px 0 36px; }
+  .slot-name { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 38px; letter-spacing: .12em; text-transform: uppercase; }
+  .slot-time { font-family: 'Bebas Neue'; font-size: 82px; line-height: 1; padding-top: 10px; }
+  .slot-fill { position: absolute; inset: -3px; background: var(--forest); color: var(--paper); clip-path: inset(0 100% 0 0); }
+  .slot-fill .slot-row { inset: 3px; }
+  .slot-fill svg { position: absolute; right: 38px; top: 50%; width: 58px; height: 58px; margin-top: -29px; }
+
+  /* ---------- 4. Promos ---------- */
+  #s4 { background: var(--ink); }
+  .card { width: 856px; background: var(--paper); }
+  .card-photo { position: relative; height: 470px; overflow: hidden; }
+  .card-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 58%; display: block; }
+  .badge {
+    position: absolute; left: 26px; top: 26px; background: var(--ink); color: var(--paper);
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 38px; padding: 10px 18px; letter-spacing: .02em;
+  }
+  .card-info { padding: 30px 36px 36px; }
+  .card-name { font-family: 'Public Sans'; font-weight: 800; font-size: 46px; line-height: 1.05; text-transform: uppercase; color: var(--ink); }
+  .card-weight { font-family: 'Roboto Condensed'; font-weight: 600; font-size: 32px; color: var(--muted); margin-top: 10px; }
+  .price-row { display: flex; align-items: flex-end; justify-content: flex-end; gap: 28px; height: 136px; }
+  .old { position: relative; font-family: 'Roboto Condensed'; font-weight: 600; font-size: 48px; color: var(--muted); margin-bottom: 18px; }
+  .old .strike { position: absolute; left: -6px; right: -6px; top: 50%; height: 5px; margin-top: -2px; background: var(--muted); transform-origin: 0 50%; }
+  .new { font-family: 'Bebas Neue'; font-size: 160px; line-height: .86; color: var(--ink); }
+  .btn { position: relative; height: 100px; margin-top: 22px; background: var(--ink); color: var(--paper); }
+  .btn span, .btn-fill span {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 18px;
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 38px; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .btn-fill { position: absolute; inset: 0; background: var(--forest); clip-path: inset(0 100% 0 0); }
+  .btn-fill svg { width: 44px; height: 44px; }
+  #s4-stamp { padding: 18px 60px 16px; }
+  #s4-stamp b { display: block; font-family: 'Bebas Neue'; font-weight: 400; font-size: 168px; line-height: .86; padding-top: 12px; }
+
+  /* ---------- 5. Cuisson ---------- */
+  #s5 { background: var(--stone); }
+  .fiche { width: 936px; background: var(--paper); border: 2px solid rgba(27, 35, 26, .14); }
+  .fiche-head { display: flex; gap: 30px; align-items: center; padding: 26px; border-bottom: 2px solid rgba(27, 35, 26, .12); }
+  .thumb { width: 150px; height: 150px; }
+  .fiche-name { font-family: 'Public Sans'; font-weight: 800; font-size: 46px; line-height: 1.05; text-transform: uppercase; }
+  .fiche-cat { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 28px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 12px; }
+  .cook { display: flex; align-items: center; gap: 34px; height: 132px; padding: 0 34px; border-bottom: 2px solid rgba(27, 35, 26, .1); }
+  .cook svg { width: 98px; height: 98px; color: var(--rust); flex: none; overflow: visible; }
+  .cook svg * { stroke-dasharray: 100 102; }
+  .cook-label { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 28px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .cook-value { font-family: 'Bebas Neue'; font-size: 80px; line-height: .9; color: var(--ink); padding-top: 6px; }
+  .fiche-foot { padding: 28px 34px 30px; }
+  .okchip {
+    display: inline-flex; align-items: center; gap: 16px; border: 3px solid var(--forest); color: var(--forest);
+    padding: 14px 22px 14px 18px; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 32px;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  .okchip svg { width: 40px; height: 40px; }
+
+  /* ---------- 6. Appel à l'action ---------- */
+  #s6 { background: var(--forest); }
+  .center { left: 0; width: 1080px; display: flex; justify-content: center; }
+  .cta-btn {
+    position: relative; height: 132px; padding: 0 64px; background: var(--rust); color: var(--paper);
+    display: flex; align-items: center; gap: 28px;
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 54px; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .cta-btn svg { width: 58px; height: 58px; }
+  .cta-url { font-family: 'Public Sans'; font-weight: 700; font-size: 52px; color: var(--paper); letter-spacing: .01em; }
+  .cta-url u { text-decoration: none; border-bottom: 4px solid var(--rust); padding-bottom: 4px; }
+  .cta-note { font-family: 'Roboto Condensed'; font-weight: 600; font-size: 29px; letter-spacing: .1em; text-transform: uppercase; color: rgba(231, 226, 211, .78); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ============ 1. ACCROCHE : livraison ou retrait ============ -->
+  <section class="scene" id="s1">
+    <div class="shade"></div>
+    <div class="abs label" id="s1-label" style="left:72px; top:220px; width:300px; height:156px">
+      <img src="assets/img/logo.png" alt="" style="width:250px">
+    </div>
+    <div class="abs tag" id="s1-kicker" style="left:406px; top:246px; font-size:34px; line-height:1.25; color:var(--stone)">
+      <span class="mask"><span class="in">Surgelés</span></span>
+      <span class="mask"><span class="in">Plouédern (29)</span></span>
+    </div>
+
+    <div class="abs display" id="s1-title" data-fit="940" style="left:68px; top:468px; font-size:262px; color:var(--paper)">
+      <span class="mask"><span class="in">Le surgelé,</span></span>
+    </div>
+
+    <div class="abs opt" id="opt1" style="left:72px; top:744px">
+      <div class="opt-frame"></div>
+      <div class="opt-label display"><span class="mask"><span class="in">En livraison</span></span></div>
+      <div class="opt-fill"><div class="opt-label display"><span class="mask"><span class="in">En livraison</span></span></div></div>
+    </div>
+    <div class="abs opt" id="opt2" style="left:72px; top:984px">
+      <div class="opt-frame"></div>
+      <div class="opt-label display"><span class="mask"><span class="in">Ou en retrait</span></span></div>
+      <div class="opt-fill"><div class="opt-label display"><span class="mask"><span class="in">Ou en retrait</span></span></div></div>
+    </div>
+
+    <div class="abs stamp" id="s1-stamp" style="left:640px; top:1166px">
+      <b>Gratuit</b><i>sous 24h</i>
+    </div>
+
+    <div class="abs strip" id="s1-strip" style="left:0; top:1318px">
+      <div class="ph"><img src="assets/img/feuilletes-stjacques.jpg" alt=""></div>
+      <div class="ph"><img src="assets/img/cones-caramel.jpg" alt=""></div>
+      <div class="ph"><img src="assets/img/brochettes-poulet.jpg" alt=""></div>
+      <div class="ph"><img src="assets/img/crepes.jpg" alt=""></div>
+      <div class="ph"><img src="assets/img/langoustines.jpg" alt=""></div>
+      <div class="ph"><img src="assets/img/pizza-royale.jpg" alt=""></div>
+    </div>
+  </section>
+
+  <!-- ============ 2. CATALOGUE ============ -->
+  <section class="scene" id="s2">
+    <div class="lead" style="background:var(--rust)"></div>
+    <div class="shade"></div>
+    <div class="abs chip" id="s2-chip" style="left:72px; top:220px"><span class="n">01</span><span class="t">Le catalogue</span></div>
+
+    <div class="abs num display" id="s2-num" style="left:56px; top:300px">
+      <span class="mask"><span class="in">+</span></span>
+      <span class="odo" data-digit="2" data-spins="1"></span>
+      <span class="odo" data-digit="5" data-spins="1"></span>
+      <span class="odo" data-digit="0" data-spins="2"></span>
+    </div>
+    <div class="abs display" id="s2-ref" style="left:70px; top:756px; font-size:150px; color:var(--forest)">
+      <span class="mask"><span class="in">références</span></span>
+    </div>
+
+    <div class="abs band" id="s2-band" style="top:912px">
+      <div class="band-track" id="s2-track"></div>
+    </div>
+
+    <div class="abs wall" id="s2-wall" style="left:72px; top:1052px; width:936px; height:868px">
+      <div class="col" id="c1" style="left:0">
+        <div class="ph"><img src="assets/img/pave-saumon.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/macarons.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/frites.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/souris-agneau.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/croissants.jpg" alt=""></div>
+      </div>
+      <div class="col" id="c2" style="left:320px">
+        <div class="ph"><img src="assets/img/magret-canard.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/aiguillette-poulet.jpg" alt=""><span class="mini-badge">PROMO -10%</span></div>
+        <div class="ph"><img src="assets/img/fraisier.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/chipolatas.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/cones-caramel.jpg" alt=""></div>
+      </div>
+      <div class="col" id="c3" style="left:640px">
+        <div class="ph"><img src="assets/img/lasagne-boeuf.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/noix-stjacques.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/pizza-royale.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/blanquette-mer.jpg" alt=""></div>
+        <div class="ph"><img src="assets/img/crepes.jpg" alt=""></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. CRÉNEAUX ============ -->
+  <section class="scene" id="s3">
+    <div class="lead" style="background:var(--ink)"></div>
+    <div class="shade"></div>
+    <div class="abs chip" id="s3-chip" style="left:72px; top:220px"><span class="n">02</span><span class="t">Les créneaux</span></div>
+
+    <div class="abs display" id="s3-title" style="left:68px; top:330px; font-size:218px">
+      <span class="mask" style="color:var(--ink)"><span class="in">Votre jour,</span></span>
+      <span class="mask" style="color:var(--forest)"><span class="in">votre heure.</span></span>
+    </div>
+
+    <div class="abs" id="s3-days" style="left:72px; top:770px; width:936px; display:flex; justify-content:space-between">
+      <div class="day" style="position:relative"><span>Lun</span><div class="day-fill"><span>Lun</span></div></div>
+      <div class="day" style="position:relative"><span>Mar</span><div class="day-fill"><span>Mar</span></div></div>
+      <div class="day" style="position:relative"><span>Mer</span><div class="day-fill"><span>Mer</span></div></div>
+      <div class="day" style="position:relative"><span>Jeu</span><div class="day-fill"><span>Jeu</span></div></div>
+      <div class="day" style="position:relative"><span>Ven</span><div class="day-fill"><span>Ven</span></div></div>
+    </div>
+
+    <div class="abs" id="s3-slots" style="left:72px; top:962px; display:flex; flex-direction:column; gap:20px">
+      <div class="slot" style="position:relative">
+        <div class="slot-row"><span class="slot-name">Matin</span><span class="slot-time">9h00 – 12h00</span></div>
+        <div class="slot-fill"><div class="slot-row"><span class="slot-name">Matin</span><span class="slot-time">9h00 – 12h00</span></div></div>
+      </div>
+      <div class="slot" style="position:relative">
+        <div class="slot-row"><span class="slot-name">Midi</span><span class="slot-time">12h00 – 14h00</span></div>
+        <div class="slot-fill">
+          <div class="slot-row"><span class="slot-name">Midi</span><span class="slot-time">12h00 – 14h00</span></div>
+          <svg viewBox="0 0 24 24"><polyline class="check" pathLength="100" points="3.5,12.5 9.5,18.5 20.5,6"/></svg>
+        </div>
+      </div>
+      <div class="slot" style="position:relative">
+        <div class="slot-row"><span class="slot-name">Après-midi</span><span class="slot-time">14h00 – 18h00</span></div>
+        <div class="slot-fill"><div class="slot-row"><span class="slot-name">Après-midi</span><span class="slot-time">14h00 – 18h00</span></div></div>
+      </div>
+    </div>
+
+    <div class="abs" id="s3-caption" style="left:72px; top:1432px; font-family:'Public Sans'; font-weight:600; font-size:38px; color:var(--muted)">
+      Livraison ou retrait, du lundi au vendredi.
+    </div>
+    <div class="abs tap" id="s3-tap1"></div>
+    <div class="abs tap" id="s3-tap2"></div>
+  </section>
+
+  <!-- ============ 4. PROMOS ============ -->
+  <section class="scene" id="s4">
+    <div class="lead" style="background:var(--rust)"></div>
+    <div class="shade"></div>
+    <div class="abs chip inv" id="s4-chip" style="left:72px; top:220px"><span class="n">03</span><span class="t">Bons plans</span></div>
+
+    <div class="abs display" id="s4-title" style="left:68px; top:326px; font-size:236px; color:var(--paper)">
+      <span class="mask"><span class="in">Les promos</span></span>
+    </div>
+
+    <div class="abs card" id="s4-card" style="left:112px; top:574px">
+      <div class="card-photo">
+        <img src="assets/img/aiguillette-poulet.jpg" alt="">
+        <div class="badge" id="s4-badge">PROMO -10%</div>
+      </div>
+      <div class="card-info">
+        <div class="card-name">Aiguillette de poulet</div>
+        <div class="card-weight">1 kg</div>
+        <div class="price-row">
+          <div class="old" id="s4-old">13,29 €<div class="strike" id="s4-strike"></div></div>
+          <div class="new" id="s4-new">13,29 €</div>
+        </div>
+        <div class="btn" id="s4-btn">
+          <span>Ajouter au panier</span>
+          <div class="btn-fill" id="s4-btn-fill">
+            <span>Ajouté au panier
+              <svg viewBox="0 0 24 24"><polyline class="check" pathLength="100" points="3.5,12.5 9.5,18.5 20.5,6"/></svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs stamp" id="s4-stamp" style="left:656px; top:546px"><b>-10%</b></div>
+    <div class="abs tap" id="s4-tap"></div>
+  </section>
+
+  <!-- ============ 5. CUISSON ============ -->
+  <section class="scene" id="s5">
+    <div class="lead" style="background:var(--forest)"></div>
+    <div class="shade"></div>
+    <div class="abs chip" id="s5-chip" style="left:72px; top:220px"><span class="n">04</span><span class="t">Fiches produits</span></div>
+
+    <div class="abs display" id="s5-title" style="left:68px; top:330px; font-size:218px">
+      <span class="mask" style="color:var(--ink)"><span class="in">La cuisson</span></span>
+      <span class="mask" style="color:var(--rust)"><span class="in">expliquée</span></span>
+    </div>
+
+    <div class="abs fiche" id="s5-fiche" style="left:72px; top:770px">
+      <div class="fiche-head">
+        <div class="ph thumb"><img src="assets/img/blanquette-mer.jpg" alt=""></div>
+        <div>
+          <div class="fiche-name">Blanquette de la mer</div>
+          <div class="fiche-cat">Plats cuisinés</div>
+        </div>
+      </div>
+      <div class="cook">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect pathLength="100" x="4" y="6" width="24" height="22" rx="1.5"/>
+          <line pathLength="100" x1="4" y1="12" x2="28" y2="12"/>
+          <line pathLength="100" x1="9" y1="9" x2="11" y2="9"/>
+          <line pathLength="100" x1="14" y1="9" x2="20" y2="9"/>
+          <rect pathLength="100" x="8" y="16" width="16" height="9" rx="1"/>
+          <path pathLength="100" d="M12 20.5c.8-1.4 1.6-1.4 2.4 0s1.6 1.4 2.4 0 1.6-1.4 2.4 0"/>
+        </svg>
+        <div><div class="cook-label">Four</div><div class="cook-value">25 min · 210°C</div></div>
+      </div>
+      <div class="cook">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect pathLength="100" x="5" y="4" width="22" height="25" rx="7"/>
+          <circle pathLength="100" cx="10.5" cy="10" r="1.8"/>
+          <rect pathLength="100" x="14.5" y="8.5" width="8.5" height="3" rx="1.5"/>
+          <line pathLength="100" x1="5" y1="14.5" x2="27" y2="14.5"/>
+          <rect pathLength="100" x="13" y="17" width="6" height="9" rx="3"/>
+        </svg>
+        <div><div class="cook-label">Airfryer</div><div class="cook-value">15-18 min · 180°C</div></div>
+      </div>
+      <div class="cook">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect pathLength="100" x="3" y="7" width="26" height="18" rx="1.5"/>
+          <rect pathLength="100" x="5.5" y="9.5" width="15" height="13" rx="0.8"/>
+          <path pathLength="100" d="M9 16c.7-1.2 1.4-1.2 2.1 0s1.4 1.2 2.1 0 1.4-1.2 2.1 0"/>
+          <line pathLength="100" x1="24.5" y1="12" x2="24.5" y2="12.01"/>
+          <line pathLength="100" x1="24.5" y1="16" x2="24.5" y2="16.01"/>
+          <line pathLength="100" x1="24.5" y1="20" x2="24.5" y2="20.01"/>
+        </svg>
+        <div><div class="cook-label">Micro-ondes</div><div class="cook-value">12 min · 850 W</div></div>
+      </div>
+      <div class="fiche-foot">
+        <div class="okchip" id="s5-ok">
+          <svg viewBox="0 0 24 24"><polyline class="check" pathLength="100" points="3.5,12.5 9.5,18.5 20.5,6"/></svg>
+          Sans décongélation préalable
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. APPEL À L'ACTION ============ -->
+  <section class="scene" id="s6">
+    <div class="lead" style="background:var(--rust)"></div>
+    <div class="abs label" id="s6-label" style="left:290px; top:262px; width:500px; height:262px">
+      <img src="assets/img/logo.png" alt="" style="width:420px">
+    </div>
+    <div class="abs center display" id="s6-title" style="top:618px; font-size:232px; color:var(--paper); flex-direction:column; align-items:center; text-align:center">
+      <span class="mask"><span class="in">Commandez</span></span>
+      <span class="mask"><span class="in">en ligne</span></span>
+    </div>
+    <div class="abs center" style="top:1104px">
+      <div class="cta-btn" id="s6-btn">
+        <span>Voir le catalogue</span>
+        <svg viewBox="0 0 24 24" id="s6-arrow"><path d="M3 12h16M13 5.5l6.5 6.5-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>
+      </div>
+    </div>
+    <div class="abs center" id="s6-url" style="top:1290px">
+      <span class="mask"><span class="in cta-url"><u id="s6-url-text"></u></span></span>
+    </div>
+    <div class="abs center cta-note" id="s6-note" style="top:1400px">Paiement sur place · à la livraison ou au retrait</div>
+    <div class="abs tap" id="s6-tap"></div>
+  </section>
+
+</div>
+
+<svg id="fx" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// Réglages
+// ---------------------------------------------------------------------------
+const CONFIG = {
+  url: 'elorn-gel.vercel.app',   // adresse affichée sur l'écran final
+  duration: 15,                   // secondes (15 s maximum)
+  fps: 30,                        // images par seconde de la vidéo
+  shutter: 0.5,                   // flou de mouvement (0 = aucun, 0.5 = obturateur à 180°)
+}
+
+const params = new URLSearchParams(location.search)
+const RENDER = params.has('render')
+if (RENDER) document.body.classList.add('render')
+
+const $ = (s, root = document) => root.querySelector(s)
+const $$ = (s, root = document) => [...root.querySelectorAll(s)]
+
+gsap.config({ force3D: false })
+const tl = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } })
+
+// Fonctions rappelées après chaque image (compteurs, surbrillance du choix…)
+const afterRender = []
+const sync = () => afterRender.forEach((f) => f())
+
+// --- Petits outils d'animation -------------------------------------------
+// Texte qui monte depuis son masque
+const rise = (targets, at, { d = 0.75, stagger = 0.08, ease = 'expo.out' } = {}) =>
+  tl.fromTo(targets, { yPercent: 140 }, { yPercent: 0, duration: d, stagger, ease }, at)
+
+// Volet qui découvre un élément de gauche à droite
+const wipe = (targets, at, { d = 0.5, ease = 'expo.out', stagger = 0 } = {}) =>
+  tl.fromTo(targets, { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: d, ease, stagger }, at)
+
+// Carré brique qui « tape » sur un élément (curseur de sélection)
+function offsetIn(el, scene) {
+  let x = 0, y = 0, n = el
+  while (n && n !== scene) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent }
+  return { x, y }
+}
+function tapOn(tap, target, at) {
+  const { x, y } = offsetIn(target, tap.closest('.scene'))
+  gsap.set(tap, { left: x + target.offsetWidth / 2 - 75, top: y + target.offsetHeight / 2 - 75 })
+  tl.fromTo(tap, { scale: 1.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.18, ease: 'power2.out' }, at)
+    .to(tap, { scale: 0.72, opacity: 0, duration: 0.32, ease: 'power2.in' }, at + 0.2)
+}
+
+// Passage d'un écran à l'autre : le suivant monte, le précédent s'efface
+function transition(from, to, at, d = 0.5) {
+  tl.set(to, { visibility: 'visible' }, at)
+  tl.fromTo(to, { y: 1920 + 90 }, { y: 0, duration: d, ease: 'power4.inOut' }, at)
+  tl.to(from, { y: -380, duration: d, ease: 'power4.inOut' }, at)
+  const shade = $('.shade', from)
+  if (shade) tl.to(shade, { opacity: 0.6, duration: d, ease: 'power2.in' }, at)
+  tl.set(from, { visibility: 'hidden' }, at + d)
+}
+
+// Flou de mouvement (vidéo seulement) : un élément qui se déplace vite reçoit
+// un flou vertical proportionnel à la distance parcourue depuis l'image
+// précédente, comme une caméra dont l'obturateur reste ouvert un instant.
+const blurred = []
+function trackBlur(measureEl, filterEl = measureEl) {
+  const ns = 'http://www.w3.org/2000/svg'
+  const id = 'mb' + blurred.length
+  const filter = document.createElementNS(ns, 'filter')
+  filter.setAttribute('id', id)
+  filter.setAttribute('x', '-2%')
+  filter.setAttribute('width', '104%')
+  filter.setAttribute('y', '-40%')
+  filter.setAttribute('height', '180%')
+  filter.setAttribute('color-interpolation-filters', 'sRGB')
+  const gauss = document.createElementNS(ns, 'feGaussianBlur')
+  gauss.setAttribute('stdDeviation', '0 0')
+  filter.appendChild(gauss)
+  $('#fx').appendChild(filter)
+  blurred.push({ measureEl, filterEl, id, gauss, last: null })
+}
+function applyBlur(sequential) {
+  blurred.forEach((b) => {
+    const y = gsap.getProperty(b.measureEl, 'y')
+    const dy = sequential && b.last !== null ? Math.abs(y - b.last) : 0
+    b.last = y
+    const sigma = Math.min(140, dy * CONFIG.shutter * 0.3)
+    if (sigma < 0.6) {
+      b.filterEl.style.filter = ''
+    } else {
+      b.gauss.setAttribute('stdDeviation', `0 ${sigma.toFixed(2)}`)
+      b.filterEl.style.filter = `url(#${b.id})`
+    }
+  })
+}
+
+// Ajuste la taille d'un titre pour qu'il tienne dans la largeur voulue
+function fit(el, max) {
+  let fs = parseFloat(getComputedStyle(el).fontSize)
+  while (el.scrollWidth > max && fs > 20) {
+    fs -= 2
+    el.style.fontSize = fs + 'px'
+  }
+  return fs
+}
+
+// ---------------------------------------------------------------------------
+// Construction de la timeline
+// ---------------------------------------------------------------------------
+function build() {
+  const S = [1, 2, 3, 4, 5, 6].map((i) => $('#s' + i))
+  gsap.set(S.slice(1), { y: 1920 + 90, visibility: 'hidden' })
+  S.forEach((s, i) => gsap.set(s, { zIndex: i + 1 }))
+
+  // Moments de bascule entre les écrans
+  const T = [2.35, 4.85, 7.35, 9.85, 12.25]
+  T.forEach((at, i) => transition(S[i], S[i + 1], at))
+
+  // ===== 1. Accroche ======================================================
+  wipe('#s1-label', 0.0, { d: 0.6 })
+  tl.fromTo('#s1-label img', { x: -40 }, { x: 0, duration: 0.8 }, 0.05)
+  rise('#s1-kicker .in', 0.12)
+  rise('#s1-title .in', 0.1, { d: 0.8 })
+  wipe('#opt1 .opt-frame', 0.28, { d: 0.6 })
+  rise('#opt1 > .opt-label .in', 0.3)
+  wipe('#opt2 .opt-frame', 0.4, { d: 0.6 })
+  rise('#opt2 > .opt-label .in', 0.42)
+  tl.fromTo('#s1-strip', { y: 140 }, { y: 0, duration: 0.9 }, 0)
+  tl.fromTo('#s1-strip', { x: 30 }, { x: -760, duration: 2.9, ease: 'none' }, 0)
+
+  // Surbrillance « Livraison » puis glissement vers « Retrait » (comme le sélecteur du site)
+  const tog = { reveal: 0, p: 0 }
+  const fills = [$('#opt1 .opt-fill'), $('#opt2 .opt-fill')]
+  afterRender.push(() => {
+    const H = 216, STEP = 240
+    const Y = tog.p * STEP
+    const right = (1 - tog.reveal) * 936
+    fills.forEach((el, k) => {
+      const o = k * STEP
+      const top = Math.min(H, Math.max(0, Y - o))
+      const bottom = Math.min(H, Math.max(0, o - Y))
+      el.style.clipPath = top + bottom >= H
+        ? 'inset(0 0 100% 0)'
+        : `inset(${top}px ${right}px ${bottom}px 0px)`
+    })
+  })
+  tl.to(tog, { reveal: 1, duration: 0.42, ease: 'power3.inOut' }, 0.95)
+  tl.to(tog, { p: 1, duration: 0.42, ease: 'power3.inOut' }, 1.5)
+
+  tl.fromTo('#s1-stamp', { scale: 2.3, rotation: -26, opacity: 0 },
+    { scale: 1, rotation: -6, opacity: 1, duration: 0.42, ease: 'back.out(2.2)' }, 1.9)
+  tl.to('#opt2', { keyframes: { y: [0, 10, -4, 0] }, duration: 0.24, ease: 'power1.out' }, 1.98)
+
+  // ===== 2. Catalogue =====================================================
+  const t2 = T[0]
+  wipe('#s2-chip', t2 + 0.25)
+  rise('#s2-num .mask .in', t2 + 0.15, { d: 0.6 })
+  $$('#s2-num .odo').forEach((odo, i) => {
+    const roll = $('.roll', odo)
+    const steps = +odo.dataset.spins * 10 + +odo.dataset.digit
+    tl.fromTo(roll, { y: 0 }, { y: () => -steps * roll.firstElementChild.offsetHeight, duration: 1.1 + i * 0.15, ease: 'power4.out' }, t2 + 0.2 + i * 0.05)
+  })
+  rise('#s2-ref .in', t2 + 0.4)
+  wipe('#s2-band', t2 + 0.3, { d: 0.6, ease: 'power3.out' })
+  tl.fromTo('#s2-track', { x: 0 }, { x: -1500, duration: 3.1, ease: 'none' }, t2)
+  tl.fromTo('#s2-wall .ph', { y: 260, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.9, stagger: { each: 0.035, from: 'start' } }, t2 + 0.3)
+  tl.fromTo('#c1', { y: 0 }, { y: -330, duration: 3.1, ease: 'none' }, t2)
+  tl.fromTo('#c2', { y: -560 }, { y: -230, duration: 3.1, ease: 'none' }, t2)
+  tl.fromTo('#c3', { y: -140 }, { y: -470, duration: 3.1, ease: 'none' }, t2)
+
+  // ===== 3. Créneaux ======================================================
+  const t3 = T[1]
+  wipe('#s3-chip', t3 + 0.25)
+  rise('#s3-title .in', t3 + 0.15, { d: 0.8, stagger: 0.09 })
+  tl.fromTo('#s3-days .day', { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.05 }, t3 + 0.35)
+  tl.fromTo('#s3-slots .slot', { x: 90, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, stagger: 0.07 }, t3 + 0.5)
+  tl.fromTo('#s3-caption', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, t3 + 0.8)
+  const day = $$('#s3-days .day')[2]
+  const slot = $$('#s3-slots .slot')[1]
+  tapOn($('#s3-tap1'), day, t3 + 0.95)
+  wipe($('.day-fill', day), t3 + 1.0, { d: 0.32, ease: 'power3.out' })
+  tapOn($('#s3-tap2'), slot, t3 + 1.45)
+  wipe($('.slot-fill', slot), t3 + 1.5, { d: 0.38, ease: 'power3.out' })
+  tl.fromTo($('.slot-fill .check', slot), { strokeDashoffset: 101, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, t3 + 1.72)
+
+  // ===== 4. Promos ========================================================
+  const t4 = T[2]
+  wipe('#s4-chip', t4 + 0.25)
+  rise('#s4-title .in', t4 + 0.15, { d: 0.8 })
+  tl.fromTo('#s4-card', { y: 520, rotation: 5 }, { y: 0, rotation: 0, duration: 0.9 }, t4 + 0.2)
+  tl.fromTo('#s4-stamp', { scale: 2.4, rotation: 30, opacity: 0 },
+    { scale: 1, rotation: 8, opacity: 1, duration: 0.42, ease: 'back.out(2)' }, t4 + 0.85)
+  tl.to('#s4-card', { keyframes: { x: [0, -12, 8, -3, 0] }, duration: 0.26, ease: 'none' }, t4 + 0.93)
+  tl.fromTo('#s4-badge', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' }, t4 + 0.95)
+  tl.fromTo('#s4-old', { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4 }, t4 + 1.0)
+  tl.fromTo('#s4-strike', { scaleX: 0 }, { scaleX: 1, duration: 0.25, ease: 'power2.inOut' }, t4 + 1.15)
+  const price = { v: 13.29 }
+  afterRender.push(() => { $('#s4-new').textContent = price.v.toFixed(2).replace('.', ',') + ' €' })
+  tl.fromTo(price, { v: 13.29 }, { v: 11.96, duration: 0.55, ease: 'power2.out' }, t4 + 1.05)
+  tl.fromTo('#s4-new', { color: '#1b231a' }, { color: '#a34428', duration: 0.25, ease: 'none' }, t4 + 1.05)
+  tl.to('#s4-new', { keyframes: { scale: [1, 1.12, 1] }, duration: 0.4, ease: 'power2.out' }, t4 + 1.05)
+  gsap.set('#s4-new', { transformOrigin: '100% 100%' })
+  tapOn($('#s4-tap'), $('#s4-btn'), t4 + 1.7)
+  wipe('#s4-btn-fill', t4 + 1.75, { d: 0.36, ease: 'power3.out' })
+  tl.fromTo('#s4-btn-fill .check', { strokeDashoffset: 101, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, duration: 0.28, ease: 'power2.out' }, t4 + 1.95)
+
+  // ===== 5. Cuisson =======================================================
+  const t5 = T[3]
+  wipe('#s5-chip', t5 + 0.25)
+  rise('#s5-title .in', t5 + 0.15, { d: 0.8, stagger: 0.09 })
+  tl.fromTo('#s5-fiche', { y: 480 }, { y: 0, duration: 0.9 }, t5 + 0.22)
+  tl.fromTo('#s5-fiche .cook', { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, stagger: 0.1 }, t5 + 0.5)
+  $$('#s5-fiche .cook svg').forEach((svg, i) => {
+    const parts = svg.querySelectorAll('*')
+    tl.fromTo(parts, { strokeDashoffset: 101 }, { strokeDashoffset: 0, duration: 0.75, ease: 'power2.inOut', stagger: 0.04 }, t5 + 0.55 + i * 0.1)
+    tl.fromTo(parts, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'none', stagger: 0.04 }, t5 + 0.55 + i * 0.1)
+  })
+  wipe('#s5-ok', t5 + 1.15, { d: 0.5, ease: 'power3.out' })
+  tl.fromTo('#s5-ok .check', { strokeDashoffset: 101, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, t5 + 1.35)
+
+  // ===== 6. Appel à l'action ==============================================
+  const t6 = T[4]
+  gsap.set('#s6-label', { transformOrigin: '50% 0%' })
+  tl.fromTo('#s6-label', { y: -300, rotation: -14 }, { y: 0, rotation: 0, duration: 1.2, ease: 'elastic.out(1, 0.55)' }, t6 + 0.2)
+  rise('#s6-title .in', t6 + 0.3, { d: 0.8, stagger: 0.09 })
+  wipe('#s6-btn', t6 + 0.65, { d: 0.55 })
+  tl.fromTo('#s6-arrow', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5 }, t6 + 0.9)
+  rise('#s6-url .in', t6 + 0.85, { d: 0.7 })
+  tl.fromTo('#s6-note', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7 }, t6 + 1.0)
+  tapOn($('#s6-tap'), $('#s6-btn'), t6 + 1.6)
+  tl.to('#s6-btn', { keyframes: { scale: [1, 0.94, 1] }, duration: 0.42, ease: 'power2.out' }, t6 + 1.62)
+  tl.to('#s6-arrow', { keyframes: { x: [0, 14, 0] }, duration: 0.6, ease: 'sine.inOut' }, t6 + 2.15)
+
+  // Éléments qui reçoivent le flou de mouvement
+  S.forEach((scene) => trackBlur(scene))
+  $$('#s2-num .odo').forEach((odo) => trackBlur($('.roll', odo), $('.win', odo)))
+  ;['#s4-card', '#s5-fiche', '#s6-label'].forEach((sel) => trackBlur($(sel)))
+
+  // Durée totale exacte
+  tl.set({}, {}, CONFIG.duration)
+}
+
+// ---------------------------------------------------------------------------
+// Éléments générés (compteur, bandeau des rayons, adresse)
+// ---------------------------------------------------------------------------
+function prepare() {
+  $$('.odo').forEach((odo) => {
+    const steps = +odo.dataset.spins * 10 + +odo.dataset.digit
+    const digits = Array.from({ length: steps + 1 }, (_, i) => `<span>${i % 10}</span>`).join('')
+    odo.innerHTML = `<span class="win"><span class="roll" style="display:block">${digits}</span></span>`
+  })
+
+  const rayons = ['Viandes', 'Poissons', 'Plats cuisinés', 'Glaces', 'Boulangerie', 'Apéritifs', 'Accompagnements', 'Fruits de mer', 'Épicerie']
+  const once = rayons.map((r) => `<span>${r}</span><span class="sq"></span>`).join('')
+  $('#s2-track').innerHTML = once + once + once
+
+  $('#s6-url-text').textContent = CONFIG.url
+
+  // Titres trop larges : on réduit la police jusqu'à ce qu'ils tiennent
+  $$('[data-fit]').forEach((el) => fit(el, +el.dataset.fit))
+  $$('.opt').forEach((opt) => {
+    const [base, copy] = $$('.opt-label', opt)
+    const fs = fit(base, 860)
+    copy.style.fontSize = fs + 'px'
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Démarrage
+// ---------------------------------------------------------------------------
+function layout() {
+  if (RENDER) return
+  const s = Math.min(innerWidth / 1080, innerHeight / 1920)
+  gsap.set('#stage', { xPercent: -50, yPercent: -50, scale: s })
+}
+
+async function start() {
+  const faces = [
+    '400 100px "Bebas Neue"',
+    '500 40px "Public Sans"', '600 40px "Public Sans"', '700 40px "Public Sans"', '800 40px "Public Sans"',
+    '600 40px "Roboto Condensed"', '700 40px "Roboto Condensed"',
+  ]
+  await Promise.all(faces.map((f) => document.fonts.load(f, 'AÉé€°')))
+  await document.fonts.ready
+  await Promise.all($$('img').map((img) => img.decode().catch(() => {})))
+
+  prepare()
+  build()
+
+  let lastT = null
+  window.__seek = (t) => {
+    tl.seek(t, false)
+    sync()
+    if (RENDER) applyBlur(lastT !== null && Math.abs(t - lastT - 1 / CONFIG.fps) < 1e-6)
+    lastT = t
+  }
+  window.__duration = CONFIG.duration
+  window.__fps = CONFIG.fps
+  window.__ready = true
+
+  if (RENDER) { window.__seek(0); return }
+  layout()
+  addEventListener('resize', layout)
+  if (params.has('t')) {
+    window.__seek(parseFloat(params.get('t')))
+  } else {
+    tl.eventCallback('onUpdate', sync)
+    tl.repeat(-1).play(0)
+  }
+}
+start()
+</script>
+</body>
+</html>

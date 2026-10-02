@@ -58,6 +58,23 @@ export function parseWeightToKg(text) {
   return null
 }
 
+// Déduit l'unité d'affichage (kg ou l) depuis un texte de poids/volume comme
+// "500 g", "1,5kg" ou "2x1l" — pour que le prix au kg/litre affiché utilise
+// la bonne unité même quand il est calculé à partir d'un conditionnement
+// (ex : variante "6 l") plutôt que du champ "Prix au poids" de la fiche produit.
+export function parseWeightUnit(text) {
+  if (!text) return null
+  const cleaned = String(text).toLowerCase().replace(',', '.').replace(/\s+/g, '')
+
+  const multi = cleaned.match(/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)(kg|g|l|ml)$/)
+  if (multi) return multi[3] === 'l' || multi[3] === 'ml' ? 'l' : 'kg'
+
+  const simple = cleaned.match(/^(\d+(?:\.\d+)?)(kg|g|l|ml)$/)
+  if (simple) return simple[2] === 'l' || simple[2] === 'ml' ? 'l' : 'kg'
+
+  return null
+}
+
 // Prix au kg (ou au litre) affiché sous le produit. Se recalcule en
 // permanence à partir du prix actuel si un poids/volume de référence a
 // été renseigné ; sinon retombe sur le texte saisi à la main (produits
@@ -65,14 +82,19 @@ export function parseWeightToKg(text) {
 // weightKgOverride permet de calculer sur le poids réel du conditionnement
 // choisi (ex: 250g pour "1x250g") plutôt que sur le poids de référence du
 // produit de base — sinon le prix au kg reste faux dès qu'on change de taille.
-export function getPricePerUnitLabel(product, referencePrice, weightKgOverride = null) {
+// unitOverride fait pareil pour l'unité (kg ou l) : un conditionnement en
+// litres (ex: variante "6 l") doit afficher "€/l", pas retomber sur le champ
+// "Unité" de la fiche produit (pensé pour le poids de référence, pas les
+// conditionnements).
+export function getPricePerUnitLabel(product, referencePrice, weightKgOverride = null, unitOverride = null) {
   const weightKg =
     weightKgOverride ??
     (product.poids_reference && product.poids_reference > 0 ? product.poids_reference : null)
   if (weightKg) {
     const price = referencePrice ?? product.prix_livraison
     const perUnit = price / weightKg
-    return `${perUnit.toFixed(2)} €/${product.unite_reference || 'kg'}`
+    const unit = unitOverride || product.unite_reference || 'kg'
+    return `${perUnit.toFixed(2)} €/${unit}`
   }
   return product.prix_par_kg || null
 }

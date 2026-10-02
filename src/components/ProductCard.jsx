@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product, supplierLogo }) {
@@ -23,6 +23,7 @@ export default function ProductCard({ product, supplierLogo }) {
   const referencePrice = defaultVariant ? defaultVariant.prix_livraison : product.prix_livraison
   const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
   const variantWeightKg = defaultVariant ? parseWeightToKg(defaultVariant.poids) : null
+  const variantUnit = defaultVariant ? parseWeightUnit(defaultVariant.poids) : null
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
   const displayName = getDisplayName(product, isPickup)
@@ -104,7 +105,7 @@ export default function ProductCard({ product, supplierLogo }) {
 
         <div className="mt-auto">
           <p className="font-tag text-[10px] text-muted mb-0.5 text-right">
-            {getPricePerUnitLabel(product, basePrice, variantWeightKg)}
+            {getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit)}
           </p>
 
           <div className="flex items-end justify-between gap-2 mb-3">
