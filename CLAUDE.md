@@ -49,15 +49,38 @@ email+mot de passe, historique de commandes sur `#mes-commandes`, panier
 toujours utilisable sans compte).
 
 **En cours / à faire avant le vrai nom de domaine** :
-1. Questionnaire de conseil produit (occasions type "Apéro" → suggestions
-   ciblées, avec un recours à l'IA seulement si le questionnaire ne suffit
-   pas — voir décision du 17/09 dans l'historique de conversation si besoin
-   de redétailler).
-2. Mentions légales / CGV / CGU : rédigées mais retirées du site en attendant
+1. Mentions légales / CGV / CGU : rédigées mais retirées du site en attendant
    le nom de domaine définitif et la désignation d'un médiateur de la
    consommation (à vérifier si le groupe AUDACIER en a déjà un).
 
+**En sommeil (code et données conservés, juste désactivé le 02/10/2026)** :
+- Questionnaire de conseil produit ("Besoin d'un conseil ?" → occasions type
+  "Apéro" → suggestions ciblées, avec recours à l'IA en dernier ressort). Build
+  complet et fonctionnel (admin "Occasions", assistant client, fonction
+  Supabase `conseil-produit`, journal des interactions) mais pas d'utilité
+  perçue pour l'instant. Désactivé en retirant simplement le bouton d'accès
+  dans `Header.jsx` (desktop + mobile) — tout le reste (table `occasions` et
+  son contenu, la fonction Edge, `ConseilProvider`/`ConseilAssistant` montés
+  dans `App.jsx`) est intact. Pour réactiver : remettre le bouton "Besoin d'un
+  conseil ?" dans `Header.jsx` (voir l'historique git pour le code exact
+  retiré).
+
 ## Points de vigilance connus
+- **Quota Supabase (incident du 01/10/2026)** : le projet (offre Free) a
+  dépassé son quota gratuit "Cached Egress" à cause des photos produits
+  stockées en pleine résolution (522 Mo, jusqu'à 8 Mo/photo, souvent en PNG
+  pour des photos). Nettoyé une fois (bucket ramené à ~41 Mo) et corrigé pour
+  l'avenir : tout envoi de photo (produit, bannière, logo fournisseur) passe
+  désormais par `src/lib/imageResize.js` (redimensionnement + compression
+  côté navigateur avant envoi), et remplacer/supprimer une photo supprime
+  maintenant l'ancien fichier du stockage (`updateProduct`/`updateSettings`
+  dans les hooks, + policy SQL `supabase-suppression-photos.sql` nécessaire
+  pour que la suppression soit autorisée). Pendant le nettoyage, les logos
+  fournisseurs (table `fournisseurs`, même bucket `photos-produits`) ont été
+  supprimés par erreur puis restaurés — si un futur nettoyage du stockage est
+  refait, bien vérifier les **trois** sources avant de considérer un fichier
+  orphelin : `produits.photo_url`, `parametres_site.hero_url`/`logo_url`, et
+  `fournisseurs.logo_url`.
 - **Resend** : le domaine `elorngel.fr` n'est pas encore vérifié → les emails
   clients (confirmation de commande, réinitialisation de mot de passe) ne
   partent pas encore. Ne pas être surpris si un test d'email échoue

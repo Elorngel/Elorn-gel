@@ -1,13 +1,37 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useCategories } from '../hooks/useCategories'
-import { useConseil } from '../context/ConseilContext'
+import { supabase } from '../lib/supabaseClient'
+
+const MIN_CHARS_SUGGESTIONS = 3
+const MAX_SUGGESTIONS = 8
+
+function SearchSuggestions({ suggestions, onSelect }) {
+  return (
+    <div className="absolute left-0 right-0 top-full mt-1 bg-paper border border-ink/20 shadow-sm z-30 py-1">
+      {suggestions.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          onClick={() => onSelect(p.id)}
+          className="w-full text-left px-3 py-2 hover:bg-stone flex items-baseline justify-between gap-2"
+        >
+          <span className="font-body text-sm text-ink truncate">{p.nom}</span>
+          {p.categorie && (
+            <span className="font-tag text-[10px] uppercase text-muted shrink-0">
+              {p.categorie}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 export default function Header({ activeCategory }) {
   const { mode, setMode, discountPercent } = usePriceMode()
-  const { open: openConseil } = useConseil()
   const { settings } = useSiteSettings()
   const { categories, subcategoriesByCategory } = useCategories()
   const { itemCount } = useCart()
@@ -15,22 +39,59 @@ export default function Header({ activeCategory }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openCategory, setOpenCategory] = useState(null)
   const [openMobileCategory, setOpenMobileCategory] = useState(null)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchProducts, setSearchProducts] = useState([])
   const navRef = useRef(null)
+  const searchRef = useRef(null)
+  const mobileSearchRef = useRef(null)
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (navRef.current && !navRef.current.contains(e.target)) {
         setOpenCategory(null)
       }
+      if (
+        searchRef.current && !searchRef.current.contains(e.target) &&
+        mobileSearchRef.current && !mobileSearchRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Liste légère (nom + catégorie seulement) pour les suggestions de recherche,
+  // chargée une fois — pas besoin des variantes/prix ici.
+  useEffect(() => {
+    supabase
+      .from('produits')
+      .select('id, nom, categorie')
+      .eq('actif', true)
+      .order('nom', { ascending: true })
+      .then(({ data }) => setSearchProducts(data || []))
+  }, [])
+
+  const suggestions = useMemo(() => {
+    const q = searchText.trim().toLowerCase()
+    if (q.length < MIN_CHARS_SUGGESTIONS) return []
+    return searchProducts
+      .filter((p) => p.nom.toLowerCase().includes(q))
+      .slice(0, MAX_SUGGESTIONS)
+  }, [searchText, searchProducts])
+
+  const goToProduct = (id) => {
+    setShowSuggestions(false)
+    setMenuOpen(false)
+    setSearchText('')
+    window.location.hash = `#produit/${id}`
+  }
+
   const handleSearch = (e) => {
     e.preventDefault()
     const query = searchText.trim()
     if (query) {
+      setShowSuggestions(false)
       setMenuOpen(false)
       window.location.hash = `#recherche/${encodeURIComponent(query)}`
     }
@@ -76,22 +137,31 @@ export default function Header({ activeCategory }) {
 
         {/* Bloc recherche + toggle + panier : visible seulement à partir de md */}
         <div className="hidden md:flex items-center gap-3">
-          <form onSubmit={handleSearch} className="flex border border-ink/40">
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Rechercher un produit…"
-              className="w-40 px-2.5 py-1.5 text-sm font-body bg-transparent focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-2.5 border-l border-ink/40 font-tag text-xs uppercase hover:bg-stone"
-              aria-label="Rechercher"
-            >
-              OK
-            </button>
-          </form>
+          <div ref={searchRef} className="relative">
+            <form onSubmit={handleSearch} className="flex border border-ink/40">
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => {
+                  setSearchText(e.target.value)
+                  setShowSuggestions(true)
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder="Rechercher un produit…"
+                className="w-56 lg:w-64 px-2.5 py-1.5 text-sm font-body bg-transparent focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="px-2.5 border-l border-ink/40 font-tag text-xs uppercase hover:bg-stone shrink-0"
+                aria-label="Rechercher"
+              >
+                OK
+              </button>
+            </form>
+            {showSuggestions && suggestions.length > 0 && (
+              <SearchSuggestions suggestions={suggestions} onSelect={goToProduct} />
+            )}
+          </div>
 
           <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase">
             <button
@@ -220,42 +290,35 @@ export default function Header({ activeCategory }) {
             </div>
           )
         })}
-        <button
-          onClick={openConseil}
-          className="md:ml-auto font-tag text-xs uppercase font-semibold text-forest border border-forest px-3 py-1 hover:bg-forest hover:text-paper transition-colors"
-        >
-          Besoin d'un conseil ?
-        </button>
       </nav>
 
       {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
       {menuOpen && (
         <div className="md:hidden border-t border-ink/15 bg-paper px-4 py-4">
-          <button
-            onClick={() => {
-              setMenuOpen(false)
-              openConseil()
-            }}
-            className="w-full mb-4 font-tag text-xs uppercase font-semibold text-forest border border-forest py-2.5 hover:bg-forest hover:text-paper transition-colors"
-          >
-            Besoin d'un conseil ?
-          </button>
-
-          <form onSubmit={handleSearch} className="flex border border-ink/40 mb-4">
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Rechercher un produit…"
-              className="flex-1 min-w-0 px-2.5 py-2 text-sm font-body bg-transparent focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-3 border-l border-ink/40 font-tag text-xs uppercase shrink-0"
-            >
-              OK
-            </button>
-          </form>
+          <div ref={mobileSearchRef} className="relative mb-4">
+            <form onSubmit={handleSearch} className="flex border border-ink/40">
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => {
+                  setSearchText(e.target.value)
+                  setShowSuggestions(true)
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder="Rechercher un produit…"
+                className="flex-1 min-w-0 px-2.5 py-2 text-sm font-body bg-transparent focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="px-3 border-l border-ink/40 font-tag text-xs uppercase shrink-0"
+              >
+                OK
+              </button>
+            </form>
+            {showSuggestions && suggestions.length > 0 && (
+              <SearchSuggestions suggestions={suggestions} onSelect={goToProduct} />
+            )}
+          </div>
 
           <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase mb-4">
             <button
