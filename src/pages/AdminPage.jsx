@@ -641,6 +641,12 @@ export default function AdminPage() {
                       value={product.poids}
                       onSave={(v) => updateProduct(product.id, { poids: v })}
                     />
+                    {product.variantes?.length > 0 && (
+                      <p className="font-tag text-[10px] text-rust mt-1 leading-tight">
+                        Non utilisé : ce produit a des conditionnements, modifie leur
+                        poids via "Fiche" → Conditionnements.
+                      </p>
+                    )}
                   </td>
                   <td className="p-2">
                     <EditableCell
