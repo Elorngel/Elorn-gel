@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, isPromoActive, getPromoPercent } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product, supplierLogo }) {
@@ -24,6 +24,7 @@ export default function ProductCard({ product, supplierLogo }) {
   const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
   const variantWeightKg = defaultVariant ? parseWeightToKg(defaultVariant.poids) : null
   const variantUnit = defaultVariant ? parseWeightUnit(defaultVariant.poids) : null
+  const promoActive = isPromoActive(product)
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
   const displayName = getDisplayName(product, isPickup)
@@ -66,9 +67,9 @@ export default function ProductCard({ product, supplierLogo }) {
           </div>
         )}
 
-        {product.en_promo && !product.en_rupture && (
+        {promoActive && !product.en_rupture && (
           <div className="absolute left-2 top-2 bg-ink text-paper font-tag font-bold text-xs px-2 py-1">
-            PROMO -{product.taux_promo}%
+            PROMO -{Math.round(getPromoPercent(product))}%
           </div>
         )}
 
@@ -129,7 +130,7 @@ export default function ProductCard({ product, supplierLogo }) {
             )}
 
             <div className="flex items-baseline justify-end gap-2 flex-wrap">
-              {product.en_promo && (
+              {promoActive && (
                 <span className="font-tag text-[11px] text-muted line-through">
                   {referencePrice.toFixed(2)} €
                 </span>
@@ -146,7 +147,7 @@ export default function ProductCard({ product, supplierLogo }) {
               ) : (
                 <span
                   className={`font-display text-2xl leading-none ${
-                    product.en_promo ? 'text-rust' : isPickup ? 'text-forest' : 'text-ink'
+                    promoActive ? 'text-rust' : isPickup ? 'text-forest' : 'text-ink'
                   }`}
                 >
                   {basePrice.toFixed(2)} €

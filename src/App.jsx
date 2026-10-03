@@ -7,6 +7,7 @@ import { useCategories } from './hooks/useCategories'
 import { useProducts } from './hooks/useProducts'
 import { useSuppliers } from './hooks/useSuppliers'
 import { getSupplierLogo } from './lib/suppliers'
+import { isPromoActive } from './lib/pricing'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
@@ -39,7 +40,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
     !promoOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
 
   if (promoOnly) {
-    visibleProducts = publishedProducts.filter((p) => p.en_promo)
+    visibleProducts = publishedProducts.filter(isPromoActive)
     title = 'Promotions'
   } else if (petitsFormatsOnly) {
     visibleProducts = publishedProducts.filter(isExclusiveRetrait)

@@ -38,7 +38,10 @@ vert forêt / pierre / brique, coins carrés, typographie condensée façon
 ## État d'avancement (au 17/09/2026)
 
 **Fait** : catalogue complet, double prix livraison/retrait, créneaux,
-panier + commande sans paiement en ligne, promotions, variantes de
+panier + commande sans paiement en ligne, promotions (taux % OU prix promo,
+colonnes `taux_promo`/`prix_promo`, avec dates de début/fin incluses
+`promo_debut`/`promo_fin` — logique centralisée dans `src/lib/pricing.js` :
+`getPromoStatus`/`isPromoActive`), variantes de
 conditionnement, logos fournisseurs (avec option fond blanc par fournisseur),
 modes de cuisson (Four/Poêle/Airfryer/Friteuse/Micro-ondes : durée en plage
 possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
@@ -61,7 +64,8 @@ toujours utilisable sans compte).
   perçue pour l'instant. Désactivé en retirant simplement le bouton d'accès
   dans `Header.jsx` (desktop + mobile) — tout le reste (table `occasions` et
   son contenu, la fonction Edge, `ConseilProvider`/`ConseilAssistant` montés
-  dans `App.jsx`) est intact. Pour réactiver : remettre le bouton "Besoin d'un
+  dans `App.jsx`) est intact. À la réactivation, penser à aligner le calcul de
+  promo de la fonction Edge (`conseil.ts`) sur `pricing.js` (prix promo + dates). Pour réactiver : remettre le bouton "Besoin d'un
   conseil ?" dans `Header.jsx` (voir l'historique git pour le code exact
   retiré).
 

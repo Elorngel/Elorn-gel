@@ -11,7 +11,7 @@ import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, isPromoActive, getPromoPercent } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
@@ -64,6 +64,7 @@ export default function ProductDetailPage({ id }) {
   // de base, faux dès qu'on change de taille.
   const variantWeightKg = selectedVariant ? parseWeightToKg(selectedVariant.poids) : null
   const variantUnit = selectedVariant ? parseWeightUnit(selectedVariant.poids) : null
+  const promoActive = isPromoActive(product)
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
   const displayPrice = isPickup ? pickupPrice : basePrice
@@ -208,7 +209,7 @@ export default function ProductDetailPage({ id }) {
                       </p>
                     )}
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      {product.en_promo && (
+                      {promoActive && (
                         <span className="font-tag text-sm text-muted line-through">
                           {referencePrice.toFixed(2)} €
                         </span>
@@ -220,14 +221,19 @@ export default function ProductDetailPage({ id }) {
                       )}
                       <span
                         className={`font-display text-4xl ${
-                          product.en_promo && !isPickup ? 'text-rust' : 'text-ink'
+                          promoActive && !isPickup ? 'text-rust' : 'text-ink'
                         }`}
                       >
                         {displayPrice.toFixed(2)} €
                       </span>
-                      {product.en_promo && (
+                      {promoActive && (
                         <span className="font-tag text-xs uppercase font-semibold text-paper bg-ink px-2 py-1">
-                          Promo -{product.taux_promo}%
+                          Promo -{Math.round(getPromoPercent(product))}%
+                        </span>
+                      )}
+                      {promoActive && product.promo_fin && (
+                        <span className="font-tag text-xs text-muted">
+                          jusqu'au {product.promo_fin.split('-').reverse().join('/')}
                         </span>
                       )}
                       {isPickup && discountPercent > 0 && (

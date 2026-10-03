@@ -2,12 +2,13 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
 import { usePriceMode } from '../context/PriceModeContext'
 import CroppableImage from './CroppableImage'
+import { isPromoActive } from '../lib/pricing'
 
 export default function Hero() {
   const { settings } = useSiteSettings()
   const { products } = useProducts()
   const { mode, setMode } = usePriceMode()
-  const promoCount = products.filter((p) => p.actif !== false && p.en_promo).length
+  const promoCount = products.filter((p) => p.actif !== false && isPromoActive(p)).length
 
   return (
     <>

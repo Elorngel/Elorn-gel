@@ -1,11 +1,45 @@
+// Date du jour au format AAAA-MM-JJ, à l'heure locale (pas UTC, sinon la
+// promo changerait à 1h ou 2h du matin au lieu de minuit).
+function todayLocal() {
+  const d = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+// Pourcentage de remise d'une promo, quelle que soit sa période. Si un prix
+// promo a été saisi, on en déduit le pourcentage équivalent par rapport au
+// prix normal du produit (appliqué ensuite à chaque conditionnement).
+export function getPromoPercent(product) {
+  const { prix_promo, prix_livraison } = product
+  if (prix_promo > 0 && prix_livraison > 0 && prix_promo < prix_livraison) {
+    return (1 - prix_promo / prix_livraison) * 100
+  }
+  return product.taux_promo > 0 ? product.taux_promo : 0
+}
+
+// 'inactive' (promo non cochée ou sans remise), 'scheduled' (début à venir),
+// 'active' ou 'expired'. Les dates de début et de fin sont incluses ; une
+// date vide = pas de limite de ce côté.
+export function getPromoStatus(product, today = todayLocal()) {
+  if (!product.en_promo || getPromoPercent(product) <= 0) return 'inactive'
+  if (product.promo_debut && today < product.promo_debut) return 'scheduled'
+  if (product.promo_fin && today > product.promo_fin) return 'expired'
+  return 'active'
+}
+
+export function isPromoActive(product) {
+  return getPromoStatus(product) === 'active'
+}
+
 // Renvoie le prix "livraison" effectif d'un produit : son prix normal,
-// ou son prix réduit s'il est en promo. C'est CE prix qui sert ensuite de
-// base au calcul de la remise retrait (les deux se cumulent).
+// ou son prix réduit s'il est en promo (et dans sa période de validité).
+// C'est CE prix qui sert ensuite de base au calcul de la remise retrait
+// (les deux se cumulent).
 // referencePrice permet de calculer sur le prix d'un conditionnement
 // choisi plutôt que sur le prix de base du produit.
 export function getBasePrice(product, referencePrice = product.prix_livraison) {
-  if (product.en_promo && product.taux_promo > 0) {
-    return referencePrice * (1 - product.taux_promo / 100)
+  if (isPromoActive(product)) {
+    return referencePrice * (1 - getPromoPercent(product) / 100)
   }
   return referencePrice
 }

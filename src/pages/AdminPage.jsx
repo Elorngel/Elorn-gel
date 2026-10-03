@@ -12,7 +12,7 @@ import CategoriesPanel from '../components/CategoriesPanel'
 import OccasionsPanel from '../components/OccasionsPanel'
 import SuppliersPanel from '../components/SuppliersPanel'
 import NewProductModal from '../components/NewProductModal'
-import { getPricePerUnitLabel } from '../lib/pricing'
+import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 
 function EditableCell({ value, onSave, type = 'text', width = 'w-full', multiline = false }) {
   const [draft, setDraft] = useState(value ?? '')
@@ -41,6 +41,119 @@ function EditableCell({ value, onSave, type = 'text', width = 'w-full', multilin
         if (draft !== value) onSave(draft)
       }}
     />
+  )
+}
+
+const PROMO_STATUS_LABELS = {
+  active: { text: 'Active', className: 'text-forest' },
+  scheduled: { text: 'Programmée (pas encore commencée)', className: 'text-muted' },
+  expired: { text: 'Terminée (plus affichée)', className: 'text-rust' },
+}
+
+function PromoEditor({ product, onSave }) {
+  const [taux, setTaux] = useState(product.taux_promo > 0 ? product.taux_promo : '')
+  const [prix, setPrix] = useState(product.prix_promo ?? '')
+  const [debut, setDebut] = useState(product.promo_debut ?? '')
+  const [fin, setFin] = useState(product.promo_fin ?? '')
+  const status = PROMO_STATUS_LABELS[getPromoStatus(product)]
+  const datesInversees = debut && fin && fin < debut
+
+  const inputClass =
+    'bg-transparent border-b border-ink/20 hover:border-ink/40 focus:border-forest focus:outline-none font-body text-xs py-1'
+
+  return (
+    <div className="flex flex-col gap-1 min-w-[150px]">
+      <button
+        onClick={() => onSave({ en_promo: !product.en_promo })}
+        className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
+          product.en_promo ? 'border-rust bg-rust text-paper' : 'border-ink/40 text-ink'
+        }`}
+      >
+        {product.en_promo ? 'En promo' : 'Promo'}
+      </button>
+
+      {product.en_promo && (
+        <>
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              placeholder="Taux"
+              className={`${inputClass} w-14`}
+              value={taux}
+              onChange={(e) => setTaux(e.target.value)}
+              onBlur={() => {
+                const v = parseFloat(taux) || 0
+                if (v !== (product.taux_promo || 0)) onSave({ taux_promo: v, prix_promo: null })
+              }}
+            />
+            <span className="font-tag text-xs">%</span>
+            <span className="font-tag text-[10px] text-muted">ou</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="Prix"
+              className={`${inputClass} w-16`}
+              value={prix}
+              onChange={(e) => setPrix(e.target.value)}
+              onBlur={() => {
+                const v = parseFloat(prix)
+                if (isNaN(v) || v <= 0) {
+                  if (product.prix_promo != null) onSave({ prix_promo: null })
+                } else if (v !== product.prix_promo) {
+                  onSave({ prix_promo: v, taux_promo: 0 })
+                }
+              }}
+            />
+            <span className="font-tag text-xs">€</span>
+          </div>
+
+          <label className="flex items-center gap-1 font-tag text-[10px] uppercase text-muted">
+            Du
+            <input
+              type="date"
+              className={`${inputClass} flex-1 min-w-0`}
+              value={debut}
+              onChange={(e) => setDebut(e.target.value)}
+              onBlur={() => {
+                if (debut !== (product.promo_debut ?? '')) onSave({ promo_debut: debut || null })
+              }}
+            />
+          </label>
+          <label className="flex items-center gap-1 font-tag text-[10px] uppercase text-muted">
+            Au
+            <input
+              type="date"
+              className={`${inputClass} flex-1 min-w-0`}
+              value={fin}
+              onChange={(e) => setFin(e.target.value)}
+              onBlur={() => {
+                if (fin !== (product.promo_fin ?? '')) onSave({ promo_fin: fin || null })
+              }}
+            />
+          </label>
+
+          {datesInversees ? (
+            <p className="font-tag text-[10px] text-rust leading-tight">
+              La date de fin est avant la date de début.
+            </p>
+          ) : (
+            <p className={`font-tag text-[10px] leading-tight ${status ? status.className : 'text-rust'}`}>
+              {status
+                ? status.text
+                : 'Renseigne un taux ou un prix pour que la promo s’applique.'}
+            </p>
+          )}
+          {!debut && !fin && status && (
+            <p className="font-tag text-[10px] text-muted leading-tight">
+              Sans dates : la promo reste active en permanence.
+            </p>
+          )}
+        </>
+      )}
+    </div>
   )
 }
 
@@ -694,33 +807,11 @@ export default function AdminPage() {
                     </button>
                   </td>
                   <td className="p-2">
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={() =>
-                          updateProduct(product.id, { en_promo: !product.en_promo })
-                        }
-                        className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
-                          product.en_promo
-                            ? 'border-rust bg-rust text-paper'
-                            : 'border-ink/40 text-ink'
-                        }`}
-                      >
-                        {product.en_promo ? 'En promo' : 'Promo'}
-                      </button>
-                      {product.en_promo && (
-                        <div className="flex items-center gap-1">
-                          <EditableCell
-                            type="number"
-                            width="w-14"
-                            value={product.taux_promo}
-                            onSave={(v) =>
-                              updateProduct(product.id, { taux_promo: parseFloat(v) || 0 })
-                            }
-                          />
-                          <span className="font-tag text-xs">%</span>
-                        </div>
-                      )}
-                    </div>
+                    <PromoEditor
+                      key={[product.id, product.en_promo, product.taux_promo, product.prix_promo, product.promo_debut, product.promo_fin].join('|')}
+                      product={product}
+                      onSave={(changes) => updateProduct(product.id, changes)}
+                    />
                   </td>
                   <td className="p-2">
                     <button
