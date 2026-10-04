@@ -512,6 +512,7 @@ export default function AdminPage() {
   const [variantsProduct, setVariantsProduct] = useState(null)
   const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories' | 'occasions' | 'fournisseurs'
   const [searchText, setSearchText] = useState('')
+  const [promoOnly, setPromoOnly] = useState(false)
   const [showNewProductModal, setShowNewProductModal] = useState(false)
 
   const handleDeleteProduct = async (product) => {
@@ -544,15 +545,13 @@ export default function AdminPage() {
     }
   }
 
-  const filteredProducts = searchText.trim()
-    ? products.filter((p) => {
-        const q = searchText.trim().toLowerCase()
-        return (
-          p.nom?.toLowerCase().includes(q) ||
-          p.code_article?.toLowerCase().includes(q)
-        )
-      })
-    : products
+  const promoCount = products.filter((p) => p.en_promo).length
+  const q = searchText.trim().toLowerCase()
+  const filteredProducts = products.filter(
+    (p) =>
+      (!promoOnly || p.en_promo) &&
+      (!q || p.nom?.toLowerCase().includes(q) || p.code_article?.toLowerCase().includes(q))
+  )
 
   if (loading) {
     return <div className="p-8 font-body text-sm text-muted">Chargement du catalogue…</div>
@@ -650,6 +649,16 @@ export default function AdminPage() {
                 placeholder="Rechercher un produit (nom ou référence)…"
                 className="border border-ink/30 px-3 py-2 font-body text-sm w-full max-w-xs focus:border-forest focus:outline-none"
               />
+              <button
+                onClick={() => setPromoOnly((v) => !v)}
+                className={`font-tag text-xs font-semibold uppercase px-3 py-2 border ${
+                  promoOnly
+                    ? 'border-rust bg-rust text-paper'
+                    : 'border-rust text-rust hover:bg-rust/10'
+                }`}
+              >
+                {promoOnly ? 'Promos uniquement' : 'Voir les promos'} ({promoCount})
+              </button>
               {searchText && (
                 <button
                   onClick={() => setSearchText('')}
@@ -668,7 +677,8 @@ export default function AdminPage() {
 
             <p className="font-body text-sm text-muted mb-4">
               {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''}
-              {searchText ? ` trouvé${filteredProducts.length !== 1 ? 's' : ''}` : ''}.
+              {searchText || promoOnly ? ` trouvé${filteredProducts.length !== 1 ? 's' : ''}` : ''}
+              {promoOnly ? ' en promotion (active, programmée ou terminée)' : ''}.
               Clique sur la photo pour la choisir et la régler (molette pour zoomer,
               glisser pour recentrer). Les autres champs se sauvegardent
               automatiquement quand tu cliques ailleurs.
