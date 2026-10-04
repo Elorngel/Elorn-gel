@@ -14,13 +14,16 @@ import SuppliersPanel from '../components/SuppliersPanel'
 import NewProductModal from '../components/NewProductModal'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 
+const NO_SPINNER =
+  '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+
 function EditableCell({ value, onSave, type = 'text', width = 'w-full', multiline = false }) {
   const [draft, setDraft] = useState(value ?? '')
 
   if (multiline) {
     return (
       <textarea
-        rows={2}
+        rows={3}
         className={`${width} bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1 resize-none leading-snug`}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -34,7 +37,9 @@ function EditableCell({ value, onSave, type = 'text', width = 'w-full', multilin
   return (
     <input
       type={type}
-      className={`${width} bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1`}
+      className={`${width} bg-transparent border-b border-transparent hover:border-ink/20 focus:border-forest focus:outline-none font-body text-xs py-1 ${
+        type === 'number' ? NO_SPINNER : ''
+      }`}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => {
@@ -46,8 +51,8 @@ function EditableCell({ value, onSave, type = 'text', width = 'w-full', multilin
 
 const PROMO_STATUS_LABELS = {
   active: { text: 'Active', className: 'text-forest' },
-  scheduled: { text: 'Programmée (pas encore commencée)', className: 'text-muted' },
-  expired: { text: 'Terminée (plus affichée)', className: 'text-rust' },
+  scheduled: { text: 'Programmée', className: 'text-muted' },
+  expired: { text: 'Terminée', className: 'text-rust' },
 }
 
 function PromoEditor({ product, onSave }) {
@@ -62,10 +67,10 @@ function PromoEditor({ product, onSave }) {
     'bg-transparent border-b border-ink/20 hover:border-ink/40 focus:border-forest focus:outline-none font-body text-xs py-1'
 
   return (
-    <div className="flex flex-col gap-1 min-w-[150px]">
+    <div className="flex flex-col gap-1">
       <button
         onClick={() => onSave({ en_promo: !product.en_promo })}
-        className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
+        className={`font-tag text-[10px] uppercase font-semibold px-1 py-1 w-full border ${
           product.en_promo ? 'border-rust bg-rust text-paper' : 'border-ink/40 text-ink'
         }`}
       >
@@ -80,7 +85,7 @@ function PromoEditor({ product, onSave }) {
               step="0.1"
               min="0"
               placeholder="Taux"
-              className={`${inputClass} w-14`}
+              className={`${inputClass} w-12 ${NO_SPINNER}`}
               value={taux}
               onChange={(e) => setTaux(e.target.value)}
               onBlur={() => {
@@ -89,13 +94,15 @@ function PromoEditor({ product, onSave }) {
               }}
             />
             <span className="font-tag text-xs">%</span>
-            <span className="font-tag text-[10px] text-muted">ou</span>
+            <span className="font-tag text-[10px] text-muted ml-1">ou</span>
+          </div>
+          <div className="flex items-center gap-1">
             <input
               type="number"
               step="0.01"
               min="0"
               placeholder="Prix"
-              className={`${inputClass} w-16`}
+              className={`${inputClass} w-14 ${NO_SPINNER}`}
               value={prix}
               onChange={(e) => setPrix(e.target.value)}
               onBlur={() => {
@@ -137,18 +144,18 @@ function PromoEditor({ product, onSave }) {
 
           {datesInversees ? (
             <p className="font-tag text-[10px] text-rust leading-tight">
-              La date de fin est avant la date de début.
+              Fin avant début !
             </p>
           ) : (
             <p className={`font-tag text-[10px] leading-tight ${status ? status.className : 'text-rust'}`}>
               {status
                 ? status.text
-                : 'Renseigne un taux ou un prix pour que la promo s’applique.'}
+                : 'Indique un taux ou un prix.'}
             </p>
           )}
           {!debut && !fin && status && (
             <p className="font-tag text-[10px] text-muted leading-tight">
-              Sans dates : la promo reste active en permanence.
+              Sans dates : toujours active.
             </p>
           )}
         </>
@@ -581,7 +588,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="p-6 max-w-7xl mx-auto">
+      <main className="px-3 py-5 max-w-[1800px] mx-auto">
         <SiteSettingsPanel />
 
         <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase w-fit mb-4">
@@ -668,23 +675,20 @@ export default function AdminPage() {
             </p>
 
         <div className="bg-paper border border-ink/15 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left table-fixed">
             <thead>
-              <tr className="border-b border-ink/15 font-tag text-xs uppercase text-muted">
-                <th className="p-2 w-20">Photo</th>
-                <th className="p-2 w-20">Réf.</th>
-                <th className="p-2 min-w-[200px]">Désignation</th>
-                <th className="p-2">Catégorie</th>
-                <th className="p-2">Sous-catégorie</th>
-                <th className="p-2">Fournisseur</th>
-                <th className="p-2 w-28">Poids</th>
-                <th className="p-2 w-28">Prix livr.</th>
-                <th className="p-2 w-32">Prix / kg</th>
-                <th className="p-2 w-32">Stock</th>
-                <th className="p-2 w-28">Publié</th>
-                <th className="p-2 w-28">Promo</th>
-                <th className="p-2 w-28">Accueil</th>
-                <th className="p-2 w-20">Fiche</th>
+              <tr className="border-b border-ink/15 font-tag text-[11px] uppercase text-muted">
+                <th className="px-1.5 py-2 w-[52px]">Photo</th>
+                <th className="px-1.5 py-2 w-[48px]">Réf.</th>
+                <th className="px-1.5 py-2">Désignation</th>
+                <th className="px-1.5 py-2 w-[150px]">Catégorie</th>
+                <th className="px-1.5 py-2 w-[92px]">Fournisseur</th>
+                <th className="px-1.5 py-2 w-[74px]">Poids</th>
+                <th className="px-1.5 py-2 w-[60px]">Prix livr.</th>
+                <th className="px-1.5 py-2 w-[76px]">Prix / kg</th>
+                <th className="px-1.5 py-2 w-[84px]">Stock / Publié / Accueil</th>
+                <th className="px-1.5 py-2 w-[124px]">Promo</th>
+                <th className="px-1.5 py-2 w-[62px]">Fiche</th>
               </tr>
             </thead>
             <tbody>
@@ -695,10 +699,10 @@ export default function AdminPage() {
                     product.en_rupture || product.actif === false ? 'opacity-50' : ''
                   }`}
                 >
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <button
                       onClick={() => setEditingProduct(product)}
-                      className="block w-14 h-14 bg-stone border border-ink/15 overflow-hidden relative"
+                      className="block w-11 h-11 bg-stone border border-ink/15 overflow-hidden relative"
                     >
                       {product.photo_url ? (
                         <CroppableImage
@@ -714,28 +718,26 @@ export default function AdminPage() {
                       )}
                     </button>
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <EditableCell
                       value={product.code_article}
                       onSave={(v) => updateProduct(product.id, { code_article: v })}
-                      width="w-16"
+                      width="w-full"
                     />
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <EditableCell
                       value={product.nom}
                       onSave={(v) => updateProduct(product.id, { nom: v })}
                       multiline
                     />
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <CategorySelect
                       value={product.categorie}
                       onSave={(v) => updateProduct(product.id, { categorie: v })}
                       categories={categories}
                     />
-                  </td>
-                  <td className="p-2">
                     <SubcategorySelect
                       categorie={product.categorie}
                       value={product.sous_categorie}
@@ -743,25 +745,27 @@ export default function AdminPage() {
                       subcategoriesByCategory={subcategoriesByCategory}
                     />
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <EditableCell
                       value={product.fournisseur}
                       onSave={(v) => updateProduct(product.id, { fournisseur: v })}
                     />
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <EditableCell
                       value={product.poids}
                       onSave={(v) => updateProduct(product.id, { poids: v })}
                     />
                     {product.variantes?.length > 0 && (
-                      <p className="font-tag text-[10px] text-rust mt-1 leading-tight">
-                        Non utilisé : ce produit a des conditionnements, modifie leur
-                        poids via "Fiche" → Conditionnements.
+                      <p
+                        className="font-tag text-[10px] text-rust mt-1 leading-tight"
+                        title='Ce produit a des conditionnements : leur poids se modifie via "Fiche" → Conditionnements.'
+                      >
+                        Non utilisé, voir Fiche
                       </p>
                     )}
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <EditableCell
                       type="number"
                       value={product.prix_livraison}
@@ -770,7 +774,7 @@ export default function AdminPage() {
                       }
                     />
                   </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     {product.poids_reference ? (
                       <span className="font-tag text-xs text-forest">
                         {getPricePerUnitLabel(product, product.prix_livraison)}
@@ -782,55 +786,51 @@ export default function AdminPage() {
                       />
                     )}
                   </td>
-                  <td className="p-2">
-                    <button
-                      onClick={() => toggleStock(product)}
-                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full ${
-                        product.en_rupture
-                          ? 'bg-rust text-paper'
-                          : 'bg-forest text-paper'
-                      }`}
-                    >
-                      {product.en_rupture ? 'Bientôt de retour' : 'En stock'}
-                    </button>
+                  <td className="px-1.5 py-2 align-top">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => toggleStock(product)}
+                        className={`font-tag text-[10px] uppercase font-semibold px-1 py-1 w-full leading-tight ${
+                          product.en_rupture ? 'bg-rust text-paper' : 'bg-forest text-paper'
+                        }`}
+                      >
+                        {product.en_rupture ? 'Bientôt de retour' : 'En stock'}
+                      </button>
+                      <button
+                        onClick={() => toggleActive(product)}
+                        className={`font-tag text-[10px] uppercase font-semibold px-1 py-1 w-full border ${
+                          product.actif !== false
+                            ? 'border-ink/40 text-ink'
+                            : 'border-rust bg-rust/10 text-rust'
+                        }`}
+                      >
+                        {product.actif !== false ? 'Publié' : 'Masqué'}
+                      </button>
+                      <button
+                        onClick={() =>
+                          updateProduct(product.id, { mis_en_avant: !product.mis_en_avant })
+                        }
+                        className={`font-tag text-[10px] uppercase font-semibold px-1 py-1 w-full border ${
+                          product.mis_en_avant
+                            ? 'border-forest bg-forest text-paper'
+                            : 'border-ink/40 text-ink'
+                        }`}
+                      >
+                        {product.mis_en_avant ? 'En avant' : 'Standard'}
+                      </button>
+                    </div>
                   </td>
-                  <td className="p-2">
-                    <button
-                      onClick={() => toggleActive(product)}
-                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
-                        product.actif !== false
-                          ? 'border-ink/40 text-ink'
-                          : 'border-rust bg-rust/10 text-rust'
-                      }`}
-                    >
-                      {product.actif !== false ? 'Publié' : 'Masqué'}
-                    </button>
-                  </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <PromoEditor
                       key={[product.id, product.en_promo, product.taux_promo, product.prix_promo, product.promo_debut, product.promo_fin].join('|')}
                       product={product}
                       onSave={(changes) => updateProduct(product.id, changes)}
                     />
                   </td>
-                  <td className="p-2">
-                    <button
-                      onClick={() =>
-                        updateProduct(product.id, { mis_en_avant: !product.mis_en_avant })
-                      }
-                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border ${
-                        product.mis_en_avant
-                          ? 'border-forest bg-forest text-paper'
-                          : 'border-ink/40 text-ink'
-                      }`}
-                    >
-                      {product.mis_en_avant ? 'En avant' : 'Standard'}
-                    </button>
-                  </td>
-                  <td className="p-2">
+                  <td className="px-1.5 py-2 align-top">
                     <button
                       onClick={() => setDetailsProduct(product)}
-                      className={`font-tag text-[11px] uppercase font-semibold px-2.5 py-1.5 w-full border hover:bg-stone ${
+                      className={`font-tag text-[10px] uppercase font-semibold px-1 py-1 w-full border hover:bg-stone ${
                         product.poids_variable || product.variantes?.length > 0
                           ? 'border-forest text-forest'
                           : 'border-ink/40 text-ink'
@@ -840,9 +840,10 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product)}
-                      className="font-tag text-[10px] uppercase text-rust mt-1 w-full hover:underline"
+                      title="Supprimer définitivement ce produit"
+                      className="font-tag text-[10px] uppercase text-rust mt-2 w-full hover:underline"
                     >
-                      Suppr. définitivement
+                      Suppr.
                     </button>
                   </td>
                 </tr>
