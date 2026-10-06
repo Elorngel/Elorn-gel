@@ -219,6 +219,8 @@ function SiteSettingsPanel() {
   const [emailDraft, setEmailDraft] = useState(null)
   const [telDraft, setTelDraft] = useState(null)
   const [adresseDraft, setAdresseDraft] = useState(null)
+  const [facebookDraft, setFacebookDraft] = useState(null)
+  const [instagramDraft, setInstagramDraft] = useState(null)
 
   useEffect(() => {
     if (settings && discountDraft === null) {
@@ -234,6 +236,8 @@ function SiteSettingsPanel() {
       setEmailDraft(settings.contact_email ?? 'logistique@elorngel.fr')
       setTelDraft(settings.contact_telephone ?? '02 98 20 50 43')
       setAdresseDraft(settings.adresse ?? 'ZI de Keriel Nord, 29800 Plouédern')
+      setFacebookDraft(settings.lien_facebook ?? '')
+      setInstagramDraft(settings.lien_instagram ?? '')
     }
   }, [settings, discountDraft])
 
@@ -263,6 +267,14 @@ function SiteSettingsPanel() {
     if (telDraft !== settings.contact_telephone) {
       updateSettings({ contact_telephone: telDraft })
     }
+  }
+  const saveFacebook = () => {
+    const v = facebookDraft.trim()
+    if (v !== (settings.lien_facebook ?? '')) updateSettings({ lien_facebook: v || null })
+  }
+  const saveInstagram = () => {
+    const v = instagramDraft.trim()
+    if (v !== (settings.lien_instagram ?? '')) updateSettings({ lien_instagram: v || null })
   }
   const saveAdresse = () => {
     if (adresseDraft !== settings.adresse) updateSettings({ adresse: adresseDraft })
@@ -459,6 +471,32 @@ function SiteSettingsPanel() {
               value={adresseDraft ?? ''}
               onChange={(e) => setAdresseDraft(e.target.value)}
               onBlur={saveAdresse}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Lien Facebook (icône du bandeau)
+            </label>
+            <input
+              type="url"
+              placeholder="https://www.facebook.com/…"
+              value={facebookDraft ?? ''}
+              onChange={(e) => setFacebookDraft(e.target.value)}
+              onBlur={saveFacebook}
+              className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Lien Instagram (icône du bandeau)
+            </label>
+            <input
+              type="url"
+              placeholder="https://www.instagram.com/…"
+              value={instagramDraft ?? ''}
+              onChange={(e) => setInstagramDraft(e.target.value)}
+              onBlur={saveInstagram}
               className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
             />
           </div>

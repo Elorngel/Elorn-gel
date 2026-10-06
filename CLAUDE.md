@@ -47,7 +47,7 @@ modes de cuisson (Four/Poêle/Airfryer/Friteuse/Micro-ondes : durée en plage
 possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
 (micro-ondes) ou en texte "feu doux/moyen/vif" (poêle), plusieurs étapes
 possibles "5 min à feu vif puis 10 min à feu moyen" ; cases "Décongélation
-préalable nécessaire" / "Sans décongélation préalable"), admin complet, **comptes clients** (Supabase Auth,
+préalable nécessaire" / "Sans décongélation préalable"), admin complet, **liens Facebook/Instagram** (réglables dans l'admin → Réglages du site, colonnes `lien_facebook`/`lien_instagram`, affichés via `SocialIcon.jsx` dans le bandeau du haut et le pied de page), **comptes clients** (Supabase Auth,
 email+mot de passe, historique de commandes sur `#mes-commandes`, panier
 toujours utilisable sans compte).
 

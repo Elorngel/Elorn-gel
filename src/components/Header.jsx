@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useCategories } from '../hooks/useCategories'
 import { supabase } from '../lib/supabaseClient'
+import SocialIcon from './SocialIcon'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -103,7 +104,11 @@ export default function Header({ activeCategory }) {
         <span className="truncate">
           {settings?.bandeau_haut ?? 'Retrait gratuit sous 24h à Plouédern'}
         </span>
-        <div className="flex gap-4 shrink-0 ml-2">
+        <div className="flex items-center gap-4 shrink-0 ml-2">
+          <div className="flex items-center gap-3">
+            <SocialIcon name="Facebook" url={settings?.lien_facebook} />
+            <SocialIcon name="Instagram" url={settings?.lien_instagram} />
+          </div>
           <a
             href={`tel:${(settings?.contact_telephone || '02 98 20 50 43').replace(/\s/g, '')}`}
             className="hidden sm:inline"

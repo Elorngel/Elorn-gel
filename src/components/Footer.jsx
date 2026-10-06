@@ -1,4 +1,5 @@
 import { useSiteSettings } from '../hooks/useSiteSettings'
+import SocialIcon from './SocialIcon'
 
 export default function Footer() {
   const { settings } = useSiteSettings()
@@ -49,6 +50,12 @@ export default function Footer() {
               </a>
             </li>
             <li className="text-stone/70">{adresse}</li>
+            {(settings?.lien_facebook || settings?.lien_instagram) && (
+              <li className="flex items-center gap-5 mt-1">
+                <SocialIcon name="Facebook" url={settings?.lien_facebook} label hideIfEmpty />
+                <SocialIcon name="Instagram" url={settings?.lien_instagram} label hideIfEmpty />
+              </li>
+            )}
           </ul>
         </div>
       </div>
