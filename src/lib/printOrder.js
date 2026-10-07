@@ -1,3 +1,12 @@
+// Échappe le texte saisi par les clients avant de l'insérer dans la page imprimable.
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 // Ouvre un onglet séparé avec un bon de commande propre, prêt à imprimer.
 // Utilisé à la fois côté client (confirmation) et côté admin (préparation).
 export function printBonDeCommande(commande, lignes) {
@@ -10,7 +19,7 @@ export function printBonDeCommande(commande, lignes) {
     .map(
       (l) => `
         <tr>
-          <td style="padding:6px 4px;border-bottom:1px solid #ddd;">${l.nom_produit || l.nom}</td>
+          <td style="padding:6px 4px;border-bottom:1px solid #ddd;">${esc(l.nom_produit || l.nom)}</td>
           <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:center;">${l.quantite || l.quantity}</td>
           <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${(l.prix_unitaire ?? l.unitPrice).toFixed(2)} €</td>
           <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${((l.prix_unitaire ?? l.unitPrice) * (l.quantite || l.quantity)).toFixed(2)} €</td>
@@ -23,7 +32,7 @@ export function printBonDeCommande(commande, lignes) {
     <html lang="fr">
     <head>
       <meta charset="UTF-8" />
-      <title>Bon de commande — ${commande.nom_client}</title>
+      <title>Bon de commande — ${esc(commande.nom_client)}</title>
       <style>
         body { font-family: Arial, sans-serif; color: #1b231a; max-width: 700px; margin: 30px auto; padding: 0 20px; }
         h1 { font-size: 22px; border-bottom: 3px solid #23422b; padding-bottom: 10px; }
@@ -36,16 +45,17 @@ export function printBonDeCommande(commande, lignes) {
       </style>
     </head>
     <body>
-      <h1>ELORN GEL — Bon de commande</h1>
+      <h1>BONTIN — Bon de commande</h1>
       <div class="infos">
         <div><strong>Date :</strong> ${dateStr}</div>
-        <div><strong>Client :</strong> ${commande.nom_client}</div>
-        <div><strong>Téléphone :</strong> ${commande.telephone}</div>
-        ${commande.email ? `<div><strong>Email :</strong> ${commande.email}</div>` : ''}
+        <div><strong>Client :</strong> ${esc(commande.nom_client)}</div>
+        <div><strong>Téléphone :</strong> ${esc(commande.telephone)}</div>
+        ${commande.email ? `<div><strong>Email :</strong> ${esc(commande.email)}</div>` : ''}
         <div><strong>Mode :</strong> ${commande.mode === 'retrait' ? 'Retrait au dépôt' : 'Livraison'}</div>
-        ${commande.creneau_retrait ? `<div><strong>Créneau :</strong> ${commande.creneau_retrait}</div>` : ''}
-        ${commande.creneau_livraison ? `<div><strong>Créneau :</strong> ${commande.creneau_livraison}</div>` : ''}
-        ${commande.note ? `<div><strong>Note :</strong> ${commande.note}</div>` : ''}
+        ${commande.creneau_retrait ? `<div><strong>Créneau :</strong> ${esc(commande.creneau_retrait)}</div>` : ''}
+        ${commande.creneau_livraison ? `<div><strong>Créneau :</strong> ${esc(commande.creneau_livraison)}</div>` : ''}
+        ${commande.adresse_livraison ? `<div><strong>Adresse :</strong> ${esc(commande.adresse_livraison)}, ${esc(commande.code_postal)} ${esc(commande.ville)}</div>` : ''}
+        ${commande.note ? `<div><strong>Note :</strong> ${esc(commande.note)}</div>` : ''}
       </div>
 
       <table>

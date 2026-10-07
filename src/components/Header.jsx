@@ -5,6 +5,7 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useCategories } from '../hooks/useCategories'
 import { supabase } from '../lib/supabaseClient'
 import SocialIcon from './SocialIcon'
+import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -102,7 +103,7 @@ export default function Header({ activeCategory }) {
     <header className="bg-paper border-b border-ink/15 sticky top-0 z-20">
       <div className="bg-ink text-stone text-[11px] font-tag px-4 md:px-5 py-1.5 flex justify-between">
         <span className="truncate">
-          {settings?.bandeau_haut ?? 'Retrait gratuit sous 24h à Plouédern'}
+          {settings ? settings.bandeau_haut ?? DEFAULT_BANDEAU : ''}
         </span>
         <div className="flex items-center gap-4 shrink-0 ml-2">
           <div className="flex items-center gap-3">
@@ -110,10 +111,10 @@ export default function Header({ activeCategory }) {
             <SocialIcon name="Instagram" url={settings?.lien_instagram} />
           </div>
           <a
-            href={`tel:${(settings?.contact_telephone || '02 98 20 50 43').replace(/\s/g, '')}`}
+            href={`tel:${(settings?.contact_telephone || DEFAULT_TELEPHONE).replace(/\s/g, '')}`}
             className="hidden sm:inline"
           >
-            {settings?.contact_telephone || '02 98 20 50 43'}
+            {settings?.contact_telephone || DEFAULT_TELEPHONE}
           </a>
           <a href="#admin" className="text-stone/60 hover:text-stone">
             Administration
@@ -125,7 +126,7 @@ export default function Header({ activeCategory }) {
         <a href="#" className="block h-9 md:h-10 relative shrink-0">
           <img
             src={settings?.logo_url || '/logo.png'}
-            alt="Elorn Gel"
+            alt="Bontin"
             className="h-9 md:h-10 w-auto"
             onError={(e) => {
               e.target.style.display = 'none'
@@ -136,7 +137,7 @@ export default function Header({ activeCategory }) {
             className="font-display text-2xl md:text-3xl tracking-wide text-forest absolute inset-0"
             style={{ display: 'none' }}
           >
-            ELORN GEL
+            BONTIN
           </span>
         </a>
 
@@ -403,10 +404,10 @@ export default function Header({ activeCategory }) {
           )}
 
           <a
-            href={`tel:${(settings?.contact_telephone || '02 98 20 50 43').replace(/\s/g, '')}`}
+            href={`tel:${(settings?.contact_telephone || DEFAULT_TELEPHONE).replace(/\s/g, '')}`}
             className="block mt-4 font-tag text-xs uppercase text-muted"
           >
-            Appeler le dépôt · {settings?.contact_telephone || '02 98 20 50 43'}
+            Appeler le dépôt · {settings?.contact_telephone || DEFAULT_TELEPHONE}
           </a>
         </div>
       )}

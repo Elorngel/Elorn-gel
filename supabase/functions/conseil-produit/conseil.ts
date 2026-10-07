@@ -15,7 +15,7 @@ export const LIMITS = {
   maxTokensParAppel: 800,
 }
 
-const TELEPHONE_DEFAUT = '02 98 20 50 43'
+const TELEPHONE_DEFAUT = '02 56 31 11 97'
 
 export type Mode = 'livraison' | 'retrait'
 

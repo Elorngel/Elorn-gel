@@ -13,6 +13,7 @@ import OccasionsPanel from '../components/OccasionsPanel'
 import SuppliersPanel from '../components/SuppliersPanel'
 import NewProductModal from '../components/NewProductModal'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
+import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 
 const NO_SPINNER =
   '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
@@ -232,10 +233,10 @@ function SiteSettingsPanel() {
         settings.hero_sous_titre ??
           `Commandez chez vous, récupérez en point de retrait et économisez ${settings.remise_retrait ?? 10}% sur chaque commande retirée sur place.`
       )
-      setBandeauDraft(settings.bandeau_haut ?? 'Retrait gratuit sous 24h à Plouédern')
-      setEmailDraft(settings.contact_email ?? 'logistique@elorngel.fr')
-      setTelDraft(settings.contact_telephone ?? '02 98 20 50 43')
-      setAdresseDraft(settings.adresse ?? 'ZI de Keriel Nord, 29800 Plouédern')
+      setBandeauDraft(settings.bandeau_haut ?? DEFAULT_BANDEAU)
+      setEmailDraft(settings.contact_email ?? DEFAULT_EMAIL)
+      setTelDraft(settings.contact_telephone ?? DEFAULT_TELEPHONE)
+      setAdresseDraft(settings.adresse ?? DEFAULT_ADRESSE)
       setFacebookDraft(settings.lien_facebook ?? '')
       setInstagramDraft(settings.lien_instagram ?? '')
     }

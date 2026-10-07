@@ -7,7 +7,7 @@
 export const mentionsLegales = `
 <h2>Éditeur du site</h2>
 <p>
-Le site elorngel.fr est édité par la société <strong>ELORN GEL</strong>,
+Le site bontin.fr est édité par la société <strong>ELORN GEL</strong>,
 SAS au capital de 8 000,00 €, immatriculée au Registre du Commerce et
 des Sociétés de Brest sous le numéro SIREN
 490 383 767 (SIRET : 490 383 767 00038),
@@ -20,7 +20,7 @@ Numéro de TVA intracommunautaire : FR37 490 383 767.
 Directeur de la publication : Monsieur Ianis ZEMRAK.
 </p>
 <p>
-Contact : logistique@elorngel.fr — 02 98 20 50 43.
+Contact : logistique@bontin.fr — 02 56 31 11 97.
 </p>
 
 <h2>Hébergement</h2>
@@ -35,7 +35,7 @@ Supabase.
 
 <h2>Propriété intellectuelle</h2>
 <p>
-L'ensemble des éléments composant le site elorngel.fr (textes, images,
+L'ensemble des éléments composant le site bontin.fr (textes, images,
 logos, mise en page) est protégé par le droit de la propriété
 intellectuelle. Toute reproduction, représentation ou adaptation, totale
 ou partielle, sans l'autorisation écrite préalable de la société ELORN
@@ -49,7 +49,7 @@ utilisées exclusivement pour le traitement des commandes et ne sont
 jamais cédées à des tiers à des fins commerciales. Conformément au
 Règlement Général sur la Protection des Données (RGPD), vous disposez
 d'un droit d'accès, de rectification et de suppression de vos données,
-que vous pouvez exercer en écrivant à logistique@elorngel.fr. Vous
+que vous pouvez exercer en écrivant à logistique@bontin.fr. Vous
 disposez également du droit d'introduire une réclamation auprès de la
 CNIL (cnil.fr).
 </p>
@@ -59,7 +59,7 @@ export const cgv = `
 <h2>Article 1 — Champ d'application</h2>
 <p>
 Les présentes Conditions Générales de Vente s'appliquent à toute
-commande passée sur le site elorngel.fr auprès de la société ELORN GEL,
+commande passée sur le site bontin.fr auprès de la société ELORN GEL,
 pour la vente de produits alimentaires surgelés, en livraison à domicile
 ou en retrait au dépôt de Plouédern.
 </p>
@@ -93,7 +93,7 @@ le site.
 
 <h2>Article 5 — Paiement</h2>
 <p>
-Le site elorngel.fr ne propose pas de paiement en ligne. Le règlement de
+Le site bontin.fr ne propose pas de paiement en ligne. Le règlement de
 la commande s'effectue exclusivement sur place, au moment de la
 livraison ou du retrait, selon les moyens de paiement acceptés par ELORN
 GEL (à préciser au client lors de la confirmation de commande).
@@ -135,7 +135,7 @@ ou défectueux doit être signalé à ELORN GEL dans les meilleurs délais.
 <h2>Article 10 — Réclamations et médiation</h2>
 <p>
 Pour toute réclamation, le client peut contacter ELORN GEL à
-logistique@elorngel.fr. En cas de litige non résolu, le client
+logistique@bontin.fr. En cas de litige non résolu, le client
 consommateur peut recourir gratuitement à un médiateur de la
 consommation [nom et coordonnées du médiateur à désigner].
 </p>
@@ -151,7 +151,7 @@ export const cgu = `
 <h2>Article 1 — Objet</h2>
 <p>
 Les présentes Conditions Générales d'Utilisation ont pour objet de
-définir les modalités d'accès et d'utilisation du site elorngel.fr,
+définir les modalités d'accès et d'utilisation du site bontin.fr,
 édité par la société ELORN GEL.
 </p>
 

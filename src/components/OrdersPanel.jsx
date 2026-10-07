@@ -105,6 +105,11 @@ export default function OrdersPanel() {
                     <strong>Email :</strong> {order.email}
                   </p>
                 )}
+                {order.adresse_livraison && (
+                  <p>
+                    <strong>Adresse :</strong> {order.adresse_livraison}, {order.code_postal} {order.ville}
+                  </p>
+                )}
                 {order.note && (
                   <p>
                     <strong>Note :</strong> {order.note}

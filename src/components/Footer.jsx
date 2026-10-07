@@ -1,12 +1,13 @@
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import SocialIcon from './SocialIcon'
+import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE } from '../lib/siteDefaults'
 
 export default function Footer() {
   const { settings } = useSiteSettings()
 
-  const email = settings?.contact_email || 'logistique@elorngel.fr'
-  const telephone = settings?.contact_telephone || '02 98 20 50 43'
-  const adresse = settings?.adresse || 'ZI de Keriel Nord, 29800 Plouédern'
+  const email = settings?.contact_email || DEFAULT_EMAIL
+  const telephone = settings?.contact_telephone || DEFAULT_TELEPHONE
+  const adresse = settings?.adresse || DEFAULT_ADRESSE
 
   return (
     <footer className="bg-ink text-stone mt-10">

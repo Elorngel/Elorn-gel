@@ -6,18 +6,30 @@ const corsHeaders = {
 }
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-// Pendant les tests (avant vérification de domaine), Resend impose cet
-// expéditeur. Une fois le domaine elorngel.fr vérifié dans Resend, on
-// pourra le remplacer par ex. par "commandes@elorngel.fr".
-const FROM_EMAIL = 'onboarding@resend.dev'
-const ADMIN_EMAIL = 'logistique@elorngel.fr'
+// Tant que le domaine bontin.fr n'est pas vérifié dans Resend, Resend impose
+// l'expéditeur de test ci-dessous et n'autorise l'envoi qu'à l'adresse du
+// compte Resend. Une fois le domaine vérifié, il suffit de régler les deux
+// variables (sans toucher au code) :
+//   supabase secrets set FROM_EMAIL=commandes@bontin.fr ADMIN_EMAIL=logistique@bontin.fr
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'logistique@elorngel.fr'
+
+// Les champs saisis par les clients sont insérés dans du HTML : on les échappe
+// pour qu'un nom ou une note ne puisse pas injecter de code dans l'email.
+function esc(value: unknown) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 function buildHtml(order: any) {
   const lignesHtml = (order.lignes || [])
     .map(
       (l: any) => `
         <tr>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${l.nom}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${esc(l.nom)}</td>
           <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center;">${l.quantite}</td>
           <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">${(l.prix_unitaire * l.quantite).toFixed(2)} €</td>
         </tr>`
@@ -28,14 +40,15 @@ function buildHtml(order: any) {
 
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1b231a;">
-      <h2 style="color:#23422b;">ELORN GEL</h2>
+      <h2 style="color:#23422b;">BONTIN</h2>
       <p>
-        <strong>Client :</strong> ${order.nomClient}<br/>
-        <strong>Téléphone :</strong> ${order.telephone}<br/>
-        ${order.email ? `<strong>Email :</strong> ${order.email}<br/>` : ''}
+        <strong>Client :</strong> ${esc(order.nomClient)}<br/>
+        <strong>Téléphone :</strong> ${esc(order.telephone)}<br/>
+        ${order.email ? `<strong>Email :</strong> ${esc(order.email)}<br/>` : ''}
         <strong>Mode :</strong> ${order.mode === 'retrait' ? 'Retrait au dépôt' : 'Livraison'}<br/>
-        ${creneau ? `<strong>Créneau :</strong> ${creneau}<br/>` : ''}
-        ${order.note ? `<strong>Note :</strong> ${order.note}<br/>` : ''}
+        ${creneau ? `<strong>Créneau :</strong> ${esc(creneau)}<br/>` : ''}
+        ${order.adresseLivraison ? `<strong>Adresse :</strong> ${esc(order.adresseLivraison)}, ${esc(order.codePostal)} ${esc(order.ville)}<br/>` : ''}
+        ${order.note ? `<strong>Note :</strong> ${esc(order.note)}<br/>` : ''}
       </p>
       <table style="width:100%;border-collapse:collapse;">
         <thead>
@@ -83,10 +96,10 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `ELORN GEL <${FROM_EMAIL}>`,
+          from: `Bontin <${FROM_EMAIL}>`,
           to: order.email,
-          subject: 'Votre commande ELORN GEL est confirmée',
-          html: `<p>Bonjour ${order.nomClient},</p><p>Votre commande a bien été enregistrée, merci !</p>${html}`,
+          subject: 'Votre commande Bontin est confirmée',
+          html: `<p>Bonjour ${esc(order.nomClient)},</p><p>Votre commande a bien été enregistrée, merci !</p>${html}`,
         }),
       })
       results.push({ target: 'client', status: res.status, body: await res.text() })
@@ -99,7 +112,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `Site ELORN GEL <${FROM_EMAIL}>`,
+        from: `Site Bontin <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
         reply_to: order.email || undefined,
         subject: `Nouvelle commande — ${order.nomClient}`,

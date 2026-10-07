@@ -6,6 +6,7 @@ import { useProductsByIds } from '../hooks/useProductsByIds'
 import { useConseilInteractions } from '../hooks/useConseilInteractions'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getQuestionsPosees, findSelection } from '../lib/occasions'
+import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import ProductCard from './ProductCard'
 
 const QUESTION_MAX = 300
@@ -73,7 +74,7 @@ function ConseilDialog({ onClose }) {
   const [aiState, setAiState] = useState('idle') // 'idle' | 'loading' | 'done' | 'error'
   const [aiResult, setAiResult] = useState(null)
 
-  const telephone = settings?.contact_telephone || '02 98 20 50 43'
+  const telephone = settings?.contact_telephone || DEFAULT_TELEPHONE
 
   // Une occasion sans aucun produit renseigné mènerait à un cul-de-sac : on la masque.
   const visibleOccasions = useMemo(

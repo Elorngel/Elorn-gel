@@ -25,6 +25,9 @@ export default function CartPage() {
   const [telephone, setTelephone] = useState('')
   const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
+  const [adresseLivraison, setAdresseLivraison] = useState('')
+  const [codePostal, setCodePostal] = useState('')
+  const [ville, setVille] = useState('')
   const [pickupDate, setPickupDate] = useState('')
   const [pickupSlot, setPickupSlot] = useState('')
   const [deliveryDate, setDeliveryDate] = useState('')
@@ -64,6 +67,9 @@ export default function CartPage() {
         email,
         mode,
         note,
+        adresseLivraison: !isPickup ? adresseLivraison.trim() : null,
+        codePostal: !isPickup ? codePostal.trim() : null,
+        ville: !isPickup ? ville.trim() : null,
         creneauRetrait: isPickup ? `${pickupDateLabel(pickupDate)} · ${pickupSlot}` : null,
         creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDate)} · ${deliveryWindow}` : null,
         total,
@@ -289,8 +295,44 @@ export default function CartPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                 />
+                {!isPickup && (
+                  <div className="flex flex-col gap-3">
+                    <p className="font-tag text-[11px] uppercase text-forest font-semibold">
+                      Adresse de livraison
+                    </p>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Adresse (numéro et rue)"
+                      value={adresseLivraison}
+                      onChange={(e) => setAdresseLivraison(e.target.value)}
+                      className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                    />
+                    <div className="grid grid-cols-[110px_1fr] gap-3">
+                      <input
+                        required
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]{5}"
+                        maxLength={5}
+                        placeholder="Code postal"
+                        value={codePostal}
+                        onChange={(e) => setCodePostal(e.target.value)}
+                        className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                      />
+                      <input
+                        required
+                        type="text"
+                        placeholder="Ville"
+                        value={ville}
+                        onChange={(e) => setVille(e.target.value)}
+                        className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
                 <textarea
-                  placeholder="Note (optionnel)"
+                  placeholder="Note (optionnel — étage, digicode…)"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={2}
