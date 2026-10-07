@@ -12,12 +12,12 @@ export default function Hero() {
 
   return (
     <>
-    <section className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border-b border-ink/15">
-      <div className="bg-forest text-paper px-5 md:px-8 py-8 md:py-10 flex flex-col justify-center">
+    <section className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] border-b border-ink/15">
+      <div className="bg-forest text-paper px-5 md:px-8 py-8 flex flex-col justify-center">
         <span className="font-tag text-xs uppercase tracking-widest text-stone/80 mb-2">
           {settings ? settings.hero_badge ?? '250 références' : ''}
         </span>
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.95] mb-4">
+        <h1 className="font-display text-4xl sm:text-5xl lg:text-5xl xl:text-6xl leading-[0.95] mb-4">
           {settings ? settings.hero_titre ?? 'Le surgelé, en livraison ou en retrait' : ''}
         </h1>
         <p className="font-body text-sm text-stone/90 max-w-md mb-6">
@@ -33,7 +33,8 @@ export default function Hero() {
           {promoCount > 0 ? 'Voir les promos' : 'Voir le catalogue'}
         </a>
       </div>
-      <div className="relative bg-stone flex items-center justify-center min-h-[180px] md:min-h-[220px] overflow-hidden">
+      {/* Format 16:9 fixe : le cadre de réglage de la photo dans l'admin a le même format. */}
+      <div className="relative bg-stone flex items-center justify-center aspect-video lg:self-stretch overflow-hidden">
         {settings?.hero_url ? (
           <CroppableImage
             src={settings.hero_url}

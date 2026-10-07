@@ -47,7 +47,7 @@ modes de cuisson (Four/Poêle/Airfryer/Friteuse/Micro-ondes : durée en plage
 possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
 (micro-ondes) ou en texte "feu doux/moyen/vif" (poêle), plusieurs étapes
 possibles "5 min à feu vif puis 10 min à feu moyen" ; cases "Décongélation
-préalable nécessaire" / "Sans décongélation préalable"), admin complet, **liens Facebook/Instagram** (réglables dans l'admin → Réglages du site, colonnes `lien_facebook`/`lien_instagram`, affichés via `SocialIcon.jsx` dans le bandeau du haut et le pied de page), **déstockage** (case + prix sur la fiche produit admin → rubrique « Déstockage » du menu, route `#destockage`, colonnes `en_destockage`/`prix_destockage`, logique dans `src/lib/pricing.js`, passe avant la promo), **adresse de livraison** (adresse/code postal/ville demandés en mode
+préalable nécessaire" / "Sans décongélation préalable"), admin complet, **liens Facebook/Instagram** (réglables dans l'admin → Réglages du site, colonnes `lien_facebook`/`lien_instagram`, affichés via `SocialIcon.jsx` dans le bandeau du haut et le pied de page), **photo vitrine au format fixe 16:9** (même cadre dans l'éditeur admin et sur le site, `Hero.jsx` + `PhotoEditorModal aspect`), **déstockage** (case + prix sur la fiche produit admin → rubrique « Déstockage » du menu, route `#destockage`, colonnes `en_destockage`/`prix_destockage`, logique dans `src/lib/pricing.js`, passe avant la promo), **adresse de livraison** (adresse/code postal/ville demandés en mode
 Livraison, colonnes `adresse_livraison`/`code_postal`/`ville` de `commandes`).
 ⚠ Les **comptes clients** (Supabase Auth, `#mes-commandes`) annoncés ici
 n'existent PAS dans ce dépôt (aucun code d'auth) : peut-être sur l'autre

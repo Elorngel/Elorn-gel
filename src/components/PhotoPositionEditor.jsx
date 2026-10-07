@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 // glisser-déposer pour recentrer. Utilise les mêmes valeurs (zoom, posX,
 // posY) que CroppableImage, donc ce que tu règles ici s'affiche à
 // l'identique sur le site.
-export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange }) {
+export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange, aspect = 1 }) {
   const containerRef = useRef(null)
   const [dragging, setDragging] = useState(false)
 
@@ -35,7 +35,10 @@ export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange })
 
   if (!url) {
     return (
-      <div className="w-full aspect-square max-h-72 mx-auto bg-stone flex items-center justify-center font-tag text-xs text-muted">
+      <div
+        style={{ aspectRatio: aspect }}
+        className={`w-full mx-auto bg-stone flex items-center justify-center font-tag text-xs text-muted ${aspect === 1 ? 'max-w-72' : ''}`}
+      >
         Choisis d'abord une photo
       </div>
     )
@@ -45,7 +48,8 @@ export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange })
     <div>
       <div
         ref={containerRef}
-        className="relative w-full aspect-square max-h-72 mx-auto overflow-hidden bg-stone cursor-move select-none border border-ink/20"
+        style={{ aspectRatio: aspect }}
+        className={`relative w-full mx-auto overflow-hidden bg-stone cursor-move select-none border border-ink/20 ${aspect === 1 ? 'max-w-72' : ''}`}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -58,6 +62,8 @@ export default function PhotoPositionEditor({ url, zoom, posX, posY, onChange })
           draggable={false}
           className="pointer-events-none"
           style={{
+            position: 'absolute',
+            inset: 0,
             width: '100%',
             height: '100%',
             objectFit: 'cover',

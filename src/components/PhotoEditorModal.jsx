@@ -10,6 +10,8 @@ export default function PhotoEditorModal({
   onUpload, // (file) => Promise<url>
   onSave, // ({ url, zoom, posX, posY }) => Promise
   onClose,
+  aspect = 1, // format du cadre (largeur / hauteur) : 1 = carré ; 16 / 9 = bannière
+  hint,
 }) {
   const [url, setUrl] = useState(initialUrl || '')
   const [zoom, setZoom] = useState(initialZoom)
@@ -49,7 +51,7 @@ export default function PhotoEditorModal({
 
   return (
     <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-paper w-full max-w-md border border-ink/20">
+      <div className={`bg-paper w-full border border-ink/20 ${aspect === 1 ? 'max-w-md' : 'max-w-xl'}`}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-ink/15">
           <h3 className="font-display text-xl text-ink">{title}</h3>
           <button
@@ -66,12 +68,15 @@ export default function PhotoEditorModal({
             zoom={zoom}
             posX={posX}
             posY={posY}
+            aspect={aspect}
             onChange={({ zoom: z, posX: x, posY: y }) => {
               setZoom(z)
               setPosX(x)
               setPosY(y)
             }}
           />
+
+          {hint && <p className="font-body text-xs text-forest mt-2">{hint}</p>}
 
           <label className="mt-3 block w-full text-center border border-ink/40 font-tag text-xs uppercase font-semibold py-2 cursor-pointer hover:bg-stone">
             {uploading ? 'Envoi en cours…' : url ? 'Changer de photo' : 'Choisir une photo'}

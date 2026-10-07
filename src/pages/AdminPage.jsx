@@ -509,6 +509,8 @@ function SiteSettingsPanel() {
       {editing === 'hero' && (
         <PhotoEditorModal
           title="Photo vitrine (page d'accueil)"
+          aspect={16 / 9}
+          hint="Ce cadre a exactement le format de la photo sur le site (16 de large pour 9 de haut), sur ordinateur comme sur mobile : ce que vous voyez ici est ce qui s'affiche."
           initialUrl={settings.hero_url}
           initialZoom={settings.hero_zoom ?? 1}
           initialPosX={settings.hero_pos_x ?? 50}
