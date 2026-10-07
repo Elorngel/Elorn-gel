@@ -31,17 +31,37 @@ export function isPromoActive(product) {
   return getPromoStatus(product) === 'active'
 }
 
+// Déstockage : produit coché "déstockage" avec un prix de déstockage plus bas
+// que son prix normal. Passe avant une éventuelle promo. Un article déjà dans
+// le panier garde son pourcentage dans `taux_destockage`.
+export function getDestockagePercent(product) {
+  if (product.taux_destockage > 0) return product.taux_destockage
+  const { en_destockage, prix_destockage, prix_livraison } = product
+  if (en_destockage && prix_destockage > 0 && prix_livraison > 0 && prix_destockage < prix_livraison) {
+    return (1 - prix_destockage / prix_livraison) * 100
+  }
+  return 0
+}
+
+export function isDestockage(product) {
+  return getDestockagePercent(product) > 0
+}
+
+// Remise effective à appliquer maintenant (déstockage, sinon promo en cours).
+export function getDiscountPercent(product) {
+  if (isDestockage(product)) return getDestockagePercent(product)
+  return isPromoActive(product) ? getPromoPercent(product) : 0
+}
+
 // Renvoie le prix "livraison" effectif d'un produit : son prix normal,
-// ou son prix réduit s'il est en promo (et dans sa période de validité).
-// C'est CE prix qui sert ensuite de base au calcul de la remise retrait
-// (les deux se cumulent).
+// ou son prix réduit s'il est en déstockage ou en promo (dans sa période de
+// validité). C'est CE prix qui sert ensuite de base au calcul de la remise
+// retrait (les deux se cumulent).
 // referencePrice permet de calculer sur le prix d'un conditionnement
 // choisi plutôt que sur le prix de base du produit.
 export function getBasePrice(product, referencePrice = product.prix_livraison) {
-  if (isPromoActive(product)) {
-    return referencePrice * (1 - getPromoPercent(product) / 100)
-  }
-  return referencePrice
+  const percent = getDiscountPercent(product)
+  return percent > 0 ? referencePrice * (1 - percent / 100) : referencePrice
 }
 
 // Renvoie le conditionnement à afficher par défaut dans le catalogue

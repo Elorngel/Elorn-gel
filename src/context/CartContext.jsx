@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getPromoPercent } from '../lib/pricing'
+import { getPromoPercent, getDestockagePercent } from '../lib/pricing'
 
 const CartContext = createContext(null)
 const STORAGE_KEY = 'elorngel-panier'
@@ -46,6 +46,7 @@ export function CartProvider({ children }) {
           prix_par_kg: product.prix_par_kg,
           en_promo: product.en_promo,
           taux_promo: getPromoPercent(product),
+          taux_destockage: getDestockagePercent(product),
           promo_debut: product.promo_debut,
           promo_fin: product.promo_fin,
           photo_url: product.photo_url,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, isPromoActive, getPromoPercent } from '../lib/pricing'
+import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 export default function ProductCard({ product, supplierLogo }) {
@@ -24,7 +24,9 @@ export default function ProductCard({ product, supplierLogo }) {
   const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
   const variantWeightKg = defaultVariant ? parseWeightToKg(defaultVariant.poids) : null
   const variantUnit = defaultVariant ? parseWeightUnit(defaultVariant.poids) : null
-  const promoActive = isPromoActive(product)
+  const remisePercent = getDiscountPercent(product)
+  const promoActive = remisePercent > 0
+  const destockage = isDestockage(product)
   const basePrice = getBasePrice(product, referencePrice)
   const pickupPrice = getPickupPrice(basePrice)
   const displayName = getDisplayName(product, isPickup)
@@ -69,7 +71,7 @@ export default function ProductCard({ product, supplierLogo }) {
 
         {promoActive && !product.en_rupture && (
           <div className="absolute left-2 top-2 bg-ink text-paper font-tag font-bold text-xs px-2 py-1">
-            PROMO -{Math.round(getPromoPercent(product))}%
+            {destockage ? 'DÉSTOCKAGE' : 'PROMO'} -{Math.round(remisePercent)}%
           </div>
         )}
 

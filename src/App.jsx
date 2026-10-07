@@ -7,7 +7,7 @@ import { useCategories } from './hooks/useCategories'
 import { useProducts } from './hooks/useProducts'
 import { useSuppliers } from './hooks/useSuppliers'
 import { getSupplierLogo } from './lib/suppliers'
-import { isPromoActive } from './lib/pricing'
+import { isPromoActive, isDestockage } from './lib/pricing'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
@@ -20,7 +20,7 @@ import Footer from './components/Footer'
 import Breadcrumb from './components/Breadcrumb'
 import { mentionsLegales, cgv, cgu } from './data/legalContent'
 
-function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showFullCatalog, petitsFormatsOnly }) {
+function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading, error } = useProducts()
   const { subcategoriesByCategory } = useCategories()
   const { suppliers } = useSuppliers()
@@ -37,11 +37,14 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
   const isHomepage =
-    !promoOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
+    !promoOnly && !destockageOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
 
   if (promoOnly) {
     visibleProducts = publishedProducts.filter(isPromoActive)
     title = 'Promotions'
+  } else if (destockageOnly) {
+    visibleProducts = publishedProducts.filter(isDestockage)
+    title = 'Déstockage'
   } else if (petitsFormatsOnly) {
     visibleProducts = publishedProducts.filter(isExclusiveRetrait)
     title = 'Petits formats — exclusif retrait'
@@ -68,7 +71,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
 
   return (
     <>
-      <Header activeCategory={activeCategory} />
+      <Header activeCategory={destockageOnly ? 'Déstockage' : activeCategory} />
       {isHomepage && <Hero />}
 
       <main className="px-5 py-8 max-w-6xl mx-auto">
@@ -78,6 +81,8 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, showF
               { label: 'Accueil', href: '#' },
               ...(promoOnly
                 ? [{ label: 'Promotions' }]
+                : destockageOnly
+                  ? [{ label: 'Déstockage' }]
                 : petitsFormatsOnly
                   ? [{ label: 'Petits formats' }]
                   : showFullCatalog
@@ -198,6 +203,7 @@ function App() {
   const categorieMatch = route.match(/^#categorie\/([^/]+)(?:\/(.+))?$/)
   const rechercheMatch = route.match(/^#recherche\/(.+)$/)
   const promoMatch = route === '#promo'
+  const destockageMatch = route === '#destockage'
   const catalogueMatch = route === '#catalogue'
   const petitsFormatsMatch = route === '#petits-formats'
 
@@ -226,6 +232,7 @@ function App() {
               activeSubcategory={activeSubcategory}
               searchQuery={searchQuery}
               promoOnly={promoMatch}
+              destockageOnly={destockageMatch}
               showFullCatalog={catalogueMatch}
               petitsFormatsOnly={petitsFormatsMatch}
             />

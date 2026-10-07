@@ -609,7 +609,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-stone">
       <header className="bg-ink text-paper px-6 py-4 flex items-center justify-between">
-        <h1 className="font-display text-2xl tracking-wide">ELORN GEL — Administration</h1>
+        <h1 className="font-display text-2xl tracking-wide">BONTIN — Administration</h1>
         <div className="flex gap-4">
           <a href="#" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
             Voir le site
@@ -887,6 +887,11 @@ export default function AdminPage() {
                     >
                       Fiche
                     </button>
+                    {product.en_destockage && (
+                      <p className="font-tag text-[10px] uppercase font-semibold text-rust text-center mt-1">
+                        Déstockage
+                      </p>
+                    )}
                     <button
                       onClick={() => handleDeleteProduct(product)}
                       title="Supprimer définitivement ce produit"

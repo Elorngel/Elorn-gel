@@ -6,6 +6,7 @@ import { useCategories } from '../hooks/useCategories'
 import { supabase } from '../lib/supabaseClient'
 import SocialIcon from './SocialIcon'
 import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
+import { isDestockage } from '../lib/pricing'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -68,11 +69,13 @@ export default function Header({ activeCategory }) {
   useEffect(() => {
     supabase
       .from('produits')
-      .select('id, nom, categorie')
+      .select('id, nom, categorie, en_destockage, prix_destockage, prix_livraison')
       .eq('actif', true)
       .order('nom', { ascending: true })
       .then(({ data }) => setSearchProducts(data || []))
   }, [])
+
+  const hasDestockage = useMemo(() => searchProducts.some(isDestockage), [searchProducts])
 
   const suggestions = useMemo(() => {
     const q = searchText.trim().toLowerCase()
@@ -296,6 +299,18 @@ export default function Header({ activeCategory }) {
             </div>
           )
         })}
+        {hasDestockage && (
+          <a
+            href="#destockage"
+            className={`font-body pb-0.5 border-b-2 transition-colors ${
+              activeCategory === 'Déstockage'
+                ? 'border-rust text-rust font-semibold'
+                : 'border-transparent text-rust font-semibold hover:border-rust/40'
+            }`}
+          >
+            Déstockage
+          </a>
+        )}
       </nav>
 
       {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
@@ -391,6 +406,17 @@ export default function Header({ activeCategory }) {
                 </div>
               )
             })}
+            {hasDestockage && (
+              <div className="py-3">
+                <a
+                  href="#destockage"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-body text-sm text-rust font-semibold"
+                >
+                  Déstockage
+                </a>
+              </div>
+            )}
           </nav>
 
           {mode === 'retrait' && (

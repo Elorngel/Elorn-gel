@@ -27,6 +27,8 @@ export default function ProductDetailsModal({
   const [prixKgDraft, setPrixKgDraft] = useState(product.prix_kg_ref ?? '')
   const [poidsDraft, setPoidsDraft] = useState(product.poids_kg ?? '')
   const [poidsVariable, setPoidsVariable] = useState(product.poids_variable)
+  const [destockage, setDestockage] = useState(product.en_destockage === true)
+  const [prixDestockageDraft, setPrixDestockageDraft] = useState(product.prix_destockage ?? '')
   const [dispoLivraison, setDispoLivraison] = useState(product.dispo_livraison !== false)
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
@@ -119,6 +121,20 @@ export default function ProductDetailsModal({
         prix_livraison: Math.round(p * k * 100) / 100,
         poids: `${k} kg`,
       })
+    }
+  }
+
+  const toggleDestockage = () => {
+    const newValue = !destockage
+    setDestockage(newValue)
+    updateProduct(product.id, { en_destockage: newValue })
+  }
+
+  const savePrixDestockage = () => {
+    const v = parseFloat(prixDestockageDraft)
+    const next = isNaN(v) || v <= 0 ? null : v
+    if (next !== (product.prix_destockage ?? null)) {
+      updateProduct(product.id, { prix_destockage: next })
     }
   }
 
@@ -369,6 +385,52 @@ export default function ProductDetailsModal({
                   >
                     + Créer "{fournisseurSearch.trim()}" et l'associer
                   </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-ink/15 mt-5 pt-5">
+            <p className="font-tag text-xs uppercase text-muted mb-2">
+              Déstockage
+            </p>
+            <button
+              onClick={toggleDestockage}
+              className={`font-tag text-xs uppercase font-semibold px-3 py-2 border w-full mb-2 ${
+                destockage ? 'border-rust bg-rust text-paper' : 'border-ink/40 text-ink'
+              }`}
+            >
+              {destockage ? 'En déstockage' : 'Désactivé — cliquer pour activer'}
+            </button>
+            {destockage && (
+              <div>
+                <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+                  Prix de déstockage
+                </label>
+                <div className="flex items-center gap-1 w-40">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={prixDestockageDraft}
+                    onChange={(e) => setPrixDestockageDraft(e.target.value)}
+                    onBlur={savePrixDestockage}
+                    className="w-full border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                  />
+                  <span className="font-tag text-xs shrink-0">€</span>
+                </div>
+                {parseFloat(prixDestockageDraft) >= product.prix_livraison ? (
+                  <p className="font-tag text-xs text-rust mt-2">
+                    Le prix de déstockage doit être inférieur au prix normal (
+                    {Number(product.prix_livraison).toFixed(2)} €), sinon rien n'est appliqué.
+                  </p>
+                ) : (
+                  <p className="font-body text-xs text-muted mt-2">
+                    Le produit apparaît dans la rubrique « Déstockage » du site, avec ce prix
+                    (prix normal barré). Pour un produit à conditionnements, la remise
+                    équivalente est appliquée à chaque conditionnement. Le déstockage
+                    remplace une éventuelle promo.
+                  </p>
                 )}
               </div>
             )}
