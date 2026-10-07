@@ -72,5 +72,22 @@ export function useSiteSettings() {
     return data.publicUrl
   }, [])
 
-  return { settings, loading, updateSettings, uploadSiteImage }
+  // Reprend une photo déjà stockée sur le site (ex : photo d'un produit) en
+  // en faisant une COPIE côté stockage : la photo vitrine a ainsi son propre
+  // fichier, et supprimer ou remplacer la photo du produit ne l'affecte pas
+  // (et inversement, grâce au nettoyage de l'ancien fichier à chaque changement).
+  const copySiteImage = useCallback(async (sourceUrl, prefix) => {
+    const sourceName = storageFileName(sourceUrl)
+    if (!sourceName) throw new Error("Cette photo n'est pas stockée sur le site.")
+    const ext = sourceName.split('.').pop()
+    const filePath = `${prefix}-${Date.now()}.${ext}`
+
+    const { error } = await supabase.storage.from('photos-produits').copy(sourceName, filePath)
+    if (error) throw error
+
+    const { data } = supabase.storage.from('photos-produits').getPublicUrl(filePath)
+    return data.publicUrl
+  }, [])
+
+  return { settings, loading, updateSettings, uploadSiteImage, copySiteImage }
 }

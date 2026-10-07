@@ -208,7 +208,7 @@ function SubcategorySelect({ categorie, value, onSave, subcategoriesByCategory }
 }
 
 function SiteSettingsPanel() {
-  const { settings, loading, updateSettings, uploadSiteImage } = useSiteSettings()
+  const { settings, loading, updateSettings, uploadSiteImage, copySiteImage } = useSiteSettings()
   const [editing, setEditing] = useState(null) // 'hero' | 'logo' | null
   const [expanded, setExpanded] = useState(false)
   const [discountDraft, setDiscountDraft] = useState(null)
@@ -516,6 +516,7 @@ function SiteSettingsPanel() {
           initialPosX={settings.hero_pos_x ?? 50}
           initialPosY={settings.hero_pos_y ?? 50}
           onUpload={(file) => uploadSiteImage(file, 'vitrine')}
+          onPickExisting={(url) => copySiteImage(url, 'vitrine')}
           onSave={({ url, zoom, posX, posY }) =>
             updateSettings({
               hero_url: url,

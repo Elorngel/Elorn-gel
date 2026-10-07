@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PhotoPositionEditor from './PhotoPositionEditor'
+import ExistingPhotoPicker from './ExistingPhotoPicker'
 
 export default function PhotoEditorModal({
   title,
@@ -8,6 +9,7 @@ export default function PhotoEditorModal({
   initialPosX = 50,
   initialPosY = 50,
   onUpload, // (file) => Promise<url>
+  onPickExisting, // (url d'une photo déjà sur le site) => Promise<nouvelle url> ; absent = pas de choix parmi les photos du site
   onSave, // ({ url, zoom, posX, posY }) => Promise
   onClose,
   aspect = 1, // format du cadre (largeur / hauteur) : 1 = carré ; 16 / 9 = bannière
@@ -19,6 +21,7 @@ export default function PhotoEditorModal({
   const [posY, setPosY] = useState(initialPosY)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [picking, setPicking] = useState(false)
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0]
@@ -32,6 +35,22 @@ export default function PhotoEditorModal({
       setPosY(50)
     } catch (err) {
       alert(`Erreur upload : ${err.message}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handlePickExisting = async (existingUrl) => {
+    setUploading(true)
+    try {
+      const newUrl = await onPickExisting(existingUrl)
+      setUrl(newUrl)
+      setZoom(1)
+      setPosX(50)
+      setPosY(50)
+      setPicking(false)
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
     } finally {
       setUploading(false)
     }
@@ -87,6 +106,19 @@ export default function PhotoEditorModal({
               onChange={handleFileChange}
             />
           </label>
+
+          {onPickExisting && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPicking((v) => !v)}
+                className="mt-2 w-full border border-forest text-forest font-tag text-xs uppercase font-semibold py-2 hover:bg-forest hover:text-paper transition-colors"
+              >
+                {picking ? 'Fermer la liste des photos du site' : 'Choisir une photo déjà sur le site'}
+              </button>
+              {picking && <ExistingPhotoPicker onPick={handlePickExisting} disabled={uploading} />}
+            </>
+          )}
 
           <button
             onClick={handleSave}
