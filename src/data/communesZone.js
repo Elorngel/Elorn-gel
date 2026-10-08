@@ -931,6 +931,14 @@ export const COMMUNES_ZONE = [
   "z": "in"
  },
  {
+  "n": "Plouégat-Guérand",
+  "cp": [
+   "29620"
+  ],
+  "g": "Morlaix et sa région",
+  "z": "in"
+ },
+ {
   "n": "Plouigneau",
   "cp": [
    "29610",

@@ -8,7 +8,6 @@ import { useProducts } from './hooks/useProducts'
 import { useSuppliers } from './hooks/useSuppliers'
 import { getSupplierLogo } from './lib/suppliers'
 import { isPromoActive, isDestockage } from './lib/pricing'
-import { estSurLePouce, SUR_LE_POUCE_MAX_MIN } from './lib/cuisson'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
@@ -21,7 +20,7 @@ import Footer from './components/Footer'
 import Breadcrumb from './components/Breadcrumb'
 import { mentionsLegales, cgv, cgu } from './data/legalContent'
 
-function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, surLePouceOnly, showFullCatalog, petitsFormatsOnly }) {
+function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading, error } = useProducts()
   const { subcategoriesByCategory } = useCategories()
   const { suppliers } = useSuppliers()
@@ -38,14 +37,11 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
   const isHomepage =
-    !promoOnly && !destockageOnly && !surLePouceOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
+    !promoOnly && !destockageOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
 
   if (promoOnly) {
     visibleProducts = publishedProducts.filter(isPromoActive)
     title = 'Promotions'
-  } else if (surLePouceOnly) {
-    visibleProducts = publishedProducts.filter(estSurLePouce)
-    title = 'Sur le pouce'
   } else if (destockageOnly) {
     visibleProducts = publishedProducts.filter(isDestockage)
     title = 'Déstockage'
@@ -75,7 +71,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
 
   return (
     <>
-      <Header activeCategory={destockageOnly ? 'Déstockage' : surLePouceOnly ? 'Sur le pouce' : activeCategory} />
+      <Header activeCategory={destockageOnly ? 'Déstockage' : activeCategory} />
       {isHomepage && <Hero />}
 
       <main className="px-5 py-8 max-w-6xl mx-auto">
@@ -85,8 +81,6 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
               { label: 'Accueil', href: '#' },
               ...(promoOnly
                 ? [{ label: 'Promotions' }]
-                : surLePouceOnly
-                  ? [{ label: 'Sur le pouce' }]
                 : destockageOnly
                   ? [{ label: 'Déstockage' }]
                 : petitsFormatsOnly
@@ -114,12 +108,6 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
             </a>
           )}
         </div>
-
-        {surLePouceOnly && (
-          <p className="font-body text-sm text-muted mb-5">
-            Des produits prêts en {SUR_LE_POUCE_MAX_MIN} minutes de cuisson ou moins, pour un repas rapide.
-          </p>
-        )}
 
         {activeCategory && subcategoryOptions.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-5">
@@ -216,7 +204,6 @@ function App() {
   const rechercheMatch = route.match(/^#recherche\/(.+)$/)
   const promoMatch = route === '#promo'
   const destockageMatch = route === '#destockage'
-  const surLePouceMatch = route === '#sur-le-pouce'
   const catalogueMatch = route === '#catalogue'
   const petitsFormatsMatch = route === '#petits-formats'
 
@@ -246,7 +233,6 @@ function App() {
               searchQuery={searchQuery}
               promoOnly={promoMatch}
               destockageOnly={destockageMatch}
-              surLePouceOnly={surLePouceMatch}
               showFullCatalog={catalogueMatch}
               petitsFormatsOnly={petitsFormatsMatch}
             />
