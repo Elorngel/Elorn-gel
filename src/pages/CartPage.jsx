@@ -6,6 +6,8 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getAvailablePickupDates, getPickupTimeSlots, getAvailableDeliveryDates, getDeliveryTimeWindows } from '../lib/pickupSlots'
 import { getBasePrice } from '../lib/pricing'
 import { printBonDeCommande } from '../lib/printOrder'
+import { verifierZoneLivraison } from '../lib/zoneLivraison'
+import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import CroppableImage from '../components/CroppableImage'
@@ -17,7 +19,7 @@ const deliveryWindows = getDeliveryTimeWindows()
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear } = useCart()
-  const { mode, isPickup, getPickupPrice, discountPercent } = usePriceMode()
+  const { mode, setMode, isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { submitOrder, submitting, error } = useOrder()
   const { settings } = useSiteSettings()
 
@@ -50,9 +52,15 @@ export default function CartPage() {
   const deliveryDateLabel = (value) =>
     deliveryDates.find((d) => d.value === value)?.label || value
 
+  // Zone de livraison (réglée dans l'admin) : ne concerne que la livraison.
+  const zone = !isPickup ? verifierZoneLivraison(settings?.zone_livraison, codePostal, ville) : { ok: true }
+  const cpComplet = codePostal.trim().length === 5
+  const livraisonRefusee = !isPickup && !zone.ok && (cpComplet || zone.raison === 'commune')
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (items.length === 0) return
+    if (livraisonRefusee) return
 
     const lignesPourRecap = items.map((item) => ({
       nom: item.nom,
@@ -329,6 +337,31 @@ export default function CartPage() {
                         className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                       />
                     </div>
+                    {livraisonRefusee && cpComplet && (
+                      <div className="border border-rust bg-rust/5 p-3" role="alert">
+                        {zone.raison === 'code' ? (
+                          <p className="font-body text-sm text-ink">
+                            Désolé, nous ne livrons pas encore à cette adresse (code postal{' '}
+                            <strong>{codePostal.trim()}</strong>). Vous pouvez choisir le
+                            retrait au dépôt, ou nous appeler au{' '}
+                            {settings?.contact_telephone || DEFAULT_TELEPHONE}.
+                          </p>
+                        ) : (
+                          <p className="font-body text-sm text-ink">
+                            Ce code postal est partagé par plusieurs communes, et nous ne livrons
+                            que : <strong>{zone.desservies.join(', ')}</strong>. Indiquez le nom de
+                            votre commune dans « Ville », ou choisissez le retrait au dépôt.
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setMode('retrait')}
+                          className="mt-2 border border-ink font-tag text-xs font-semibold uppercase px-3 py-1.5 hover:bg-stone"
+                        >
+                          Passer en retrait au dépôt
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 <textarea
@@ -442,7 +475,7 @@ export default function CartPage() {
 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || livraisonRefusee}
                   className="bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2.5 hover:bg-forest transition-colors disabled:bg-muted"
                 >
                   {submitting ? 'Envoi…' : 'Valider la commande'}

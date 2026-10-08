@@ -11,6 +11,7 @@ import VariantsModal from '../components/VariantsModal'
 import CategoriesPanel from '../components/CategoriesPanel'
 import OccasionsPanel from '../components/OccasionsPanel'
 import SuppliersPanel from '../components/SuppliersPanel'
+import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import NewProductModal from '../components/NewProductModal'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
@@ -552,7 +553,7 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [detailsProduct, setDetailsProduct] = useState(null)
   const [variantsProduct, setVariantsProduct] = useState(null)
-  const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories' | 'occasions' | 'fournisseurs'
+  const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories' | 'occasions' | 'fournisseurs' | 'zone'
   const [searchText, setSearchText] = useState('')
   const [promoOnly, setPromoOnly] = useState(false)
   const [showNewProductModal, setShowNewProductModal] = useState(false)
@@ -671,6 +672,14 @@ export default function AdminPage() {
           >
             Fournisseurs
           </button>
+          <button
+            onClick={() => setTab('zone')}
+            className={`px-4 py-2 border-l border-ink/40 ${
+              tab === 'zone' ? 'bg-ink text-paper' : 'text-ink'
+            }`}
+          >
+            Zone de livraison
+          </button>
         </div>
 
         {tab === 'commandes' ? (
@@ -681,6 +690,8 @@ export default function AdminPage() {
           <OccasionsPanel allProducts={products} />
         ) : tab === 'fournisseurs' ? (
           <SuppliersPanel />
+        ) : tab === 'zone' ? (
+          <DeliveryZonePanel />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-4 flex-wrap">

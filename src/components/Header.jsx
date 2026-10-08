@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient'
 import SocialIcon from './SocialIcon'
 import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 import { isDestockage } from '../lib/pricing'
+import { estSurLePouce } from '../lib/cuisson'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -69,13 +70,16 @@ export default function Header({ activeCategory }) {
   useEffect(() => {
     supabase
       .from('produits')
-      .select('id, nom, categorie, en_destockage, prix_destockage, prix_livraison')
+      .select(
+        'id, nom, categorie, en_destockage, prix_destockage, prix_livraison, temps_four, temps_poele, temps_airfryer, temps_micro_ondes, temps_friteuse, temps_cocotte, necessite_decongelation, sans_decongelation'
+      )
       .eq('actif', true)
       .order('nom', { ascending: true })
       .then(({ data }) => setSearchProducts(data || []))
   }, [])
 
   const hasDestockage = useMemo(() => searchProducts.some(isDestockage), [searchProducts])
+  const hasSurLePouce = useMemo(() => searchProducts.some(estSurLePouce), [searchProducts])
 
   const suggestions = useMemo(() => {
     const q = searchText.trim().toLowerCase()
@@ -311,6 +315,18 @@ export default function Header({ activeCategory }) {
             Déstockage
           </a>
         )}
+        {hasSurLePouce && (
+          <a
+            href="#sur-le-pouce"
+            className={`md:ml-auto border border-forest px-3 py-0.5 font-tag text-xs uppercase font-semibold transition-colors ${
+              activeCategory === 'Sur le pouce'
+                ? 'bg-forest text-paper'
+                : 'text-forest hover:bg-forest hover:text-paper'
+            }`}
+          >
+            Sur le pouce
+          </a>
+        )}
       </nav>
 
       {/* Panneau mobile : catégories, recherche, mode livraison/retrait */}
@@ -414,6 +430,17 @@ export default function Header({ activeCategory }) {
                   className="font-body text-sm text-rust font-semibold"
                 >
                   Déstockage
+                </a>
+              </div>
+            )}
+            {hasSurLePouce && (
+              <div className="py-3">
+                <a
+                  href="#sur-le-pouce"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-body text-sm text-forest font-semibold"
+                >
+                  Sur le pouce
                 </a>
               </div>
             )}
