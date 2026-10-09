@@ -5,6 +5,7 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useCategories } from '../hooks/useCategories'
 import { supabase } from '../lib/supabaseClient'
 import SocialIcon from './SocialIcon'
+import { isAdminAuthenticated } from './AdminGate'
 import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 import { isDestockage } from '../lib/pricing'
 
@@ -44,6 +45,8 @@ export default function Header({ activeCategory }) {
   const [openMobileCategory, setOpenMobileCategory] = useState(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchProducts, setSearchProducts] = useState([])
+  // Le lien vers l'admin n'est visible que pour une personne connectée en mode admin.
+  const [estAdmin] = useState(() => isAdminAuthenticated())
   const navRef = useRef(null)
   const searchRef = useRef(null)
   const mobileSearchRef = useRef(null)
@@ -119,6 +122,11 @@ export default function Header({ activeCategory }) {
           >
             {settings?.contact_telephone || DEFAULT_TELEPHONE}
           </a>
+          {estAdmin && (
+            <a href="#admin" className="text-stone/60 hover:text-stone">
+              Administration
+            </a>
+          )}
         </div>
       </div>
 
