@@ -1,15 +1,24 @@
 import { useState } from 'react'
 
-const AUTH_KEY = 'elorngel-admin-auth'
-const ADMIN_USER = 'Admin'
-const ADMIN_PASSWORD = 'Bontin1234'
+// Nouvelle clé : les anciennes connexions (ancien compte « Admin ») ne donnent plus accès.
+const AUTH_KEY = 'bontin-admin-auth-v2'
+const OLD_AUTH_KEY = 'elorngel-admin-auth'
+
+// Comptes autorisés pour le moment. ATTENTION : cette vérification se fait dans le
+// navigateur, donc elle ne protège que de la curiosité (voir CLAUDE.md, « Sécurité admin »).
+const ADMIN_ACCOUNTS = [
+  { user: 'sylvie', password: '1234' },
+  { user: 'romuald', password: '1234' },
+]
 
 export function isAdminAuthenticated() {
-  return localStorage.getItem(AUTH_KEY) === 'true'
+  const connecte = localStorage.getItem(AUTH_KEY)
+  return ADMIN_ACCOUNTS.some((a) => a.user === connecte)
 }
 
 export function adminLogout() {
   localStorage.removeItem(AUTH_KEY)
+  localStorage.removeItem(OLD_AUTH_KEY)
 }
 
 export default function AdminGate({ children }) {
@@ -20,8 +29,12 @@ export default function AdminGate({ children }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (username === ADMIN_USER && password === ADMIN_PASSWORD) {
-      localStorage.setItem(AUTH_KEY, 'true')
+    const compte = ADMIN_ACCOUNTS.find(
+      (c) => c.user === username.trim().toLowerCase() && c.password === password
+    )
+    if (compte) {
+      localStorage.setItem(AUTH_KEY, compte.user)
+      localStorage.removeItem(OLD_AUTH_KEY)
       setAuthenticated(true)
       setErrorMsg('')
     } else {

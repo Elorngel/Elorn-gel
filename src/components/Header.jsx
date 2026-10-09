@@ -119,9 +119,6 @@ export default function Header({ activeCategory }) {
           >
             {settings?.contact_telephone || DEFAULT_TELEPHONE}
           </a>
-          <a href="#admin" className="text-stone/60 hover:text-stone">
-            Administration
-          </a>
         </div>
       </div>
 

@@ -95,8 +95,10 @@ machine (PC Windows) non poussé — à vérifier avant de les considérer faits
   clients (confirmation de commande, réinitialisation de mot de passe) ne
   partent pas encore. Ne pas être surpris si un test d'email échoue
   silencieusement, c'est attendu tant que ce n'est pas débloqué.
-- **Sécurité admin (connu, non corrigé)** : `AdminGate` n'est qu'un mot de
-  passe côté client (pas une vraie auth Supabase). La clé anonyme utilisée
+- **Sécurité admin (connu, non corrigé)** : `AdminGate` n'est qu'un contrôle
+  côté client (pas une vraie auth Supabase) : 2 comptes (sylvie, romuald) écrits
+  dans `AdminGate.jsx`, mots de passe faibles. Accès par `/#admin` (plus de lien
+  visible sur le site depuis le 09/10/2026). La clé anonyme utilisée
   par l'admin peut en théorie lire toutes les commandes (RLS permissif sur
   `commandes`/`commande_lignes`, policy `for all using (true)`). Ne pas
   aggraver cette ouverture ; en discuter avec Romuald avant de la resserrer,
