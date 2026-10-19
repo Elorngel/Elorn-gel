@@ -53,10 +53,22 @@ Livraison, colonnes `adresse_livraison`/`code_postal`/`ville` de `commandes`).
 n'existent PAS dans ce dépôt (aucun code d'auth) : peut-être sur l'autre
 machine (PC Windows) non poussé — à vérifier avant de les considérer faits.
 
-**En cours / à faire avant le vrai nom de domaine** :
-1. Mentions légales / CGV / CGU : rédigées mais retirées du site en attendant
-   le nom de domaine définitif et la désignation d'un médiateur de la
-   consommation (à vérifier si le groupe AUDACIER en a déjà un).
+**Reste à faire avant la bascule sur www.bontin.fr et la publicité** (audit du 19/10/2026) :
+1. Photos / quota Supabase (bloquant avant pub) : une visite du catalogue ≈ 49 Mo
+   (pas de chargement différé, logos fournisseurs lourds, `cache-control: no-cache`).
+2. Abonnements : Supabase Pro avant la pub ; Vercel Pro (Hobby = non commercial) ou Cloudflare Pages.
+3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
+4. IONOS (domaine, DNS et mails y sont) : créer logistique@ et contact@bontin.fr ; bascule DNS
+   (A vers Vercel, supprimer l'AAAA, www en CNAME, ne pas toucher MX/SPF/DMARC) ; garder
+   l'ancien PrestaShop un mois + export clients.
+5. CGV = copie de l'ancien site (19/10/2026), paiement et contact RGPD corrigés à la demande de
+   Romuald. Médiateur : CM2C conseillé, décision avec la direction prévue le 22/10/2026 ; une fois
+   inscrit, mettre à jour l'article 9 des CGV (et retirer le lien vers la plateforme européenne,
+   fermée) + mention sur le bon de commande. Pas de politique de confidentialité (l'ancien site
+   n'en avait pas).
+6. Données : 5 commandes test du 10/09, un produit publié à 0 €, 16 sans ingrédients (INCO).
+7. Plus tard : jours de fermeture, redirections des anciennes adresses PrestaShop + robots/sitemap,
+   tarifs de livraison selon la distance, mesure d'audience, fiche Google.
 
 **En sommeil (code et données conservés, juste désactivé le 02/10/2026)** :
 - Questionnaire de conseil produit ("Besoin d'un conseil ?" → occasions type

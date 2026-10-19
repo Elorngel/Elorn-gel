@@ -56,95 +56,26 @@ CNIL (cnil.fr).
 `
 
 export const cgv = `
-<h2>Article 1 — Champ d'application</h2>
-<p>
-Les présentes Conditions Générales de Vente s'appliquent à toute
-commande passée sur le site bontin.fr auprès de la société ELORN GEL,
-pour la vente de produits alimentaires surgelés, en livraison à domicile
-ou en retrait au dépôt de Plouédern.
-</p>
-
-<h2>Article 2 — Produits</h2>
-<p>
-Les produits proposés à la vente sont ceux présentés sur le site au
-moment de la commande, dans la limite des stocks disponibles. ELORN GEL
-se réserve le droit de modifier son catalogue et ses prix à tout moment.
-</p>
-
-<h2>Article 3 — Prix</h2>
-<p>
-Les prix sont indiqués en euros, toutes taxes comprises. Le site propose
-deux modes de tarification : un prix "Livraison" et un prix "Retrait"
-réduit (le taux de réduction applicable est affiché sur le site au
-moment de la commande), ainsi que des offres promotionnelles
-ponctuelles clairement signalées sur les fiches produits concernées.
-Des frais de livraison forfaitaires s'appliquent aux commandes livrées,
-également indiqués sur le site avant validation de la commande.
-</p>
-
-<h2>Article 4 — Commande</h2>
-<p>
-La commande s'effectue en ligne via le panier du site : sélection des
-produits et quantités, choix du mode (livraison ou retrait), puis
-validation avec les coordonnées du client (nom, téléphone, email
-facultatif). Aucun paiement n'est demandé au moment de la commande sur
-le site.
-</p>
-
-<h2>Article 5 — Paiement</h2>
-<p>
-Le site bontin.fr ne propose pas de paiement en ligne. Le règlement de
-la commande s'effectue exclusivement sur place, au moment de la
-livraison ou du retrait, selon les moyens de paiement acceptés par ELORN
-GEL (à préciser au client lors de la confirmation de commande).
-</p>
-
-<h2>Article 6 — Retrait de commande</h2>
-<p>
-Pour les commandes en retrait, celles-ci sont disponibles au dépôt de
-Plouédern sous 24 heures. Le client choisit un jour et un créneau
-horaire de 30 minutes (entre 8h et 18h, du lundi au vendredi) au moment
-de la commande.
-</p>
-
-<h2>Article 7 — Livraison</h2>
-<p>
-Les commandes en livraison sont proposées sous 24 heures, du lundi au
-vendredi. Le client choisit un jour et un créneau (matin, midi ou
-après-midi) au moment de la commande.
-</p>
-
-<h2>Article 8 — Droit de rétractation</h2>
-<p>
-Conformément à l'article L221-28 du Code de la consommation, le droit
-de rétractation ne s'applique pas aux biens susceptibles de se détériorer
-ou de se périmer rapidement, ce qui inclut les produits alimentaires
-surgelés vendus sur ce site. Une commande validée ne peut donc pas faire
-l'objet d'une rétractation, sauf accord exprès d'ELORN GEL ou produit
-non conforme à la commande.
-</p>
-
-<h2>Article 9 — Garanties</h2>
-<p>
-Les produits vendus bénéficient de la garantie légale de conformité et
-de la garantie contre les vices cachés, dans les conditions prévues par
-le Code civil et le Code de la consommation. Tout produit non conforme
-ou défectueux doit être signalé à ELORN GEL dans les meilleurs délais.
-</p>
-
-<h2>Article 10 — Réclamations et médiation</h2>
-<p>
-Pour toute réclamation, le client peut contacter ELORN GEL à
-logistique@bontin.fr. En cas de litige non résolu, le client
-consommateur peut recourir gratuitement à un médiateur de la
-consommation [nom et coordonnées du médiateur à désigner].
-</p>
-
-<h2>Article 11 — Droit applicable</h2>
-<p>
-Les présentes CGV sont soumises au droit français. En cas de litige, les
-tribunaux français seront seuls compétents.
-</p>
+<!-- Repris à l'identique des CGV de l'ancien site bontin.fr (octobre 2026), à la demande d'ELORN GEL. -->
+<h2>1. Identification du vendeur</h2>
+<p>La société ELORN GEL, SAS au capital de 8 000,00€, dont le siège social est situé ZI de Keriel Nord, 29800 Plouédern, immatriculée au RCS de Brest sous le numéro 490 383 767, TVA intracommunautaire : FR37490383767,<br>Email : contact@bontin.fr – Téléphone : 02.56.31.11.97.</p>
+<h2>2. Produits</h2>
+<p>Les produits proposés à la vente sont des <strong>produits alimentaires surgelés</strong>. Ils doivent être conservés immédiatement au congélateur après livraison afin de garantir leur qualité et leur sécurité alimentaire.</p>
+<p><strong>Les photographies présentées sur le site ne sont pas contractuelles et ne peuvent assurer une parfaite similitude avec le produit livré (variations possibles de présentation, taille, forme ou couleur).</strong></p>
+<h2>3. Prix et paiement</h2>
+<p>Les prix affichés sur le site sont exprimés en euros, toutes taxes comprises (TTC).<br>Les frais de livraison sont indiqués lors de la commande.<br>Le paiement s’effectue à la livraison (ou lors du retrait au dépôt), par carte bancaire, chèque ou espèces.</p>
+<h2>4. Livraison</h2>
+<p>La livraison est effectuée à l’adresse indiquée par le client dans les zones géographiques desservies par le vendeur.<br>Le client s’engage à être présent au créneau convenu afin de réceptionner les produits.<br>En cas d’absence, la responsabilité du vendeur ne pourra être engagée pour la perte des produits, ceux-ci ne pouvant être représentés ultérieurement si la chaîne du froid n’a pas été respectée.</p>
+<h2>5. Droit de rétractation</h2>
+<p>Conformément à l’article <strong>L221-28 du Code de la consommation</strong>, le droit de rétractation ne s’applique pas à la fourniture de biens susceptibles de se détériorer ou de se périmer rapidement, tels que les <strong>produits alimentaires surgelés</strong>.<br>En conséquence, toute commande est <strong>ferme et définitive</strong> après validation.</p>
+<h2>6. Réclamations</h2>
+<p>Toute réclamation (produit manquant, endommagé, ou non conforme) doit être signalée immédiatement au service client :<br>Email : contact@bontin.fr – Téléphone : 02.56.31.11.97.<br>Passé un délai de 48 heures après la livraison, aucune réclamation ne pourra être prise en compte.</p>
+<h2>7. Responsabilité</h2>
+<p>Le vendeur ne saurait être tenu responsable d’une mauvaise conservation des produits après leur livraison chez le client.<br>Sa responsabilité ne pourra pas être engagée en cas de force majeure ou de fait imputable au client.</p>
+<h2>8. Données personnelles</h2>
+<p>Les données collectées lors de la commande sont utilisées uniquement pour le traitement des achats, la livraison et la facturation.<br>Conformément au RGPD, le client dispose d’un droit d’accès, de rectification et de suppression de ses données en écrivant à contact@bontin.fr ou par courrier à ELORN GEL, ZI de Keriel Nord, 29800 Plouédern.</p>
+<h2>9. Droit applicable et litiges</h2>
+<p>Les présentes CGV sont soumises au <strong>droit français</strong>.<br>En cas de litige, le client peut recourir gratuitement à un médiateur de la consommation, ou saisir la plateforme européenne de règlement en ligne des litiges : <a class="decorated-link cursor-pointer">https://ec.europa.eu/consumers/odr</a>.<br>À défaut d’accord amiable, les tribunaux français seront seuls compétents.</p>
 `
 
 export const cgu = `
