@@ -60,8 +60,10 @@ machine (PC Windows) non poussé — à vérifier avant de les considérer faits
    sous leur ancien nom, sans le suffixe `-allege` : ne pas les supprimer comme « orphelins » sans
    accord), compression automatique des futurs logos (`useSuppliers`). Supabase impose
    `no-cache` côté navigateur (revalidation sans retéléchargement). Supabase Pro reste conseillé avant la pub.
-   Prochaine demande de Romuald : un calendrier dans l'admin pour fermer des jours (retrait et
-   livraison) et désactiver certains créneaux selon le jour de la semaine.
+   Calendrier : FAIT le 19/10/2026 (admin → onglet « Calendrier », `CalendarPanel.jsx` : jours
+   fermés au retrait, à la livraison ou aux deux + bouton « Fermer les jours fériés » ; créneaux
+   indisponibles par jour de la semaine ; colonnes `jours_fermes`/`creneaux_indisponibles` ;
+   logique dans `src/lib/pickupSlots.js`, utilisée par `CartPage`). Vide au départ : à régler par Romuald.
 2. Abonnements : Supabase Pro avant la pub ; Vercel Pro (Hobby = non commercial) ou Cloudflare Pages.
 3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
 4. IONOS (domaine, DNS et mails y sont) : créer logistique@ et contact@bontin.fr ; bascule DNS
@@ -73,7 +75,7 @@ machine (PC Windows) non poussé — à vérifier avant de les considérer faits
    fermée) + mention sur le bon de commande. Pas de politique de confidentialité (l'ancien site
    n'en avait pas).
 6. Données : 5 commandes test du 10/09, un produit publié à 0 €, 16 sans ingrédients (INCO).
-7. Plus tard : jours de fermeture, redirections des anciennes adresses PrestaShop + robots/sitemap,
+7. Plus tard : redirections des anciennes adresses PrestaShop + robots/sitemap,
    tarifs de livraison selon la distance, mesure d'audience, fiche Google.
 
 **En sommeil (code et données conservés, juste désactivé le 02/10/2026)** :

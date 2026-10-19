@@ -3,7 +3,7 @@ import { useCart } from '../context/CartContext'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
-import { getAvailablePickupDates, getPickupTimeSlots, getAvailableDeliveryDates, getDeliveryTimeWindows } from '../lib/pickupSlots'
+import { getDatesDisponibles, getCreneauxDisponibles } from '../lib/pickupSlots'
 import { getBasePrice } from '../lib/pricing'
 import { printBonDeCommande } from '../lib/printOrder'
 import { verifierZoneLivraison } from '../lib/zoneLivraison'
@@ -12,10 +12,6 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import CroppableImage from '../components/CroppableImage'
 
-const pickupDates = getAvailablePickupDates()
-const pickupSlots = getPickupTimeSlots()
-const deliveryDates = getAvailableDeliveryDates()
-const deliveryWindows = getDeliveryTimeWindows()
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear } = useCart()
@@ -45,6 +41,22 @@ export default function CartPage() {
   const subtotal = items.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0)
   const deliveryFee = !isPickup ? settings?.frais_livraison ?? 7 : 0
   const total = subtotal + deliveryFee
+
+  // Jours et créneaux proposés : calendrier réglé dans l'admin (jours fermés, créneaux
+  // indisponibles selon le jour de la semaine).
+  const calendrier = {
+    joursFermes: settings?.jours_fermes,
+    indispo: settings?.creneaux_indisponibles,
+  }
+  const pickupDates = getDatesDisponibles('retrait', calendrier)
+  const deliveryDates = getDatesDisponibles('livraison', calendrier)
+  // Une date ou un créneau qui n'est plus proposé (réglages chargés entre-temps) est ignoré.
+  const pickupDateOk = pickupDates.some((d) => d.value === pickupDate) ? pickupDate : ''
+  const deliveryDateOk = deliveryDates.some((d) => d.value === deliveryDate) ? deliveryDate : ''
+  const pickupSlots = getCreneauxDisponibles('retrait', pickupDateOk, calendrier)
+  const deliveryWindows = getCreneauxDisponibles('livraison', deliveryDateOk, calendrier)
+  const pickupSlotOk = pickupSlots.includes(pickupSlot) ? pickupSlot : ''
+  const deliveryWindowOk = deliveryWindows.includes(deliveryWindow) ? deliveryWindow : ''
 
   const pickupDateLabel = (value) =>
     pickupDates.find((d) => d.value === value)?.label || value
@@ -78,8 +90,8 @@ export default function CartPage() {
         adresseLivraison: !isPickup ? adresseLivraison.trim() : null,
         codePostal: !isPickup ? codePostal.trim() : null,
         ville: !isPickup ? ville.trim() : null,
-        creneauRetrait: isPickup ? `${pickupDateLabel(pickupDate)} · ${pickupSlot}` : null,
-        creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDate)} · ${deliveryWindow}` : null,
+        creneauRetrait: isPickup ? `${pickupDateLabel(pickupDateOk)} · ${pickupSlotOk}` : null,
+        creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDateOk)} · ${deliveryWindowOk}` : null,
         total,
         fraisLivraison: deliveryFee,
         items: lignesPourRecap,
@@ -383,7 +395,7 @@ export default function CartPage() {
                     </label>
                     <select
                       required
-                      value={pickupDate}
+                      value={pickupDateOk}
                       onChange={(e) => setPickupDate(e.target.value)}
                       className="w-full border border-ink/20 p-2 font-body text-sm mb-3 focus:border-forest focus:outline-none"
                     >
@@ -402,12 +414,13 @@ export default function CartPage() {
                     </label>
                     <select
                       required
-                      value={pickupSlot}
+                      value={pickupSlotOk}
                       onChange={(e) => setPickupSlot(e.target.value)}
-                      className="w-full border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                      disabled={!pickupDateOk}
+                      className="w-full border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none disabled:bg-stone disabled:text-muted"
                     >
                       <option value="" disabled>
-                        — choisir un créneau —
+                        {pickupDateOk ? '— choisir un créneau —' : "— choisir d'abord un jour —"}
                       </option>
                       {pickupSlots.map((slot) => (
                         <option key={slot} value={slot}>
@@ -427,7 +440,7 @@ export default function CartPage() {
                     </label>
                     <select
                       required
-                      value={deliveryDate}
+                      value={deliveryDateOk}
                       onChange={(e) => setDeliveryDate(e.target.value)}
                       className="w-full border border-ink/20 p-2 font-body text-sm mb-3 focus:border-forest focus:outline-none"
                     >
@@ -446,12 +459,13 @@ export default function CartPage() {
                     </label>
                     <select
                       required
-                      value={deliveryWindow}
+                      value={deliveryWindowOk}
                       onChange={(e) => setDeliveryWindow(e.target.value)}
-                      className="w-full border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                      disabled={!deliveryDateOk}
+                      className="w-full border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none disabled:bg-stone disabled:text-muted"
                     >
                       <option value="" disabled>
-                        — choisir un créneau —
+                        {deliveryDateOk ? '— choisir un créneau —' : "— choisir d'abord un jour —"}
                       </option>
                       {deliveryWindows.map((w) => (
                         <option key={w} value={w}>
