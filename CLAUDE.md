@@ -54,8 +54,14 @@ n'existent PAS dans ce dépôt (aucun code d'auth) : peut-être sur l'autre
 machine (PC Windows) non poussé — à vérifier avant de les considérer faits.
 
 **Reste à faire avant la bascule sur www.bontin.fr et la publicité** (audit du 19/10/2026) :
-1. Photos / quota Supabase (bloquant avant pub) : une visite du catalogue ≈ 49 Mo
-   (pas de chargement différé, logos fournisseurs lourds, `cache-control: no-cache`).
+1. Photos / quota Supabase : FAIT le 19/10/2026 sans toucher à la qualité des photos produits —
+   chargement différé (`loading="lazy"` dans `CroppableImage`, sauf bannière et photo de la fiche),
+   logos fournisseurs réduits à 400 px max (6,45 → 2,28 Mo ; les originaux restent dans le bucket
+   sous leur ancien nom, sans le suffixe `-allege` : ne pas les supprimer comme « orphelins » sans
+   accord), compression automatique des futurs logos (`useSuppliers`). Supabase impose
+   `no-cache` côté navigateur (revalidation sans retéléchargement). Supabase Pro reste conseillé avant la pub.
+   Prochaine demande de Romuald : un calendrier dans l'admin pour fermer des jours (retrait et
+   livraison) et désactiver certains créneaux selon le jour de la semaine.
 2. Abonnements : Supabase Pro avant la pub ; Vercel Pro (Hobby = non commercial) ou Cloudflare Pages.
 3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
 4. IONOS (domaine, DNS et mails y sont) : créer logistique@ et contact@bontin.fr ; bascule DNS

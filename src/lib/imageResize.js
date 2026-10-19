@@ -9,6 +9,11 @@
 // de plats), donc tout part en JPEG — sauf si l'image de départ a un fond
 // réellement transparent (ex : un futur logo), auquel cas on garde le PNG.
 
+// Les fichiers envoyés ont un nom unique (horodaté) et ne sont jamais réécrits : durée de
+// cache longue indiquée au CDN de Supabase. Les navigateurs revalident quand même (réponse
+// « pas modifié », sans retéléchargement), Supabase imposant no-cache côté navigateur.
+export const CACHE_UN_AN = '31536000'
+
 const MAX_DIMENSION = 1600 // largeur/hauteur max ; bien au-delà de ce qui s'affiche sur le site
 const JPEG_QUALITY = 0.85
 
@@ -41,7 +46,11 @@ function hasRealTransparency(ctx, width, height) {
 
 // Renvoie un nouveau File prêt à envoyer (toujours plus léger, jamais plus
 // lourd que l'original : si la compression ne gagne rien, on garde l'original).
-export async function resizeImageFile(file, { maxDimension = MAX_DIMENSION, quality = JPEG_QUALITY } = {}) {
+// garderPng : un PNG reste un PNG même sans transparence (logos : texte et contours nets).
+export async function resizeImageFile(
+  file,
+  { maxDimension = MAX_DIMENSION, quality = JPEG_QUALITY, garderPng = false } = {}
+) {
   // SVG et GIF (animés) : rien à gagner à les repasser par un canvas, on les laisse tels quels.
   if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file
 
@@ -63,7 +72,7 @@ export async function resizeImageFile(file, { maxDimension = MAX_DIMENSION, qual
     const ctx = canvas.getContext('2d')
     ctx.drawImage(img, 0, 0, width, height)
 
-    const keepPng = file.type === 'image/png' && hasRealTransparency(ctx, width, height)
+    const keepPng = file.type === 'image/png' && (garderPng || hasRealTransparency(ctx, width, height))
     const outType = keepPng ? 'image/png' : 'image/jpeg'
     const outExt = keepPng ? 'png' : 'jpg'
 

@@ -106,6 +106,7 @@ export default function ProductDetailPage({ id }) {
               <CroppableImage
                 src={product.photo_url}
                 alt={product.nom}
+                loading="eager"
                 zoom={product.photo_zoom ?? 1}
                 posX={product.photo_pos_x ?? 50}
                 posY={product.photo_pos_y ?? 50}

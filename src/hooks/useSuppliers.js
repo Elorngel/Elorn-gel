@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { resizeImageFile, CACHE_UN_AN } from '../lib/imageResize'
 
 export function useSuppliers() {
   const [suppliers, setSuppliers] = useState([])
@@ -43,12 +44,15 @@ export function useSuppliers() {
   }
 
   const uploadLogo = async (id, file) => {
-    const fileExt = file.name.split('.').pop()
+    // Les logos s'affichent en 80 px au plus : 400 px suffisent largement, même zoomés
+    // et sur écran Retina (un logo de 2 600 px pesait jusqu'à 1 Mo).
+    const toSend = await resizeImageFile(file, { maxDimension: 400, quality: 0.92, garderPng: true })
+    const fileExt = toSend.name.split('.').pop()
     const filePath = `fournisseur-${id}-${Date.now()}.${fileExt}`
 
     const { error: uploadError } = await supabase.storage
       .from('photos-produits')
-      .upload(filePath, file, { upsert: true })
+      .upload(filePath, toSend, { upsert: true, cacheControl: CACHE_UN_AN })
     if (uploadError) throw uploadError
 
     const { data } = supabase.storage.from('photos-produits').getPublicUrl(filePath)

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { resizeImageFile } from '../lib/imageResize'
+import { resizeImageFile, CACHE_UN_AN } from '../lib/imageResize'
 
 // Extrait le nom de fichier du bucket "photos-produits" à partir d'une URL
 // publique, pour pouvoir supprimer l'ancienne photo quand on la remplace.
@@ -77,7 +77,7 @@ export function useProducts() {
 
     const { error: uploadError } = await supabase.storage
       .from('photos-produits')
-      .upload(filePath, toSend, { upsert: true })
+      .upload(filePath, toSend, { upsert: true, cacheControl: CACHE_UN_AN })
 
     if (uploadError) throw uploadError
 
@@ -96,7 +96,7 @@ export function useProducts() {
 
     const { error: uploadError } = await supabase.storage
       .from('photos-produits')
-      .upload(filePath, toSend, { upsert: true })
+      .upload(filePath, toSend, { upsert: true, cacheControl: CACHE_UN_AN })
 
     if (uploadError) throw uploadError
 

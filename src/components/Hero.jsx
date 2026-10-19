@@ -39,6 +39,7 @@ export default function Hero() {
           <CroppableImage
             src={settings.hero_url}
             alt="Bontin"
+            loading="eager"
             zoom={settings.hero_zoom ?? 1}
             posX={settings.hero_pos_x ?? 50}
             posY={settings.hero_pos_y ?? 50}

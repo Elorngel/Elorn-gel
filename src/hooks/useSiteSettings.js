@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { resizeImageFile } from '../lib/imageResize'
+import { resizeImageFile, CACHE_UN_AN } from '../lib/imageResize'
 
 function storageFileName(url) {
   if (!url) return null
@@ -64,7 +64,7 @@ export function useSiteSettings() {
 
     const { error: uploadError } = await supabase.storage
       .from('photos-produits')
-      .upload(filePath, toSend, { upsert: true })
+      .upload(filePath, toSend, { upsert: true, cacheControl: CACHE_UN_AN })
 
     if (uploadError) throw uploadError
 

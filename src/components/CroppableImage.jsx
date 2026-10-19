@@ -7,6 +7,8 @@
 // Le conteneur parent doit avoir "position: relative" et une hauteur définie
 // (ou "overflow-hidden" avec une hauteur fixée par ex. h-36) : cette image
 // se cale dessus en absolu, elle ne détermine jamais la taille du cadre.
+// loading 'lazy' (par défaut) : la photo ne se télécharge qu'en arrivant à l'écran, ce qui
+// économise le quota Supabase ; 'eager' pour une image visible dès l'arrivée (bannière).
 export default function CroppableImage({
   src,
   alt = '',
@@ -15,11 +17,14 @@ export default function CroppableImage({
   posY = 50,
   fit = 'cover',
   className = '',
+  loading = 'lazy',
 }) {
   return (
     <img
       src={src}
       alt={alt}
+      loading={loading}
+      decoding="async"
       className={`absolute inset-0 ${className}`}
       style={{
         width: '100%',
