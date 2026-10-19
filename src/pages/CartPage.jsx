@@ -47,6 +47,7 @@ export default function CartPage() {
   const calendrier = {
     joursFermes: settings?.jours_fermes,
     indispo: settings?.creneaux_indisponibles,
+    speciaux: settings?.horaires_speciaux,
   }
   const pickupDates = getDatesDisponibles('retrait', calendrier)
   const deliveryDates = getDatesDisponibles('livraison', calendrier)

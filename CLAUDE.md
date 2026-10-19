@@ -62,7 +62,9 @@ machine (PC Windows) non poussé — à vérifier avant de les considérer faits
    `no-cache` côté navigateur (revalidation sans retéléchargement). Supabase Pro reste conseillé avant la pub.
    Calendrier : FAIT le 19/10/2026 (admin → onglet « Calendrier », `CalendarPanel.jsx` : jours
    fermés au retrait, à la livraison ou aux deux + bouton « Fermer les jours fériés » ; créneaux
-   indisponibles par jour de la semaine ; colonnes `jours_fermes`/`creneaux_indisponibles` ;
+   indisponibles par jour de la semaine ; horaires spéciaux d'une date précise (matin, après-midi,
+   de telle heure à telle heure, séparément livraison/retrait, prioritaires sur la semaine) ;
+   colonnes `jours_fermes`/`creneaux_indisponibles`/`horaires_speciaux` ;
    logique dans `src/lib/pickupSlots.js`, utilisée par `CartPage`). Vide au départ : à régler par Romuald.
 2. Abonnements : Supabase Pro avant la pub ; Vercel Pro (Hobby = non commercial) ou Cloudflare Pages.
 3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.

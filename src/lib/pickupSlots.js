@@ -46,7 +46,9 @@ export function getDeliveryTimeWindows() {
 const TOUS_LES_CRENEAUX = { retrait: getPickupTimeSlots(), livraison: getDeliveryTimeWindows() }
 
 // Réglages du calendrier (admin) : `joursFermes` = { 'AAAA-MM-JJ': 'tout' | 'retrait' | 'livraison' },
-// `indispo` = { retrait: { '1': [créneaux bloqués le lundi], … }, livraison: { … } }.
+// `indispo` = { retrait: { '1': [créneaux bloqués le lundi], … }, livraison: { … } },
+// `speciaux` = { 'AAAA-MM-JJ': { retrait: [créneaux OUVERTS ce jour-là], livraison: [...] } }
+// (horaires d'une date précise, prioritaires sur les créneaux habituels de la semaine).
 export function estJourFerme(type, cle, joursFermes) {
   const v = joursFermes?.[cle]
   return v === 'tout' || v === type
@@ -57,9 +59,26 @@ export function creneauxDuJour(type, jourSemaine, indispo) {
   return TOUS_LES_CRENEAUX[type].filter((c) => !bloques.includes(c))
 }
 
+// "9h00 - 12h00 (matin)" -> { debut: 540, fin: 720 } (en minutes)
+export function bornesCreneau(creneau) {
+  const m = creneau.match(/(\d+)h(\d+)\s*-\s*(\d+)h(\d+)/)
+  if (!m) return null
+  return { debut: +m[1] * 60 + +m[2], fin: +m[3] * 60 + +m[4] }
+}
+
+export const TOUS_CRENEAUX = TOUS_LES_CRENEAUX
+
+// Créneaux ouverts à une date donnée : horaires spéciaux de la date s'il y en a, sinon
+// créneaux habituels de ce jour de la semaine.
+export function creneauxPourDate(type, cle, { indispo, speciaux } = {}) {
+  const special = speciaux?.[cle]?.[type]
+  if (Array.isArray(special)) return TOUS_LES_CRENEAUX[type].filter((c) => special.includes(c))
+  return creneauxDuJour(type, dateDepuisCle(cle).getDay(), indispo)
+}
+
 // Prochains jours proposés au client (à partir de demain : disponible sous 24h), en sautant
 // les week-ends, les jours fermés et les jours de la semaine sans aucun créneau ouvert.
-export function getDatesDisponibles(type, { joursFermes, indispo } = {}, nombre = 7) {
+export function getDatesDisponibles(type, { joursFermes, indispo, speciaux } = {}, nombre = 7) {
   const dates = []
   const cursor = new Date()
   cursor.setHours(12, 0, 0, 0)
@@ -69,15 +88,15 @@ export function getDatesDisponibles(type, { joursFermes, indispo } = {}, nombre 
     const cle = cleDate(cursor)
     if (!JOURS_OUVRES.includes(jour)) continue
     if (estJourFerme(type, cle, joursFermes)) continue
-    if (creneauxDuJour(type, jour, indispo).length === 0) continue
+    if (creneauxPourDate(type, cle, { indispo, speciaux }).length === 0) continue
     dates.push({ value: cle, label: libelleDate(cursor) })
   }
   return dates
 }
 
-export function getCreneauxDisponibles(type, cle, { indispo } = {}) {
+export function getCreneauxDisponibles(type, cle, { indispo, speciaux } = {}) {
   if (!cle) return []
-  return creneauxDuJour(type, dateDepuisCle(cle).getDay(), indispo)
+  return creneauxPourDate(type, cle, { indispo, speciaux })
 }
 
 // Jours fériés français d'une année (Pâques calculé : algorithme de Meeus/Butcher).
