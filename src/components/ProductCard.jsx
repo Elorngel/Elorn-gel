@@ -142,7 +142,9 @@ export default function ProductCard({ product, supplierLogo }) {
                   <span className="font-tag text-[11px] text-muted line-through">
                     {basePrice.toFixed(2)} €
                   </span>
-                  <span className="font-display text-2xl text-forest leading-none">
+                  <span
+                    className={`font-display text-2xl leading-none ${promoActive ? 'text-rust' : 'text-forest'}`}
+                  >
                     {pickupPrice.toFixed(2)} €
                   </span>
                 </>

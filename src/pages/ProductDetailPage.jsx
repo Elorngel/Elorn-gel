@@ -224,7 +224,7 @@ export default function ProductDetailPage({ id }) {
                       )}
                       <span
                         className={`font-display text-4xl ${
-                          promoActive && !isPickup ? 'text-rust' : 'text-ink'
+                          promoActive ? 'text-rust' : 'text-ink'
                         }`}
                       >
                         {displayPrice.toFixed(2)} €
