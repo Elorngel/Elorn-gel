@@ -68,6 +68,11 @@ export default function ProductDetailPage({ id }) {
   const promoActive = promoPercent > 0
   const destockage = isDestockage(product)
   const basePrice = getBasePrice(product, referencePrice)
+  // Conditionnement au poids illisible ("1.2" sans unité) : pas de prix au kg plutôt qu'un prix faux.
+  const prixAuKg =
+    selectedVariant && variantWeightKg === null
+      ? null
+      : getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit)
   const pickupPrice = getPickupPrice(basePrice)
   const displayPrice = isPickup ? pickupPrice : basePrice
   const displayName = getDisplayName(product, isPickup)
@@ -206,11 +211,7 @@ export default function ProductDetailPage({ id }) {
               <div className="border-y border-ink/15 py-4 mb-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    {getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit) && (
-                      <p className="font-tag text-xs text-muted mb-1">
-                        {getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit)}
-                      </p>
-                    )}
+                    {prixAuKg && <p className="font-tag text-xs text-muted mb-1">{prixAuKg}</p>}
                     <div className="flex items-baseline gap-3 flex-wrap">
                       {promoActive && (
                         <span className="font-tag text-sm text-muted line-through">

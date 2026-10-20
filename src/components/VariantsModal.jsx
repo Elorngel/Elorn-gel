@@ -93,7 +93,9 @@ export default function VariantsModal({ product, onClose }) {
                           updateVariant(v.id, { poids: e.target.value })
                         }
                       }}
-                      className="flex-1 border border-ink/20 p-1.5 font-body text-sm focus:border-forest focus:outline-none"
+                      className={`flex-1 border p-1.5 font-body text-sm focus:border-forest focus:outline-none ${
+                        parseWeightToKg(v.poids) === null ? 'border-rust' : 'border-ink/20'
+                      }`}
                     />
                     <input
                       type="number"
@@ -125,6 +127,12 @@ export default function VariantsModal({ product, onClose }) {
                       Suppr.
                     </button>
                   </div>
+                  {parseWeightToKg(v.poids) === null && (
+                    <p className="font-tag text-[11px] text-rust pl-1 mb-1">
+                      Poids non reconnu : indiquez l'unité (ex : « 1,2 kg », « 800 g », « 75 cl ») pour
+                      que le prix au kg soit juste. En attendant, il n'est pas affiché.
+                    </p>
+                  )}
                   <div className="flex items-center gap-4 pl-1">
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input

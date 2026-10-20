@@ -85,48 +85,48 @@ export function getDisplayName(product, isPickup) {
   return product.nom
 }
 
-// Extrait un poids en kg depuis un texte. Comprend "500 g", "500g",
-// "1 kg", "1,5kg", ET le format "2x250g" (nombre d'unités × poids par
-// unité, ex: 2 sachets de 250g = 500g au total). Renvoie null si le
-// format n'est pas reconnu plutôt que de deviner un mauvais poids.
-export function parseWeightToKg(text) {
+// Lit un poids ou un volume écrit à la main dans un conditionnement : "500 g", "500gr",
+// "1,5 kg", "1 kilo", "75 cl", "2x250 g", "3X420 g env"… Renvoie { kg, unite } où kg est la
+// quantité totale (en kg, ou en litres pour un volume) et unite 'kg' ou 'l'. Renvoie null si
+// l'unité manque ("1.2") ou n'est pas reconnue, plutôt que de deviner un mauvais poids.
+const UNITE = '(kilogrammes?|kilos?|kgs?|grammes?|grs?|g|litres?|cl|ml|l)'
+const SIMPLE = new RegExp(`^(\\d+(?:\\.\\d+)?)${UNITE}$`)
+const MULTIPLE = new RegExp(`^(\\d+(?:\\.\\d+)?)[x×*](\\d+(?:\\.\\d+)?)${UNITE}$`)
+const EN_KG = { kg: 1, g: 0.001, l: 1, cl: 0.01, ml: 0.001 }
+
+function lirePoids(text) {
   if (!text) return null
-  const cleaned = String(text).toLowerCase().replace(',', '.').replace(/\s+/g, '')
-
-  const multi = cleaned.match(/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)(kg|g|l|ml)$/)
+  const cleaned = String(text)
+    .toLowerCase()
+    .replace(/,/g, '.')
+    .replace(/\s+/g, '')
+    .replace(/(env\.?|environ)$/, '')
+  let nombre = 1
+  let quantite
+  let unite
+  const multi = cleaned.match(MULTIPLE)
   if (multi) {
-    const count = parseFloat(multi[1])
-    const qty = parseFloat(multi[2])
-    const unit = multi[3]
-    const perUnitKg = unit === 'kg' || unit === 'l' ? qty : qty / 1000
-    return count * perUnitKg
+    nombre = parseFloat(multi[1])
+    quantite = parseFloat(multi[2])
+    unite = multi[3]
+  } else {
+    const simple = cleaned.match(SIMPLE)
+    if (!simple) return null
+    quantite = parseFloat(simple[1])
+    unite = simple[2]
   }
-
-  const simple = cleaned.match(/^(\d+(?:\.\d+)?)(kg|g|l|ml)$/)
-  if (simple) {
-    const value = parseFloat(simple[1])
-    const unit = simple[2]
-    return unit === 'kg' || unit === 'l' ? value : value / 1000
-  }
-
-  return null
+  const u = unite.startsWith('k') ? 'kg' : unite.startsWith('g') ? 'g' : unite === 'cl' || unite === 'ml' ? unite : 'l'
+  return { kg: nombre * quantite * EN_KG[u], unite: u === 'kg' || u === 'g' ? 'kg' : 'l' }
 }
 
-// Déduit l'unité d'affichage (kg ou l) depuis un texte de poids/volume comme
-// "500 g", "1,5kg" ou "2x1l" — pour que le prix au kg/litre affiché utilise
-// la bonne unité même quand il est calculé à partir d'un conditionnement
-// (ex : variante "6 l") plutôt que du champ "Prix au poids" de la fiche produit.
+// Poids total en kg (ou volume en litres) d'un texte de conditionnement, ou null.
+export function parseWeightToKg(text) {
+  return lirePoids(text)?.kg ?? null
+}
+
+// Unité d'affichage du prix au kg/litre ('kg' ou 'l') d'un texte de conditionnement, ou null.
 export function parseWeightUnit(text) {
-  if (!text) return null
-  const cleaned = String(text).toLowerCase().replace(',', '.').replace(/\s+/g, '')
-
-  const multi = cleaned.match(/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)(kg|g|l|ml)$/)
-  if (multi) return multi[3] === 'l' || multi[3] === 'ml' ? 'l' : 'kg'
-
-  const simple = cleaned.match(/^(\d+(?:\.\d+)?)(kg|g|l|ml)$/)
-  if (simple) return simple[2] === 'l' || simple[2] === 'ml' ? 'l' : 'kg'
-
-  return null
+  return lirePoids(text)?.unite ?? null
 }
 
 // Prix au kg (ou au litre) affiché sous le produit. Se recalcule en

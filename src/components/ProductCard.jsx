@@ -108,7 +108,10 @@ export default function ProductCard({ product, supplierLogo }) {
 
         <div className="mt-auto">
           <p className="font-tag text-[10px] text-muted mb-0.5 text-right">
-            {getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit)}
+            {/* Conditionnement au poids illisible : pas de prix au kg plutôt qu'un prix faux. */}
+            {defaultVariant && variantWeightKg === null
+              ? null
+              : getPricePerUnitLabel(product, basePrice, variantWeightKg, variantUnit)}
           </p>
 
           <div className="flex items-end justify-between gap-2 mb-3">
