@@ -1,28 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { requeteMemo, oublierRequetes } from '../lib/requeteMemo'
 
 export function useCategories() {
   const [categoriesFull, setCategoriesFull] = useState([])
   const [subcategoriesFull, setSubcategoriesFull] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const fetchAll = useCallback(async () => {
+  const fetchAll = useCallback(async (forcer = true) => {
     setLoading(true)
-    const { data: cats } = await supabase
-      .from('categories')
-      .select('*')
-      .order('ordre', { ascending: true })
-    const { data: subs } = await supabase
-      .from('sous_categories')
-      .select('*')
-      .order('ordre', { ascending: true })
+    if (forcer) oublierRequetes('categories')
+    // Catégories et sous-catégories en même temps, et une seule fois pour toute la page.
+    const [{ data: cats }, { data: subs }] = await requeteMemo('categories', () =>
+      Promise.all([
+        supabase.from('categories').select('*').order('ordre', { ascending: true }),
+        supabase.from('sous_categories').select('*').order('ordre', { ascending: true }),
+      ])
+    )
     setCategoriesFull(cats || [])
     setSubcategoriesFull(subs || [])
     setLoading(false)
   }, [])
 
   useEffect(() => {
-    fetchAll()
+    fetchAll(false)
   }, [fetchAll])
 
   // Formes simples, compatibles avec ce qu'utilisaient déjà le header,

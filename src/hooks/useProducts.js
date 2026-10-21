@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { resizeImageFile, CACHE_UN_AN } from '../lib/imageResize'
+import { requeteMemo, oublierRequetes } from '../lib/requeteMemo'
 
 // Extrait le nom de fichier du bucket "photos-produits" à partir d'une URL
 // publique, pour pouvoir supprimer l'ancienne photo quand on la remplace.
@@ -11,38 +12,58 @@ function storageFileName(url) {
   return i === -1 ? null : decodeURIComponent(url.slice(i + marker.length))
 }
 
-export function useProducts() {
+// Colonnes utiles aux pages du site (cartes produits, filtres, panier). Les fiches détaillées
+// chargent leur produit à part : inutile de télécharger ici les ingrédients et descriptions
+// des 290 produits (plus de 40 % du poids).
+const COLONNES_SITE =
+  'id, nom, nom_retrait, categorie, sous_categorie, fournisseur, actif, mis_en_avant, en_rupture, ' +
+  'en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, ' +
+  'prix_livraison, prix_par_kg, poids, poids_reference, unite_reference, tags, dispo_livraison, ' +
+  'dispo_retrait, photo_url, photo_zoom, photo_pos_x, photo_pos_y'
+
+// Produits et conditionnements demandés en même temps (et non l'un après l'autre).
+function chargerProduits(leger) {
+  return requeteMemo(`produits:${leger ? 'site' : 'complet'}`, async () => {
+    const [produits, variantes] = await Promise.all([
+      supabase.from('produits').select(leger ? COLONNES_SITE : '*').order('nom', { ascending: true }),
+      supabase.from('variantes_produit').select('*'),
+    ])
+    return { data: produits.data, error: produits.error, variantes: variantes.data || [] }
+  })
+}
+
+// leger : pour les pages du site (sans ingrédients ni description). L'admin charge tout.
+export function useProducts({ leger = false } = {}) {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('produits')
-      .select('*')
-      .order('nom', { ascending: true })
+  const fetchProducts = useCallback(
+    async (forcer = true) => {
+      setLoading(true)
+      if (forcer) oublierRequetes('produits')
+      const { data, error, variantes } = await chargerProduits(leger)
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+        return
+      }
+
+      const withVariants = data.map((p) => ({
+        ...p,
+        variantes: variantes.filter((v) => v.produit_id === p.id),
+      }))
+
+      setProducts(withVariants)
+      setError(null)
       setLoading(false)
-      return
-    }
-
-    const { data: variantesData } = await supabase.from('variantes_produit').select('*')
-
-    const withVariants = data.map((p) => ({
-      ...p,
-      variantes: (variantesData || []).filter((v) => v.produit_id === p.id),
-    }))
-
-    setProducts(withVariants)
-    setError(null)
-    setLoading(false)
-  }, [])
+    },
+    [leger]
+  )
 
   useEffect(() => {
-    fetchProducts()
+    fetchProducts(false)
   }, [fetchProducts])
 
   const updateProduct = useCallback(async (id, changes) => {
@@ -57,6 +78,7 @@ export function useProducts() {
 
     const { error } = await supabase.from('produits').update(changes).eq('id', id)
     if (error) throw error
+    oublierRequetes('produits')
     setProducts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, ...changes } : p))
     )
@@ -129,6 +151,7 @@ export function useProducts() {
 
     const { error } = await supabase.from('produits').delete().eq('id', id)
     if (error) throw error
+    oublierRequetes('produits')
     setProducts((prev) => prev.filter((p) => p.id !== id))
 
     const oldName = storageFileName(produit?.photo_url)

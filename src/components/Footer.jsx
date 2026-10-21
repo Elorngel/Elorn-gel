@@ -32,6 +32,11 @@ export default function Footer() {
                 Conditions générales d'utilisation (CGU)
               </a>
             </li>
+            <li>
+              <a href="#confidentialite" className="hover:underline">
+                Politique de confidentialité
+              </a>
+            </li>
           </ul>
         </div>
 

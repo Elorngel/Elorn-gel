@@ -6,7 +6,7 @@ import { isPromoActive } from '../lib/pricing'
 
 export default function Hero() {
   const { settings } = useSiteSettings()
-  const { products } = useProducts()
+  const { products } = useProducts({ leger: true })
   const { mode, setMode } = usePriceMode()
   const promoCount = products.filter((p) => p.actif !== false && isPromoActive(p)).length
 

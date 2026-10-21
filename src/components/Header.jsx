@@ -5,7 +5,7 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useCategories } from '../hooks/useCategories'
 import { supabase } from '../lib/supabaseClient'
 import SocialIcon from './SocialIcon'
-import { isAdminAuthenticated } from './AdminGate'
+import { useAuth } from '../context/AuthContext'
 import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 import { isDestockage } from '../lib/pricing'
 
@@ -46,7 +46,7 @@ export default function Header({ activeCategory }) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchProducts, setSearchProducts] = useState([])
   // Le lien vers l'admin n'est visible que pour une personne connectée en mode admin.
-  const [estAdmin] = useState(() => isAdminAuthenticated())
+  const { estAdmin, client } = useAuth()
   const navRef = useRef(null)
   const searchRef = useRef(null)
   const mobileSearchRef = useRef(null)
@@ -206,6 +206,13 @@ export default function Header({ activeCategory }) {
           )}
 
           <a
+            href="#mon-compte"
+            className="border border-ink/40 px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-stone"
+          >
+            {client ? client.prenom : 'Mon compte'}
+          </a>
+
+          <a
             href="#panier"
             className="relative border border-ink/40 px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-stone"
           >
@@ -220,6 +227,9 @@ export default function Header({ activeCategory }) {
 
         {/* Panier + burger : visibles seulement en dessous de md */}
         <div className="flex md:hidden items-center gap-3 shrink-0">
+          <a href="#mon-compte" aria-label="Mon compte" className="font-tag text-xs uppercase font-semibold border border-ink/40 px-2.5 py-1.5">
+            Compte
+          </a>
           <a href="#panier" className="relative" aria-label="Voir le panier">
             <span className="font-tag text-xs uppercase font-semibold border border-ink/40 px-2.5 py-1.5 block">
               Panier

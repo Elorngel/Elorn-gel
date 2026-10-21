@@ -18,10 +18,11 @@ import CartPage from './pages/CartPage'
 import LegalPage from './pages/LegalPage'
 import Footer from './components/Footer'
 import Breadcrumb from './components/Breadcrumb'
-import { mentionsLegales, cgv, cgu } from './data/legalContent'
+import { mentionsLegales, cgv, cgu, confidentialite } from './data/legalContent'
+import MonComptePage from './pages/MonComptePage'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
-  const { products, loading, error } = useProducts()
+  const { products, loading, error } = useProducts({ leger: true })
   const { subcategoriesByCategory } = useCategories()
   const { suppliers } = useSuppliers()
 
@@ -167,11 +168,12 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
 
         {!loading && !error && visibleProducts.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {visibleProducts.map((product) => (
+            {visibleProducts.map((product, i) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 supplierLogo={getSupplierLogo(suppliers, product.fournisseur)}
+                prioritaire={i < 4}
               />
             ))}
           </div>
@@ -218,6 +220,10 @@ function App() {
         <ConseilProvider>
           {route === '#mentions-legales' ? (
             <LegalPage title="Mentions légales" content={mentionsLegales} />
+          ) : route === '#confidentialite' ? (
+            <LegalPage title="Politique de confidentialité" content={confidentialite} />
+          ) : route === '#mon-compte' ? (
+            <MonComptePage />
           ) : route === '#cgv' ? (
             <LegalPage title="Conditions générales de vente" content={cgv} />
           ) : route === '#cgu' ? (

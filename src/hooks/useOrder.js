@@ -10,9 +10,15 @@ export function useOrder() {
     setError(null)
 
     try {
+      // La commande est rattachée au compte connecté (obligatoire depuis les comptes clients).
+      const { data: sessionData } = await supabase.auth.getSession()
+      const clientId = sessionData.session?.user?.id
+      if (!clientId) throw new Error('Connectez-vous pour valider votre commande.')
+
       const { data: commande, error: commandeError } = await supabase
         .from('commandes')
         .insert({
+          client_id: clientId,
           nom_client: nomClient,
           telephone,
           email: email || null,

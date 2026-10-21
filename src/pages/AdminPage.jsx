@@ -5,7 +5,7 @@ import { useCategories } from '../hooks/useCategories'
 import CroppableImage from '../components/CroppableImage'
 import PhotoEditorModal from '../components/PhotoEditorModal'
 import ProductDetailsModal from '../components/ProductDetailsModal'
-import { adminLogout } from '../components/AdminGate'
+import { useAuth } from '../context/AuthContext'
 import OrdersPanel from '../components/OrdersPanel'
 import VariantsModal from '../components/VariantsModal'
 import CategoriesPanel from '../components/CategoriesPanel'
@@ -13,6 +13,7 @@ import OccasionsPanel from '../components/OccasionsPanel'
 import SuppliersPanel from '../components/SuppliersPanel'
 import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import CalendarPanel from '../components/CalendarPanel'
+import ClientsPanel from '../components/ClientsPanel'
 import NewProductModal from '../components/NewProductModal'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
@@ -548,6 +549,7 @@ function SiteSettingsPanel() {
 }
 
 export default function AdminPage() {
+  const { deconnexion } = useAuth()
   const { products, loading, error, updateProduct, uploadPhotoOnly, refetch, createProduct, deleteProduct } = useProducts()
   const categoriesHook = useCategories()
   const { categories, subcategoriesByCategory } = categoriesHook
@@ -620,9 +622,9 @@ export default function AdminPage() {
             Voir le site
           </a>
           <button
-            onClick={() => {
-              adminLogout()
-              window.location.reload()
+            onClick={async () => {
+              await deconnexion()
+              window.location.hash = ''
             }}
             className="font-tag text-xs uppercase text-stone/80 hover:text-paper"
           >
@@ -640,6 +642,14 @@ export default function AdminPage() {
             className={`px-4 py-2 ${tab === 'produits' ? 'bg-ink text-paper' : 'text-ink'}`}
           >
             Produits
+          </button>
+          <button
+            onClick={() => setTab('clients')}
+            className={`px-4 py-2 border-l border-ink/40 ${
+              tab === 'clients' ? 'bg-ink text-paper' : 'text-ink'
+            }`}
+          >
+            Clients
           </button>
           <button
             onClick={() => setTab('commandes')}
@@ -693,6 +703,8 @@ export default function AdminPage() {
 
         {tab === 'commandes' ? (
           <OrdersPanel />
+        ) : tab === 'clients' ? (
+          <ClientsPanel />
         ) : tab === 'categories' ? (
           <CategoriesPanel {...categoriesHook} />
         ) : tab === 'occasions' ? (

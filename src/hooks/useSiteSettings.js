@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { resizeImageFile, CACHE_UN_AN } from '../lib/imageResize'
+import { requeteMemo, oublierRequetes } from '../lib/requeteMemo'
 
 function storageFileName(url) {
   if (!url) return null
@@ -16,20 +17,20 @@ export function useSiteSettings() {
   const [settings, setSettings] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchSettings = useCallback(async () => {
+  const fetchSettings = useCallback(async (forcer = true) => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('parametres_site')
-      .select('*')
-      .eq('id', 1)
-      .single()
+    if (forcer) oublierRequetes('parametres_site')
+    // Les réglages sont utilisés par une dizaine de composants : une seule requête pour tous.
+    const { data, error } = await requeteMemo('parametres_site', () =>
+      supabase.from('parametres_site').select('*').eq('id', 1).single()
+    )
 
     if (!error) setSettings(data)
     setLoading(false)
   }, [])
 
   useEffect(() => {
-    fetchSettings()
+    fetchSettings(false)
   }, [fetchSettings])
 
   const updateSettings = useCallback(async (changes) => {
@@ -47,6 +48,7 @@ export function useSiteSettings() {
       .update(changes)
       .eq('id', 1)
     if (error) throw error
+    oublierRequetes('parametres_site')
     setSettings((prev) => ({ ...prev, ...changes }))
 
     changedImageFields.forEach((f) => {

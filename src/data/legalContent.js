@@ -131,3 +131,69 @@ consultation du site.
 Les présentes CGU sont soumises au droit français.
 </p>
 `
+
+// Politique de confidentialité (rédigée le 21/10/2026 avec la création des comptes clients) :
+// à faire valider par ELORN GEL.
+export const confidentialite = `
+<h2>Qui est responsable de vos données ?</h2>
+<p>
+La société <strong>ELORN GEL</strong>, SAS au capital de 8 000,00 €, ZI de Keriel Nord, 29800 Plouédern
+(SIREN 490 383 767), qui exploite le site bontin.fr. Contact : contact@bontin.fr — 02 56 31 11 97.
+</p>
+
+<h2>Quelles données collectons-nous ?</h2>
+<p>
+Lors de la création de votre compte et de vos commandes : vos nom et prénom, adresse email, numéro de
+téléphone, date de naissance, adresse postale, le détail de vos commandes (produits, créneaux, montants)
+et, si vous l'indiquez, la façon dont vous avez connu Bontin. Votre mot de passe est conservé sous une
+forme chiffrée que personne, y compris nous, ne peut relire.
+</p>
+
+<h2>Pourquoi ?</h2>
+<p>
+<strong>Gérer votre compte et vos commandes</strong> (préparation, livraison ou retrait, historique,
+service client) : c'est nécessaire à l'exécution de votre commande.<br>
+<strong>Vous envoyer nos offres par email, dont votre bon d'achat d'anniversaire</strong> : uniquement si
+vous l'avez accepté. Vous pouvez retirer cet accord à tout moment depuis « Mon compte ». Votre date de
+naissance sert à ce bon d'anniversaire.<br>
+<strong>Mieux comprendre comment nos clients nous connaissent</strong>, pour améliorer notre communication.
+</p>
+
+<h2>Qui peut les voir ?</h2>
+<p>
+Uniquement le personnel d'ELORN GEL chargé des commandes. Nous ne vendons ni ne louons vos données.
+Elles sont hébergées par nos prestataires techniques : Supabase (base de données, serveurs situés en
+Irlande, Union européenne), Vercel (hébergement du site) et Resend (envoi des emails). Lorsque ces
+prestataires, basés aux États-Unis, peuvent accéder aux données, ce transfert est encadré par les clauses
+contractuelles types de la Commission européenne.
+</p>
+
+<h2>Combien de temps ?</h2>
+<p>
+Votre compte est conservé tant que vous l'utilisez, et supprimé après 3 ans sans commande ni connexion.
+Les commandes et factures sont conservées 10 ans, comme l'exige la loi comptable. Les données utilisées
+pour nos offres sont conservées jusqu'au retrait de votre accord, et au plus 3 ans après votre dernière
+commande.
+</p>
+
+<h2>Vos droits</h2>
+<p>
+Vous pouvez à tout moment consulter et modifier vos informations depuis « Mon compte », et y supprimer
+votre compte. Vous disposez aussi d'un droit d'accès, de rectification, d'effacement, d'opposition, de
+limitation et de portabilité de vos données : écrivez à contact@bontin.fr ou par courrier à ELORN GEL,
+ZI de Keriel Nord, 29800 Plouédern. Nous répondons dans un délai d'un mois. Si vous estimez que vos
+droits ne sont pas respectés, vous pouvez saisir la CNIL (www.cnil.fr).
+</p>
+
+<h2>Cookies</h2>
+<p>
+Le site n'utilise pas de cookies publicitaires ni de mesure d'audience. Il conserve seulement dans votre
+navigateur votre panier et votre connexion, indispensables à son fonctionnement.
+</p>
+
+<h2>Sécurité</h2>
+<p>
+Les échanges avec le site sont chiffrés (HTTPS) et l'accès aux données est limité : chaque client ne voit
+que ses propres informations, et seules les personnes habilitées d'ELORN GEL accèdent à l'administration.
+</p>
+`

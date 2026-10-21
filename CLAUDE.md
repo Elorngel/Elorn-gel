@@ -49,9 +49,17 @@ possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
 possibles "5 min à feu vif puis 10 min à feu moyen" ; cases "Décongélation
 préalable nécessaire" / "Sans décongélation préalable"), admin complet, **liens Facebook/Instagram** (réglables dans l'admin → Réglages du site, colonnes `lien_facebook`/`lien_instagram`, affichés via `SocialIcon.jsx` dans le bandeau du haut et le pied de page), **zone de livraison** (admin → onglet « Zone de livraison » : liste des communes cochées dans `parametres_site.zone_livraison` ; liste des communes et codes postaux dans `src/data/communesZone.js`, contrôle dans `src/lib/zoneLivraison.js` appelé par `CartPage` : le code postal est vérifié, et le nom de la ville quand le code est partagé avec une commune non desservie ; liste vide = aucune restriction), **photo vitrine au format fixe 16:9** (+ bouton « Choisir une photo déjà sur le site » : copie côté stockage d'une photo produit, `ExistingPhotoPicker.jsx` / `copySiteImage` — surtout ne pas faire pointer deux champs vers le même fichier, le nettoyage à chaque changement supprimerait l'autre) (même cadre dans l'éditeur admin et sur le site, `Hero.jsx` + `PhotoEditorModal aspect`), **déstockage** (case + prix sur la fiche produit admin → rubrique « Déstockage » du menu, route `#destockage`, colonnes `en_destockage`/`prix_destockage`, logique dans `src/lib/pricing.js`, passe avant la promo), **adresse de livraison** (adresse/code postal/ville demandés en mode
 Livraison, colonnes `adresse_livraison`/`code_postal`/`ville` de `commandes`).
-⚠ Les **comptes clients** (Supabase Auth, `#mes-commandes`) annoncés ici
-n'existent PAS dans ce dépôt (aucun code d'auth) : peut-être sur l'autre
-machine (PC Windows) non poussé — à vérifier avant de les considérer faits.
+**Comptes clients** (21/10/2026) : compte obligatoire pour commander, créé dans le formulaire du
+panier (onglets « Je crée mon compte » / « J'ai déjà un compte ») ou dans « Mon compte »
+(`#mon-compte` : historique des commandes, modification des informations, désinscription des
+offres, suppression du compte). Création côté serveur par la fonction Supabase `creer-compte`
+(compte actif tout de suite, sans email de confirmation) ; fiche dans la table `clients`
+(prénom, nom, email, téléphone, date de naissance, adresse, offres, « connu par ») ; commandes
+rattachées par `commandes.client_id`. Connexion partagée site/admin : `src/context/AuthContext.jsx`.
+Champs du formulaire : `ChampsCompte.jsx`. Admin → onglet « Clients » (`ClientsPanel.jsx`).
+Politique de confidentialité : `#confidentialite` (`legalContent.js`), à faire valider.
+En attente de l'accès IONOS : « mot de passe oublié » (aujourd'hui : « appelez-nous ») et le
+bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui demandent des emails.
 
 **Reste à faire avant la bascule sur www.bontin.fr et la publicité** (audit du 19/10/2026) :
 1. Photos / quota Supabase : FAIT le 19/10/2026 sans toucher à la qualité des photos produits —
@@ -60,6 +68,10 @@ machine (PC Windows) non poussé — à vérifier avant de les considérer faits
    sous leur ancien nom, sans le suffixe `-allege` : ne pas les supprimer comme « orphelins » sans
    accord), compression automatique des futurs logos (`useSuppliers`). Supabase impose
    `no-cache` côté navigateur (revalidation sans retéléchargement). Supabase Pro reste conseillé avant la pub.
+   Vitesse d'ouverture (21/10/2026) : requêtes partagées entre composants (`src/lib/requeteMemo.js`,
+   5 s), produits + conditionnements en parallèle, catalogue du site chargé sans ingrédients ni
+   description (`useProducts({ leger: true })`, l'admin charge tout), photos de la 1re rangée
+   chargées tout de suite (`ProductCard prioritaire`). 13 → 7 requêtes, 1res photos à 0,3 s au lieu de 3,5 s.
    Calendrier : FAIT le 19/10/2026 (admin → onglet « Calendrier », `CalendarPanel.jsx` : jours
    fermés au retrait, à la livraison ou aux deux + bouton « Fermer les jours fériés » ; créneaux
    indisponibles par jour de la semaine ; horaires spéciaux d'une date précise (matin, après-midi,
@@ -117,11 +129,11 @@ machine (PC Windows) non poussé — à vérifier avant de les considérer faits
   clients (confirmation de commande, réinitialisation de mot de passe) ne
   partent pas encore. Ne pas être surpris si un test d'email échoue
   silencieusement, c'est attendu tant que ce n'est pas débloqué.
-- **Sécurité admin (connu, non corrigé)** : `AdminGate` n'est qu'un contrôle
-  côté client (pas une vraie auth Supabase) : 2 comptes (sylvie, romuald) écrits
-  dans `AdminGate.jsx`, mots de passe faibles. Accès par `/#admin` (plus de lien
-  visible sur le site depuis le 09/10/2026). La clé anonyme utilisée
-  par l'admin peut en théorie lire toutes les commandes (RLS permissif sur
-  `commandes`/`commande_lignes`, policy `for all using (true)`). Ne pas
-  aggraver cette ouverture ; en discuter avec Romuald avant de la resserrer,
-  car ça toucherait au fonctionnement de l'admin actuel.
+- **Sécurité admin et base (21/10/2026)** : l'admin passe par de vrais comptes Supabase
+  (`AdminGate.jsx` : nom d'utilisateur « sylvie » → identifiant interne
+  `sylvie@admin.bontin.fr`, voir `emailAdmin`), reconnus par la table `admins` et la
+  fonction SQL `is_admin()`. Le verrouillage de la base (`supabase-securisation.sql` :
+  catalogue modifiable par les seuls admins, chaque client ne voit que ses commandes, photos
+  envoyées par les seuls admins) se pose APRÈS la mise en ligne du code et la création des
+  comptes admin — testé le 21/10 dans une transaction annulée (16 cas OK). Accès admin par
+  `/#admin` ; le lien « Administration » n'apparaît que pour un admin connecté.

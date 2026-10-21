@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { oublierRequetes } from '../lib/requeteMemo'
 
 export function useVariants(produitId) {
   const [variants, setVariants] = useState([])
@@ -31,6 +32,7 @@ export function useVariants(produitId) {
       est_defaut: variants.length === 0,
     })
     if (error) throw error
+    oublierRequetes('produits')
     await fetchVariants()
   }
 
@@ -40,12 +42,14 @@ export function useVariants(produitId) {
       .update(changes)
       .eq('id', id)
     if (error) throw error
+    oublierRequetes('produits')
     await fetchVariants()
   }
 
   const deleteVariant = async (id) => {
     const { error } = await supabase.from('variantes_produit').delete().eq('id', id)
     if (error) throw error
+    oublierRequetes('produits')
     await fetchVariants()
   }
 

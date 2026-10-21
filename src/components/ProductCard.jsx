@@ -4,7 +4,8 @@ import { useCart } from '../context/CartContext'
 import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
-export default function ProductCard({ product, supplierLogo }) {
+// prioritaire : carte visible dès l'ouverture (première rangée) → photo chargée sans attendre.
+export default function ProductCard({ product, supplierLogo, prioritaire = false }) {
   const { isPickup, getPickupPrice, discountPercent } = usePriceMode()
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState(false)
@@ -51,6 +52,7 @@ export default function ProductCard({ product, supplierLogo }) {
           <CroppableImage
             src={product.photo_url}
             alt={product.nom}
+            loading={prioritaire ? 'eager' : 'lazy'}
             zoom={product.photo_zoom ?? 1}
             posX={product.photo_pos_x ?? 50}
             posY={product.photo_pos_y ?? 50}

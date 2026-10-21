@@ -11,6 +11,8 @@ import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import CroppableImage from '../components/CroppableImage'
+import ChampsCompte, { COMPTE_VIDE } from '../components/ChampsCompte'
+import { useAuth } from '../context/AuthContext'
 
 
 export default function CartPage() {
@@ -19,13 +21,40 @@ export default function CartPage() {
   const { submitOrder, submitting, error } = useOrder()
   const { settings } = useSiteSettings()
 
-  const [nomClient, setNomClient] = useState('')
-  const [telephone, setTelephone] = useState('')
-  const [email, setEmail] = useState('')
+  const { user, client, estAdmin, chargement: authChargement, connexion, creerCompte, deconnexion } = useAuth()
+
+  // Coordonnées de la commande. null = reprendre celles du compte connecté.
+  const [nomClient, setNomClient] = useState(null)
+  const [telephone, setTelephone] = useState(null)
+  const [email, setEmail] = useState(null)
   const [note, setNote] = useState('')
-  const [adresseLivraison, setAdresseLivraison] = useState('')
-  const [codePostal, setCodePostal] = useState('')
-  const [ville, setVille] = useState('')
+  const [adresseLivraison, setAdresseLivraison] = useState(null)
+  const [codePostal, setCodePostal] = useState(null)
+  const [ville, setVille] = useState(null)
+
+  // Pas encore connecté : créer son compte (dans ce formulaire) ou se connecter.
+  const [onglet, setOnglet] = useState('creation')
+  const [compte, setCompte] = useState(COMPTE_VIDE)
+  const [connexionEmail, setConnexionEmail] = useState('')
+  const [connexionMdp, setConnexionMdp] = useState('')
+  const [erreurCompte, setErreurCompte] = useState('')
+  const [compteEnCours, setCompteEnCours] = useState(false)
+  const majCompte = (champ, valeur) => setCompte((c) => ({ ...c, [champ]: valeur }))
+
+  // D'où viennent les coordonnées : compte client, nouveau compte, ou saisie libre
+  // (administrateur qui prend une commande par téléphone).
+  const source = user ? (client ? 'compte' : 'libre') : 'creation'
+  const coord = {
+    nom:
+      source === 'creation'
+        ? `${compte.prenom} ${compte.nom}`.trim()
+        : nomClient ?? (client ? `${client.prenom} ${client.nom}` : ''),
+    telephone: source === 'creation' ? compte.telephone : telephone ?? client?.telephone ?? '',
+    email: source === 'creation' ? compte.email : source === 'compte' ? client.email : email ?? '',
+    adresse: source === 'creation' ? compte.adresse : adresseLivraison ?? client?.adresse ?? '',
+    codePostal: source === 'creation' ? compte.codePostal : codePostal ?? client?.code_postal ?? '',
+    ville: source === 'creation' ? compte.ville : ville ?? client?.ville ?? '',
+  }
   const [pickupDate, setPickupDate] = useState('')
   const [pickupSlot, setPickupSlot] = useState('')
   const [deliveryDate, setDeliveryDate] = useState('')
@@ -66,14 +95,32 @@ export default function CartPage() {
     deliveryDates.find((d) => d.value === value)?.label || value
 
   // Zone de livraison (réglée dans l'admin) : ne concerne que la livraison.
-  const zone = !isPickup ? verifierZoneLivraison(settings?.zone_livraison, codePostal, ville) : { ok: true }
-  const cpComplet = codePostal.trim().length === 5
+  const zone = !isPickup ? verifierZoneLivraison(settings?.zone_livraison, coord.codePostal, coord.ville) : { ok: true }
+  const cpComplet = coord.codePostal.trim().length === 5
   const livraisonRefusee = !isPickup && !zone.ok && (cpComplet || zone.raison === 'commune')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (items.length === 0) return
     if (livraisonRefusee) return
+    setErreurCompte('')
+
+    if (!user) {
+      setCompteEnCours(true)
+      try {
+        if (onglet === 'connexion') {
+          // Une fois connecté, le formulaire se remplit avec le compte : le client vérifie et valide.
+          await connexion(connexionEmail, connexionMdp)
+          return
+        }
+        await creerCompte(compte)
+      } catch (err) {
+        setErreurCompte(err.message)
+        return
+      } finally {
+        setCompteEnCours(false)
+      }
+    }
 
     const lignesPourRecap = items.map((item) => ({
       nom: item.nom,
@@ -83,14 +130,18 @@ export default function CartPage() {
 
     try {
       const commande = await submitOrder({
-        nomClient,
-        telephone,
-        email,
+        nomClient: coord.nom,
+        telephone: coord.telephone,
+        email: coord.email,
         mode,
         note,
-        adresseLivraison: !isPickup ? adresseLivraison.trim() : null,
-        codePostal: !isPickup ? codePostal.trim() : null,
-        ville: !isPickup ? ville.trim() : null,
+        adresseLivraison: !isPickup
+          ? [coord.adresse.trim(), (source === 'creation' ? compte.complement : client?.complement)?.trim()]
+              .filter(Boolean)
+              .join(', ')
+          : null,
+        codePostal: !isPickup ? coord.codePostal.trim() : null,
+        ville: !isPickup ? coord.ville.trim() : null,
         creneauRetrait: isPickup ? `${pickupDateLabel(pickupDateOk)} · ${pickupSlotOk}` : null,
         creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDateOk)} · ${deliveryWindowOk}` : null,
         total,
@@ -292,91 +343,165 @@ export default function CartPage() {
               >
                 <h2 className="font-display text-xl text-ink mb-1">Vos coordonnées</h2>
 
-                <input
-                  required
-                  type="text"
-                  placeholder="Nom et prénom"
-                  value={nomClient}
-                  onChange={(e) => setNomClient(e.target.value)}
-                  className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
-                />
-                <input
-                  required
-                  type="tel"
-                  placeholder="Téléphone"
-                  value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                  className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
-                />
-                <input
-                  required
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
-                />
-                {!isPickup && (
-                  <div className="flex flex-col gap-3">
-                    <p className="font-tag text-[11px] uppercase text-forest font-semibold">
-                      Adresse de livraison
+                {authChargement ? (
+                  <p className="font-body text-sm text-muted">Chargement…</p>
+                ) : !user ? (
+                  <>
+                    <p className="font-body text-sm text-muted">
+                      Un compte est nécessaire pour commander : il garde vos coordonnées et
+                      l'historique de vos commandes.
+                    </p>
+                    <div className="grid grid-cols-2 border border-ink/30 font-tag text-xs font-semibold uppercase">
+                      {[
+                        ['creation', 'Je crée mon compte'],
+                        ['connexion', "J'ai déjà un compte"],
+                      ].map(([valeur, label]) => (
+                        <button
+                          key={valeur}
+                          type="button"
+                          onClick={() => {
+                            setOnglet(valeur)
+                            setErreurCompte('')
+                          }}
+                          className={`py-2 ${onglet === valeur ? 'bg-ink text-paper' : 'text-ink hover:bg-stone'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {onglet === 'creation' ? (
+                      <ChampsCompte valeurs={compte} onChange={majCompte} idPrefixe="panier" />
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <input
+                          required
+                          type="email"
+                          autoComplete="email"
+                          placeholder="Email"
+                          value={connexionEmail}
+                          onChange={(e) => setConnexionEmail(e.target.value)}
+                          className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                        />
+                        <input
+                          required
+                          type="password"
+                          autoComplete="current-password"
+                          placeholder="Mot de passe"
+                          value={connexionMdp}
+                          onChange={(e) => setConnexionMdp(e.target.value)}
+                          className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                        />
+                        <p className="font-body text-xs text-muted">
+                          Mot de passe oublié ? Appelez-nous au{' '}
+                          {settings?.contact_telephone || DEFAULT_TELEPHONE}.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="font-body text-sm text-ink">
+                      {source === 'compte'
+                        ? `Connecté : ${client.prenom} ${client.nom} (${client.email}).`
+                        : estAdmin
+                          ? "Commande saisie par l'administration (par exemple pour un client au téléphone)."
+                          : 'Connecté.'}{' '}
+                      <button type="button" onClick={deconnexion} className="underline text-muted hover:text-ink">
+                        Se déconnecter
+                      </button>
                     </p>
                     <input
                       required
                       type="text"
-                      placeholder="Adresse (numéro et rue)"
-                      value={adresseLivraison}
-                      onChange={(e) => setAdresseLivraison(e.target.value)}
+                      placeholder="Nom et prénom"
+                      value={coord.nom}
+                      onChange={(e) => setNomClient(e.target.value)}
                       className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                     />
-                    <div className="grid grid-cols-[110px_1fr] gap-3">
+                    <input
+                      required
+                      type="tel"
+                      placeholder="Téléphone"
+                      value={coord.telephone}
+                      onChange={(e) => setTelephone(e.target.value)}
+                      className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                    />
+                    {source === 'libre' && (
                       <input
-                        required
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]{5}"
-                        maxLength={5}
-                        placeholder="Code postal"
-                        value={codePostal}
-                        onChange={(e) => setCodePostal(e.target.value)}
+                        type="email"
+                        placeholder="Email (facultatif)"
+                        value={coord.email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                       />
-                      <input
-                        required
-                        type="text"
-                        placeholder="Ville"
-                        value={ville}
-                        onChange={(e) => setVille(e.target.value)}
-                        className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
-                      />
-                    </div>
-                    {livraisonRefusee && cpComplet && (
-                      <div className="border border-rust bg-rust/5 p-3" role="alert">
-                        {zone.raison === 'code' ? (
-                          <p className="font-body text-sm text-ink">
-                            Désolé, nous ne livrons pas encore à cette adresse (code postal{' '}
-                            <strong>{codePostal.trim()}</strong>). Vous pouvez choisir le
-                            retrait au dépôt, ou nous appeler au{' '}
-                            {settings?.contact_telephone || DEFAULT_TELEPHONE}.
-                          </p>
-                        ) : (
-                          <p className="font-body text-sm text-ink">
-                            Ce code postal est partagé par plusieurs communes, et nous ne livrons
-                            que : <strong>{zone.desservies.join(', ')}</strong>. Indiquez le nom de
-                            votre commune dans « Ville », ou choisissez le retrait au dépôt.
-                          </p>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setMode('retrait')}
-                          className="mt-2 border border-ink font-tag text-xs font-semibold uppercase px-3 py-1.5 hover:bg-stone"
-                        >
-                          Passer en retrait au dépôt
-                        </button>
+                    )}
+                    {!isPickup && (
+                      <div className="flex flex-col gap-3">
+                        <p className="font-tag text-[11px] uppercase text-forest font-semibold">
+                          Adresse de livraison
+                        </p>
+                        <input
+                          required
+                          type="text"
+                          placeholder="Adresse (numéro et rue)"
+                          value={coord.adresse}
+                          onChange={(e) => setAdresseLivraison(e.target.value)}
+                          className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                        />
+                        <div className="grid grid-cols-[110px_1fr] gap-3">
+                          <input
+                            required
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]{5}"
+                            maxLength={5}
+                            placeholder="Code postal"
+                            value={coord.codePostal}
+                            onChange={(e) => setCodePostal(e.target.value)}
+                            className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                          />
+                          <input
+                            required
+                            type="text"
+                            placeholder="Ville"
+                            value={coord.ville}
+                            onChange={(e) => setVille(e.target.value)}
+                            className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+                          />
+                        </div>
                       </div>
                     )}
+                  </>
+                )}
+
+                {!isPickup && livraisonRefusee && cpComplet && (
+                  <div className="border border-rust bg-rust/5 p-3" role="alert">
+                    {zone.raison === 'code' ? (
+                      <p className="font-body text-sm text-ink">
+                        Désolé, nous ne livrons pas encore à cette adresse (code postal{' '}
+                        <strong>{coord.codePostal.trim()}</strong>). Vous pouvez choisir le
+                        retrait au dépôt, ou nous appeler au{' '}
+                        {settings?.contact_telephone || DEFAULT_TELEPHONE}.
+                      </p>
+                    ) : (
+                      <p className="font-body text-sm text-ink">
+                        Ce code postal est partagé par plusieurs communes, et nous ne livrons
+                        que : <strong>{zone.desservies.join(', ')}</strong>. Indiquez le nom de
+                        votre commune dans « Ville », ou choisissez le retrait au dépôt.
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setMode('retrait')}
+                      className="mt-2 border border-ink font-tag text-xs font-semibold uppercase px-3 py-1.5 hover:bg-stone"
+                    >
+                      Passer en retrait au dépôt
+                    </button>
                   </div>
                 )}
+
+                {!(!user && onglet === 'connexion') && (
+                <>
                 <textarea
                   placeholder="Note (optionnel — étage, digicode…)"
                   value={note}
@@ -481,6 +606,14 @@ export default function CartPage() {
                   Paiement sur place, à{' '}
                   {mode === 'retrait' ? 'la récupération de la commande' : 'la livraison'}.
                 </p>
+                </>
+                )}
+
+                {erreurCompte && (
+                  <p className="font-body text-sm text-rust" role="alert">
+                    {erreurCompte}
+                  </p>
+                )}
 
                 {error && (
                   <p className="font-body text-sm text-rust">
@@ -490,10 +623,16 @@ export default function CartPage() {
 
                 <button
                   type="submit"
-                  disabled={submitting || livraisonRefusee}
+                  disabled={submitting || compteEnCours || livraisonRefusee || authChargement}
                   className="bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2.5 hover:bg-forest transition-colors disabled:bg-muted"
                 >
-                  {submitting ? 'Envoi…' : 'Valider la commande'}
+                  {submitting || compteEnCours
+                    ? 'Envoi…'
+                    : user
+                      ? 'Valider la commande'
+                      : onglet === 'connexion'
+                        ? 'Se connecter'
+                        : 'Créer mon compte et valider la commande'}
                 </button>
               </form>
             </div>
