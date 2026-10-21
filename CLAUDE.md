@@ -132,8 +132,9 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
 - **Sécurité admin et base (21/10/2026)** : l'admin passe par de vrais comptes Supabase
   (`AdminGate.jsx` : nom d'utilisateur « sylvie » → identifiant interne
   `sylvie@admin.bontin.fr`, voir `emailAdmin`), reconnus par la table `admins` et la
-  fonction SQL `is_admin()`. Le verrouillage de la base (`supabase-securisation.sql` :
-  catalogue modifiable par les seuls admins, chaque client ne voit que ses commandes, photos
-  envoyées par les seuls admins) se pose APRÈS la mise en ligne du code et la création des
-  comptes admin — testé le 21/10 dans une transaction annulée (16 cas OK). Accès admin par
+  fonction SQL `is_admin()` (comptes : sylvie, romuald). Base VERROUILLÉE le 21/10/2026
+  (`supabase-securisation.sql` : catalogue modifiable par les seuls admins, chaque client ne
+  voit que ses commandes et sa fiche, photos envoyées par les seuls admins) — vérifié en ligne
+  (visiteur, client, admin). Créer un admin : compte via l'API admin de Supabase (clé
+  service_role récupérée par `supabase projects api-keys`, jamais écrite) + ligne dans `admins`. Accès admin par
   `/#admin` ; le lien « Administration » n'apparaît que pour un admin connecté.
