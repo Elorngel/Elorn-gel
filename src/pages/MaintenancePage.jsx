@@ -19,7 +19,7 @@ export default function MaintenancePage({ settings }) {
           <div className="border-b border-ink/15 px-6 py-5 flex items-center justify-between gap-4">
             <img src={settings?.logo_url || '/logo.png'} alt="Bontin" className="h-10 w-auto" />
             <span className="font-tag text-[11px] uppercase font-semibold tracking-wide bg-rust text-paper px-2 py-1">
-              Fermé pour travaux
+              Maintenance
             </span>
           </div>
 
