@@ -15,6 +15,7 @@ import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import CalendarPanel from '../components/CalendarPanel'
 import ClientsPanel from '../components/ClientsPanel'
 import NewProductModal from '../components/NewProductModal'
+import { MESSAGE_MAINTENANCE_DEFAUT } from './MaintenancePage'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 
@@ -207,6 +208,75 @@ function SubcategorySelect({ categorie, value, onSave, subcategoriesByCategory }
         </option>
       ))}
     </select>
+  )
+}
+
+// Case « Site en maintenance » : toujours visible en haut de l'admin, pour qu'on ne
+// l'oublie pas cochée.
+function MaintenancePanel() {
+  const { settings, updateSettings } = useSiteSettings()
+  const [messageDraft, setMessageDraft] = useState(null)
+  const [enCours, setEnCours] = useState(false)
+
+  if (!settings) return null
+  const actif = !!settings.en_maintenance
+  const message = messageDraft ?? settings.message_maintenance ?? ''
+
+  const basculer = async () => {
+    if (
+      !actif &&
+      !confirm(
+        'Mettre le site en maintenance ? Les visiteurs verront la page « On revient très vite » et ne pourront plus commander. Vous (connecté en admin) continuerez à voir le site.'
+      )
+    ) {
+      return
+    }
+    setEnCours(true)
+    try {
+      await updateSettings({ en_maintenance: !actif })
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    } finally {
+      setEnCours(false)
+    }
+  }
+
+  const enregistrerMessage = () => {
+    const v = message.trim()
+    if (v !== (settings.message_maintenance ?? '')) updateSettings({ message_maintenance: v || null })
+  }
+
+  return (
+    <div className={`border p-4 mb-4 ${actif ? 'bg-rust/10 border-rust' : 'bg-paper border-ink/15'}`}>
+      <label className="flex items-center gap-3 cursor-pointer w-fit">
+        <input type="checkbox" checked={actif} disabled={enCours} onChange={basculer} className="w-5 h-5 accent-rust" />
+        <span className="font-display text-xl text-ink">Site en maintenance</span>
+        <span
+          className={`font-tag text-[11px] uppercase font-semibold px-2 py-0.5 ${
+            actif ? 'bg-rust text-paper' : 'bg-forest text-paper'
+          }`}
+        >
+          {actif ? 'Site fermé aux visiteurs' : 'Site ouvert'}
+        </span>
+      </label>
+      <p className="font-body text-xs text-muted mt-1">
+        Cochée : les visiteurs voient une page « On revient très vite » avec votre téléphone, et ne peuvent plus
+        commander. Les administrateurs connectés continuent de voir et tester le site normalement.
+      </p>
+      <div className="mt-3 max-w-2xl">
+        <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+          Message affiché aux visiteurs (laisser vide pour le message par défaut)
+        </label>
+        <textarea
+          rows={2}
+          placeholder={MESSAGE_MAINTENANCE_DEFAUT}
+          value={message}
+          onChange={(e) => setMessageDraft(e.target.value)}
+          onBlur={enregistrerMessage}
+          className="w-full border border-ink/20 p-1.5 font-body text-sm bg-paper focus:border-forest focus:outline-none"
+        />
+      </div>
+    </div>
   )
 }
 
@@ -634,6 +704,7 @@ export default function AdminPage() {
       </header>
 
       <main className="px-3 py-5 max-w-[1800px] mx-auto">
+        <MaintenancePanel />
         <SiteSettingsPanel />
 
         <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase w-fit mb-4">

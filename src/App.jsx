@@ -20,6 +20,9 @@ import Footer from './components/Footer'
 import Breadcrumb from './components/Breadcrumb'
 import { mentionsLegales, cgv, cgu, confidentialite } from './data/legalContent'
 import MonComptePage from './pages/MonComptePage'
+import MaintenancePage from './pages/MaintenancePage'
+import { useSiteSettings } from './hooks/useSiteSettings'
+import { useAuth } from './context/AuthContext'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading, error } = useProducts({ leger: true })
@@ -186,19 +189,35 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
 
 function App() {
   const [route, setRoute] = useState(window.location.hash)
+  const { settings, loading: reglagesEnCours, rafraichir } = useSiteSettings()
+  const { chargement: connexionEnCours, estAdmin } = useAuth()
 
   useEffect(() => {
-    const onHashChange = () => setRoute(window.location.hash)
+    const onHashChange = () => {
+      setRoute(window.location.hash)
+      // Relit les réglages à chaque page : la mise en maintenance (ou sa levée) s'applique
+      // sans que le visiteur ait à recharger.
+      rafraichir()
+    }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
-  }, [])
+  }, [rafraichir])
 
+  // L'admin reste accessible en maintenance : c'est par là qu'on se connecte et qu'on la lève.
   if (route === '#admin') {
     return (
       <AdminGate>
         <AdminPage />
       </AdminGate>
     )
+  }
+
+  // On attend les réglages pour ne pas montrer la boutique un instant avant la page de maintenance.
+  // (Si les réglages sont illisibles, on affiche le site normalement plutôt qu'une page vide.)
+  if (settings === null && reglagesEnCours) return <div className="min-h-screen bg-stone" />
+  if (settings?.en_maintenance && !estAdmin) {
+    if (connexionEnCours) return <div className="min-h-screen bg-stone" />
+    return <MaintenancePage settings={settings} />
   }
 
   const produitMatch = route.match(/^#produit\/(.+)$/)
@@ -218,6 +237,14 @@ function App() {
     <PriceModeProvider>
       <CartProvider>
         <ConseilProvider>
+          {settings?.en_maintenance && (
+            <a
+              href="#admin"
+              className="block bg-rust text-paper text-center font-tag text-xs uppercase font-semibold tracking-wide px-4 py-2"
+            >
+              Site en maintenance : les visiteurs voient la page « On revient très vite ». Pour la lever : admin → Réglages du site
+            </a>
+          )}
           {route === '#mentions-legales' ? (
             <LegalPage title="Mentions légales" content={mentionsLegales} />
           ) : route === '#confidentialite' ? (

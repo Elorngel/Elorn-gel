@@ -91,5 +91,8 @@ export function useSiteSettings() {
     return data.publicUrl
   }, [])
 
-  return { settings, loading, updateSettings, uploadSiteImage, copySiteImage }
+  // Relecture discrète (ex. à chaque changement de page) : resservie par le cache si elle date de moins de 5 s.
+  const rafraichir = useCallback(() => fetchSettings(false), [fetchSettings])
+
+  return { settings, loading, updateSettings, uploadSiteImage, copySiteImage, rafraichir }
 }
