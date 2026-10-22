@@ -72,6 +72,9 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    5 s), produits + conditionnements en parallèle, catalogue du site chargé sans ingrédients ni
    description (`useProducts({ leger: true })`, l'admin charge tout), photos de la 1re rangée
    chargées tout de suite (`ProductCard prioritaire`). 13 → 7 requêtes, 1res photos à 0,3 s au lieu de 3,5 s.
+   Lenteurs Supabase (22/10/2026 : 1 demande sur 5 bloquée 2 à 30 s chez eux, base saine) : les lectures
+   sans réponse au bout de 3,5 s puis 7 s sont relancées (`src/lib/fetchAvecRelance.js`, branché dans
+   `supabaseClient.js`) ; jamais les envois (commandes, photos), pour ne rien enregistrer deux fois.
    Calendrier : FAIT le 19/10/2026 (admin → onglet « Calendrier », `CalendarPanel.jsx` : jours
    fermés au retrait, à la livraison ou aux deux + bouton « Fermer les jours fériés » ; créneaux
    indisponibles par jour de la semaine ; horaires spéciaux d'une date précise (matin, après-midi,
