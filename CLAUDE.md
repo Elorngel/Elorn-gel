@@ -115,7 +115,7 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    inscrit, mettre à jour l'article 9 des CGV (et retirer le lien vers la plateforme européenne,
    fermée) + mention sur le bon de commande. Pas de politique de confidentialité (l'ancien site
    n'en avait pas).
-6. Données : 5 commandes test du 10/09, un produit publié à 0 €, 16 sans ingrédients (INCO).
+6. Données : commandes test du 10/09 supprimées le 23/10/2026 ; reste 16 produits sans ingrédients (INCO).
 7. Plus tard : redirections des anciennes adresses PrestaShop + robots/sitemap,
    tarifs de livraison selon la distance, mesure d'audience, fiche Google.
 
