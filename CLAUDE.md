@@ -87,7 +87,8 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    logique dans `src/lib/pickupSlots.js`, utilisée par `CartPage`). Vide au départ : à régler par Romuald.
 2. Abonnements : Supabase Pro avant la pub ; Vercel Pro (Hobby = non commercial) ou Cloudflare Pages.
 3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
-4. IONOS (domaine, DNS et mails y sont) : créer logistique@ et contact@bontin.fr ; bascule DNS
+4. IONOS (domaine, DNS et mails y sont) : une seule boîte, contact@bontin.fr (email affiché par le site depuis
+   le 23/10/2026), à faire suivre vers logistique@elorngel.fr ; logistique@bontin.fr n'existe pas ; bascule DNS
    (A vers Vercel, supprimer l'AAAA, www en CNAME, ne pas toucher MX/SPF/DMARC) ; garder
    l'ancien PrestaShop un mois + export clients.
 5. CGV = copie de l'ancien site (19/10/2026), paiement et contact RGPD corrigés à la demande de
@@ -131,7 +132,9 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
 - **Bascule vers bontin.fr** : la fonction `send-order-emails` lit `FROM_EMAIL`
   et `ADMIN_EMAIL` dans les secrets Supabase (défaut : expéditeur de test Resend
   + `logistique@elorngel.fr`). Une fois `bontin.fr` vérifié dans Resend :
-  `supabase secrets set FROM_EMAIL=commandes@bontin.fr ADMIN_EMAIL=logistique@bontin.fr`.
+  `supabase secrets set FROM_EMAIL=commandes@bontin.fr` (ADMIN_EMAIL reste logistique@elorngel.fr, la boîte
+  lue par Romuald). ATTENTION : le domaine bontin.fr est dans le contrat « Hébergement Web Plus » IONOS du
+  PrestaShop — ne pas résilier l'hébergement sans en sortir d'abord le domaine et les mails.
 - **Resend** : le domaine `elorngel.fr` n'est pas encore vérifié → les emails
   clients (confirmation de commande, réinitialisation de mot de passe) ne
   partent pas encore. Ne pas être surpris si un test d'email échoue

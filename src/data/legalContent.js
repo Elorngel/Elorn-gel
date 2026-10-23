@@ -20,7 +20,7 @@ Numéro de TVA intracommunautaire : FR37 490 383 767.
 Directeur de la publication : Monsieur Ianis ZEMRAK.
 </p>
 <p>
-Contact : logistique@bontin.fr — 02 56 31 11 97.
+Contact : contact@bontin.fr — 02 56 31 11 97.
 </p>
 
 <h2>Hébergement</h2>
@@ -49,7 +49,7 @@ utilisées exclusivement pour le traitement des commandes et ne sont
 jamais cédées à des tiers à des fins commerciales. Conformément au
 Règlement Général sur la Protection des Données (RGPD), vous disposez
 d'un droit d'accès, de rectification et de suppression de vos données,
-que vous pouvez exercer en écrivant à logistique@bontin.fr. Vous
+que vous pouvez exercer en écrivant à contact@bontin.fr. Vous
 disposez également du droit d'introduire une réclamation auprès de la
 CNIL (cnil.fr).
 </p>

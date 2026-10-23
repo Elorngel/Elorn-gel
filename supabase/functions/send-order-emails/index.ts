@@ -10,7 +10,7 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 // l'expéditeur de test ci-dessous et n'autorise l'envoi qu'à l'adresse du
 // compte Resend. Une fois le domaine vérifié, il suffit de régler les deux
 // variables (sans toucher au code) :
-//   supabase secrets set FROM_EMAIL=commandes@bontin.fr ADMIN_EMAIL=logistique@bontin.fr
+//   supabase secrets set FROM_EMAIL=commandes@bontin.fr ADMIN_EMAIL=logistique@elorngel.fr
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'logistique@elorngel.fr'
 
