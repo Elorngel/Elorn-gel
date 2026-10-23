@@ -57,6 +57,33 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
+  // Parrainage : code facultatif d'un client existant. On le vérifie AVANT de créer le compte.
+  const codeParrain = texte(d.codeParrain, 30).toUpperCase().replace(/\s/g, '')
+  let parrain: { id: string; telephone: string; adresse: string; code_postal: string } | null = null
+  const { data: reglages } = await admin
+    .from('parametres_site')
+    .select('parrainage_actif, parrainage_montant, parrainage_minimum, parrainage_validite_mois')
+    .eq('id', 1)
+    .single()
+  if (codeParrain && reglages?.parrainage_actif) {
+    const { data } = await admin
+      .from('clients')
+      .select('id, telephone, adresse, code_postal')
+      .eq('code_parrain', codeParrain)
+      .maybeSingle()
+    if (!data) return json({ erreur: 'Code parrain inconnu : vérifiez-le, ou laissez la case vide.' }, 400)
+    // Garde-fou : on ne se parraine pas soi-même (même téléphone, ou même adresse).
+    const chiffres = (t: string) => (t || '').replace(/\D/g, '').slice(-9)
+    const adresseSimple = (a: string, cp: string) => `${(a || '').toLowerCase().replace(/[^a-z0-9]/g, '')}|${cp}`
+    if (
+      chiffres(data.telephone) === chiffres(fiche.telephone) ||
+      adresseSimple(data.adresse, data.code_postal) === adresseSimple(fiche.adresse, fiche.code_postal)
+    ) {
+      return json({ erreur: 'Ce code parrain ne peut pas être utilisé pour ce compte (même foyer que le parrain).' }, 400)
+    }
+    parrain = data
+  }
+
   const { data: cree, error: errCreation } = await admin.auth.admin.createUser({
     email,
     password: motDePasse,
@@ -71,7 +98,9 @@ Deno.serve(async (req) => {
     )
   }
 
-  const { error: errFiche } = await admin.from('clients').insert({ id: cree.user.id, email, ...fiche })
+  const { error: errFiche } = await admin
+    .from('clients')
+    .insert({ id: cree.user.id, email, ...fiche, parrain_id: parrain?.id ?? null })
   if (errFiche) {
     // Pas de compte à moitié créé : on annule.
     await admin.auth.admin.deleteUser(cree.user.id)
@@ -79,5 +108,19 @@ Deno.serve(async (req) => {
     return json({ erreur: 'Création du compte impossible.' }, 500)
   }
 
-  return json({ ok: true })
+  // Bon de bienvenue du filleul (valable N mois, à partir d'un minimum de commande).
+  if (parrain && reglages) {
+    const fin = new Date()
+    fin.setMonth(fin.getMonth() + (reglages.parrainage_validite_mois || 1))
+    const { error: errBon } = await admin.from('bons_achat').insert({
+      client_id: cree.user.id,
+      montant: reglages.parrainage_montant,
+      minimum_commande: reglages.parrainage_minimum,
+      motif: 'parrainage_filleul',
+      valable_jusqu_au: fin.toISOString(),
+    })
+    if (errBon) console.error('Bon de parrainage non créé :', errBon)
+  }
+
+  return json({ ok: true, parraine: !!parrain })
 })

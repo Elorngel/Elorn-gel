@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-import ChampsCompte, { COMPTE_VIDE } from '../components/ChampsCompte'
+import ChampsCompte, { COMPTE_VIDE, nouveauCompte } from '../components/ChampsCompte'
 import { useAuth } from '../context/AuthContext'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
 import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
+import { MOTIFS_BON, euros, eurosTexte, lienParrainage } from '../lib/offres'
 
 const STATUTS = { nouvelle: 'Reçue', preparee: 'Préparée', livree: 'Livrée / retirée' }
 const champ = 'w-full border border-ink/20 p-2 font-body text-sm bg-paper focus:border-forest focus:outline-none'
@@ -28,7 +29,7 @@ function NonConnecte() {
   const [email, setEmail] = useState('')
   const [mdp, setMdp] = useState('')
   const [erreur, setErreur] = useState('')
-  const [compte, setCompte] = useState(COMPTE_VIDE)
+  const [compte, setCompte] = useState(nouveauCompte)
   const [erreurCreation, setErreurCreation] = useState('')
   const [envoi, setEnvoi] = useState(false)
 
@@ -162,6 +163,20 @@ function MesCommandes({ userId }) {
                         <td className="py-1 text-right font-tag">{(l.prix_unitaire * l.quantite).toFixed(2)} €</td>
                       </tr>
                     ))}
+                    {c.remise_code > 0 && (
+                      <tr>
+                        <td className="py-1 font-body text-forest">Code {c.code_promo}</td>
+                        <td />
+                        <td className="py-1 text-right font-tag text-forest">-{euros(c.remise_code)}</td>
+                      </tr>
+                    )}
+                    {c.remise_bon > 0 && (
+                      <tr>
+                        <td className="py-1 font-body text-forest">Bon d'achat</td>
+                        <td />
+                        <td className="py-1 text-right font-tag text-forest">-{euros(c.remise_bon)}</td>
+                      </tr>
+                    )}
                     {c.frais_livraison > 0 && (
                       <tr>
                         <td className="py-1 font-body text-muted">Frais de livraison</td>
@@ -184,6 +199,79 @@ function MesCommandes({ userId }) {
         )
       })}
     </ul>
+  )
+}
+
+function Parrainage({ client }) {
+  const { settings } = useSiteSettings()
+  const [bons, setBons] = useState(null)
+  const [copie, setCopie] = useState(false)
+
+  useEffect(() => {
+    supabase
+      .from('bons_achat')
+      .select('*')
+      .eq('client_id', client.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setBons(data || []))
+  }, [client.id])
+
+  const copier = async () => {
+    try {
+      await navigator.clipboard.writeText(lienParrainage(client.code_parrain))
+      setCopie(true)
+    } catch {
+      setCopie(false)
+    }
+  }
+
+  const maintenant = new Date().toISOString()
+  const etat = (b) =>
+    b.commande_id ? 'Utilisé' : b.valable_jusqu_au < maintenant ? 'Expiré' : `Valable jusqu'au ${new Date(b.valable_jusqu_au).toLocaleDateString('fr-FR')}`
+
+  return (
+    <div className="flex flex-col gap-4">
+      {settings?.parrainage_actif !== false && client.code_parrain && (
+        <div>
+          <p className="font-body text-sm mb-2">
+            Parrainez vos proches : ils ont {eurosTexte(settings?.parrainage_montant ?? 25)} sur leur première commande, et
+            vous aussi dès que leur commande est livrée.{' '}
+            <a href="#parrainage" className="underline">
+              Comment ça marche ?
+            </a>
+          </p>
+          <p className="font-tag text-[11px] uppercase text-muted">Votre code parrain</p>
+          <p className="font-display text-3xl text-forest leading-none">{client.code_parrain}</p>
+          <button type="button" onClick={copier} className={`${bouton} mt-2`}>
+            {copie ? 'Lien copié !' : 'Copier mon lien de parrainage'}
+          </button>
+        </div>
+      )}
+      <div>
+        <p className="font-tag text-[11px] uppercase text-muted mb-1">Mes bons d'achat</p>
+        {bons === null ? (
+          <p className="font-body text-sm text-muted">Chargement…</p>
+        ) : bons.length === 0 ? (
+          <p className="font-body text-sm text-muted">Aucun bon pour le moment.</p>
+        ) : (
+          <ul className="divide-y divide-ink/10 border-y border-ink/10">
+            {bons.map((b) => (
+              <li key={b.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2 font-body text-sm">
+                <span>
+                  <strong>{eurosTexte(b.montant)}</strong> · {MOTIFS_BON[b.motif] || "Bon d'achat"}
+                  <span className="block font-tag text-[11px] text-muted">
+                    Dès {eurosTexte(b.minimum_commande)} d'achats, appliqué automatiquement dans le panier
+                  </span>
+                </span>
+                <span className={`font-tag text-[11px] uppercase ${b.commande_id || b.valable_jusqu_au < maintenant ? 'text-muted' : 'text-forest'}`}>
+                  {etat(b)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -330,6 +418,9 @@ export default function MonComptePage() {
         </div>
         <Cadre titre="Mes commandes">
           <MesCommandes userId={user.id} />
+        </Cadre>
+        <Cadre titre="Parrainage et bons d'achat">
+          <Parrainage client={client} />
         </Cadre>
         <Cadre titre="Mes informations">
           <MesInformations key={client.id} client={client} onEnregistre={rechargerProfil} />

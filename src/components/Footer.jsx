@@ -1,5 +1,6 @@
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import SocialIcon from './SocialIcon'
+import PastillesParrainage from './PastillesParrainage'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE } from '../lib/siteDefaults'
 
 export default function Footer() {
@@ -11,6 +12,17 @@ export default function Footer() {
 
   return (
     <footer className="bg-ink text-stone mt-10">
+      {settings && settings.parrainage_actif !== false && (
+        <div className="border-b border-stone/15 px-5 py-8 text-center">
+          <p className="font-display text-3xl text-paper mb-5">Parrainez vos proches</p>
+          <a href="#parrainage" className="block w-fit mx-auto" aria-label="Le parrainage Bontin : comment ça marche">
+            <PastillesParrainage montant={settings.parrainage_montant} />
+          </a>
+          <a href="#parrainage" className="inline-block mt-5 font-tag text-xs uppercase font-semibold underline hover:text-paper">
+            Comment ça marche ?
+          </a>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto px-5 py-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
         <div>
           <h3 className="font-tag text-xs uppercase font-semibold text-stone/60 mb-3">

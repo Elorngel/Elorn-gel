@@ -72,6 +72,8 @@ function buildHtml(c: any) {
         </thead>
         <tbody>${lignesHtml}</tbody>
       </table>
+      ${Number(c.remise_code) > 0 ? `<p style="text-align:right;color:#23422b;">Code promo ${esc(c.code_promo)} : -${euros(c.remise_code)}</p>` : ''}
+      ${Number(c.remise_bon) > 0 ? `<p style="text-align:right;color:#23422b;">Bon d'achat : -${euros(c.remise_bon)}</p>` : ''}
       ${Number(c.frais_livraison) > 0 ? `<p style="text-align:right;">Frais de livraison : ${euros(c.frais_livraison)}</p>` : ''}
       <p style="text-align:right;font-size:18px;font-weight:bold;">
         Total : ${euros(c.total)}

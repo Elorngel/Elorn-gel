@@ -1,23 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getDatesDisponibles, getCreneauxDisponibles } from '../lib/pickupSlots'
-import { getBasePrice } from '../lib/pricing'
+import { calculerCommande, articleIndisponible } from '../../supabase/functions/_shared/calculCommande.js'
+import { usePrixPanier, varianteDuPanier } from '../hooks/usePrixPanier'
+import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
 import { verifierZoneLivraison } from '../lib/zoneLivraison'
 import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import CroppableImage from '../components/CroppableImage'
-import ChampsCompte, { COMPTE_VIDE } from '../components/ChampsCompte'
+import ChampsCompte, { nouveauCompte } from '../components/ChampsCompte'
 import { useAuth } from '../context/AuthContext'
+import { MOTIFS_BON, euros, eurosTexte } from '../lib/offres'
 
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear } = useCart()
-  const { mode, setMode, isPickup, getPickupPrice, discountPercent } = usePriceMode()
+  const { mode, setMode, isPickup, discountPercent } = usePriceMode()
   const { submitOrder, submitting, error } = useOrder()
   const { settings } = useSiteSettings()
 
@@ -34,7 +37,7 @@ export default function CartPage() {
 
   // Pas encore connecté : créer son compte (dans ce formulaire) ou se connecter.
   const [onglet, setOnglet] = useState('creation')
-  const [compte, setCompte] = useState(COMPTE_VIDE)
+  const [compte, setCompte] = useState(nouveauCompte)
   const [connexionEmail, setConnexionEmail] = useState('')
   const [connexionMdp, setConnexionMdp] = useState('')
   const [erreurCompte, setErreurCompte] = useState('')
@@ -60,16 +63,78 @@ export default function CartPage() {
   const [deliveryDate, setDeliveryDate] = useState('')
   const [deliveryWindow, setDeliveryWindow] = useState('')
   const [confirmedOrder, setConfirmedOrder] = useState(null)
-  const [confirmedLignes, setConfirmedLignes] = useState([])
 
-  const unitPrice = (item) => {
-    const base = getBasePrice(item)
-    return isPickup ? getPickupPrice(base) : base
+  // Code promo saisi dans le panier (vérifié par la base, puis réappliqué par le serveur).
+  const [codeSaisi, setCodeSaisi] = useState('')
+  const [codeApplique, setCodeApplique] = useState(null)
+  const [codeMessage, setCodeMessage] = useState('')
+  const [codeEnCours, setCodeEnCours] = useState(false)
+
+  // Bons d'achat du client connecté (parrainage…), utilisés automatiquement.
+  const [bons, setBons] = useState([])
+  const clientId = client?.id ?? null
+  useEffect(() => {
+    if (!clientId) return
+    let annule = false
+    supabase
+      .from('bons_achat')
+      .select('*')
+      .eq('client_id', clientId)
+      .is('commande_id', null)
+      .gt('valable_jusqu_au', new Date().toISOString())
+      .order('valable_jusqu_au', { ascending: true })
+      .then(({ data }) => {
+        if (!annule) setBons(data || [])
+      })
+    return () => {
+      annule = true
+    }
+  }, [clientId])
+  const bonsDispo = clientId ? bons : []
+
+  // Prix à jour depuis la base, calculés exactement comme le fera le serveur.
+  const prix = usePrixPanier(items)
+  const lignesPanier = items.map((item) => {
+    const produit = prix.produits.get(item.id)
+    const varianteId = varianteDuPanier(item)
+    const variante = varianteId ? prix.variantes.get(varianteId) : null
+    const raison = !prix.pret
+      ? ''
+      : varianteId && !variante
+        ? "Ce conditionnement n'existe plus."
+        : articleIndisponible(produit, variante, mode)
+    return { item, produit, variante, quantite: item.quantity, raison }
+  })
+  const lignesValides = prix.pret ? lignesPanier.filter((l) => !l.raison) : []
+  const indisponibles = lignesPanier.filter((l) => l.raison)
+  const parametresCalcul = {
+    lignes: lignesValides,
+    mode,
+    remiseRetrait: settings?.remise_retrait ?? 0,
+    fraisLivraison: settings?.frais_livraison ?? 7,
+    code: codeApplique,
   }
+  const sousTotalSansBon = calculerCommande(parametresCalcul).sousTotal
+  const bon = bonsDispo.find((b) => sousTotalSansBon >= Number(b.minimum_commande || 0)) || null
+  const bonEnAttente = !bon ? bonsDispo[0] : null
+  const calcul = calculerCommande({ ...parametresCalcul, bon })
+  const prixLigne = new Map(calcul.lignes.map((l) => [l.item.cartKey, l.prixUnitaire]))
 
-  const subtotal = items.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0)
-  const deliveryFee = !isPickup ? settings?.frais_livraison ?? 7 : 0
-  const total = subtotal + deliveryFee
+  const appliquerCode = async () => {
+    const code = codeSaisi.trim()
+    if (!code) return
+    setCodeEnCours(true)
+    setCodeMessage('')
+    const { data, error: errCode } = await supabase.rpc('verifier_code_promo', { p_code: code })
+    setCodeEnCours(false)
+    if (errCode || !data?.ok) {
+      setCodeApplique(null)
+      setCodeMessage(data?.message || 'Vérification du code impossible pour le moment.')
+      return
+    }
+    setCodeApplique({ code: data.code, pourcentage: Number(data.pourcentage), restantes: data.restantes })
+    setCodeSaisi('')
+  }
 
   // Jours et créneaux proposés : calendrier réglé dans l'admin (jours fermés, créneaux
   // indisponibles selon le jour de la semaine).
@@ -122,34 +187,34 @@ export default function CartPage() {
       }
     }
 
-    const lignesPourRecap = items.map((item) => ({
-      nom: item.nom,
-      unitPrice: unitPrice(item),
-      quantity: item.quantity,
-    }))
-
     try {
       const commande = await submitOrder({
-        nomClient: coord.nom,
+        mode,
+        lignes: lignesValides.map((l) => ({
+          produitId: l.produit.id,
+          varianteId: l.variante?.id ?? null,
+          quantite: l.quantite,
+        })),
+        nom: coord.nom,
         telephone: coord.telephone,
         email: coord.email,
-        mode,
         note,
-        adresseLivraison: !isPickup
+        adresse: !isPickup
           ? [coord.adresse.trim(), (source === 'creation' ? compte.complement : client?.complement)?.trim()]
               .filter(Boolean)
               .join(', ')
           : null,
         codePostal: !isPickup ? coord.codePostal.trim() : null,
         ville: !isPickup ? coord.ville.trim() : null,
-        creneauRetrait: isPickup ? `${pickupDateLabel(pickupDateOk)} · ${pickupSlotOk}` : null,
-        creneauLivraison: !isPickup ? `${deliveryDateLabel(deliveryDateOk)} · ${deliveryWindowOk}` : null,
-        total,
-        fraisLivraison: deliveryFee,
-        items: lignesPourRecap,
+        creneau: isPickup
+          ? `${pickupDateLabel(pickupDateOk)} · ${pickupSlotOk}`
+          : `${deliveryDateLabel(deliveryDateOk)} · ${deliveryWindowOk}`,
+        codePromo: codeApplique?.code ?? null,
+        // Compte tout juste créé : un bon de parrainage a pu s'ajouter, le serveur fait foi.
+        totalAttendu: source === 'creation' ? undefined : calcul.total,
       })
       setConfirmedOrder(commande)
-      setConfirmedLignes(lignesPourRecap)
+      setCodeApplique(null)
       clear()
     } catch {
       // l'erreur est déjà exposée via le hook useOrder
@@ -187,34 +252,27 @@ export default function CartPage() {
                 </tr>
               </thead>
               <tbody>
-                {confirmedLignes.map((l, i) => (
-                  <tr key={i} className="border-b border-ink/10 last:border-b-0">
-                    <td className="py-1.5 font-body">{l.nom}</td>
-                    <td className="py-1.5 text-right font-tag">{l.quantity}</td>
-                    <td className="py-1.5 text-right font-tag">
-                      {(l.unitPrice * l.quantity).toFixed(2)} €
-                    </td>
+                {confirmedOrder.commande_lignes.map((l) => (
+                  <tr key={l.id} className="border-b border-ink/10 last:border-b-0">
+                    <td className="py-1.5 font-body">{l.nom_produit}</td>
+                    <td className="py-1.5 text-right font-tag">{l.quantite}</td>
+                    <td className="py-1.5 text-right font-tag">{euros(l.prix_unitaire * l.quantite)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {confirmedOrder.frais_livraison > 0 && (
-              <div className="flex justify-between font-body text-sm mt-2 pt-2 border-t border-ink/10">
-                <span>Frais de livraison</span>
-                <span>{confirmedOrder.frais_livraison.toFixed(2)} €</span>
-              </div>
-            )}
+            <LignesRemises commande={confirmedOrder} />
             <div className="flex justify-between items-baseline mt-2 pt-2 border-t border-ink/15">
               <span className="font-tag text-xs uppercase text-muted">Total</span>
               <span className="font-display text-2xl text-ink">
-                {confirmedOrder.total.toFixed(2)} €
+                {euros(confirmedOrder.total)}
               </span>
             </div>
           </div>
 
           <div className="flex gap-3 justify-center flex-wrap">
             <button
-              onClick={() => printBonDeCommande(confirmedOrder, confirmedLignes)}
+              onClick={() => printBonDeCommande(confirmedOrder, confirmedOrder.commande_lignes)}
               className="border border-ink/40 font-tag text-xs font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-stone transition-colors"
             >
               Imprimer le bon de commande
@@ -277,9 +335,15 @@ export default function CartPage() {
                     {item.poids && (
                       <p className="font-tag text-[11px] text-muted">{item.poids}</p>
                     )}
-                    <p className="font-display text-lg text-ink mt-1">
-                      {unitPrice(item).toFixed(2)} €
-                    </p>
+                    {lignesPanier.find((l) => l.item.cartKey === item.cartKey)?.raison ? (
+                      <p className="font-body text-xs text-rust mt-1">
+                        {lignesPanier.find((l) => l.item.cartKey === item.cartKey).raison} Retirez-le pour commander.
+                      </p>
+                    ) : (
+                      <p className="font-display text-lg text-ink mt-1">
+                        {prixLigne.has(item.cartKey) ? euros(prixLigne.get(item.cartKey)) : '…'}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-col items-end justify-between">
@@ -321,20 +385,86 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between font-body text-sm text-ink pt-2 border-t border-ink/15">
                   <span>Sous-total</span>
-                  <span>{subtotal.toFixed(2)} €</span>
+                  <span>{prix.pret ? euros(calcul.sousTotal) : '…'}</span>
                 </div>
-                {deliveryFee > 0 && (
-                  <div className="flex justify-between font-body text-sm text-ink mt-1">
-                    <span>Frais de livraison</span>
-                    <span>{deliveryFee.toFixed(2)} €</span>
-                  </div>
-                )}
+                <LignesRemises
+                  commande={{
+                    code_promo: codeApplique?.code,
+                    pourcentage: codeApplique?.pourcentage,
+                    remise_code: calcul.remiseCode,
+                    remise_bon: calcul.remiseBon,
+                    motif_bon: bon?.motif,
+                    frais_livraison: calcul.frais,
+                  }}
+                />
                 <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-ink/15">
                   <span className="font-tag text-xs uppercase text-muted">Total</span>
-                  <span className="font-display text-3xl text-ink">
-                    {total.toFixed(2)} €
-                  </span>
+                  <span className="font-display text-3xl text-ink">{prix.pret ? euros(calcul.total) : '…'}</span>
                 </div>
+                {bonEnAttente && (
+                  <p className="font-body text-xs text-forest mt-2">
+                    Vous avez un {MOTIFS_BON[bonEnAttente.motif]?.toLowerCase() || 'bon'} de {eurosTexte(bonEnAttente.montant)} :
+                    il s'applique dès {eurosTexte(bonEnAttente.minimum_commande)} d'achats (encore{' '}
+                    {euros(Math.max(0, bonEnAttente.minimum_commande - calcul.sousTotal))}).
+                  </p>
+                )}
+                {prix.erreur && (
+                  <p className="font-body text-xs text-rust mt-2">
+                    Les prix n'ont pas pu être mis à jour : rechargez la page.
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-paper border border-ink/15 p-4 mb-4">
+                {codeApplique ? (
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="font-body text-sm text-ink">
+                      Code <strong>{codeApplique.code}</strong> : -{codeApplique.pourcentage} %
+                      {codeApplique.restantes != null && (
+                        <span className="block font-tag text-[11px] text-muted">
+                          Plus que {codeApplique.restantes} utilisation{codeApplique.restantes > 1 ? 's' : ''} possible
+                          {codeApplique.restantes > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setCodeApplique(null)}
+                      className="font-tag text-[11px] uppercase text-muted underline hover:text-rust"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      appliquerCode()
+                    }}
+                  >
+                    <label htmlFor="code-promo" className="block font-tag text-[11px] uppercase text-muted mb-1">
+                      Code promo
+                    </label>
+                    <div className="flex">
+                      <input
+                        id="code-promo"
+                        type="text"
+                        autoCapitalize="characters"
+                        value={codeSaisi}
+                        onChange={(e) => setCodeSaisi(e.target.value)}
+                        className="flex-1 min-w-0 border border-ink/20 border-r-0 p-2 font-body text-sm uppercase focus:border-forest focus:outline-none"
+                      />
+                      <button
+                        type="submit"
+                        disabled={codeEnCours || !codeSaisi.trim()}
+                        className="border border-ink bg-ink text-paper font-tag text-xs font-semibold uppercase px-3 hover:bg-forest disabled:bg-muted disabled:border-muted"
+                      >
+                        Appliquer
+                      </button>
+                    </div>
+                    {codeMessage && <p className="font-body text-xs text-rust mt-1">{codeMessage}</p>}
+                  </form>
+                )}
               </div>
 
               <form
@@ -623,7 +753,15 @@ export default function CartPage() {
 
                 <button
                   type="submit"
-                  disabled={submitting || compteEnCours || livraisonRefusee || authChargement}
+                  disabled={
+                    submitting ||
+                    compteEnCours ||
+                    livraisonRefusee ||
+                    authChargement ||
+                    !prix.pret ||
+                    indisponibles.length > 0 ||
+                    lignesValides.length === 0
+                  }
                   className="bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2.5 hover:bg-forest transition-colors disabled:bg-muted"
                 >
                   {submitting || compteEnCours
@@ -641,5 +779,37 @@ export default function CartPage() {
       </div>
       <Footer />
     </div>
+  )
+}
+
+// Lignes « remise » et « frais » sous le sous-total (panier, confirmation).
+function LignesRemises({ commande }) {
+  const remiseCode = Number(commande.remise_code || 0)
+  const remiseBon = Number(commande.remise_bon || 0)
+  const frais = Number(commande.frais_livraison || 0)
+  return (
+    <>
+      {remiseCode > 0 && (
+        <div className="flex justify-between font-body text-sm text-forest mt-1">
+          <span>
+            Code {commande.code_promo}
+            {commande.pourcentage ? ` (-${commande.pourcentage} %)` : ''}
+          </span>
+          <span>-{euros(remiseCode)}</span>
+        </div>
+      )}
+      {remiseBon > 0 && (
+        <div className="flex justify-between font-body text-sm text-forest mt-1">
+          <span>{MOTIFS_BON[commande.motif_bon] || "Bon d'achat"}</span>
+          <span>-{euros(remiseBon)}</span>
+        </div>
+      )}
+      {frais > 0 && (
+        <div className="flex justify-between font-body text-sm text-ink mt-1">
+          <span>Frais de livraison</span>
+          <span>{euros(frais)}</span>
+        </div>
+      )}
+    </>
   )
 }

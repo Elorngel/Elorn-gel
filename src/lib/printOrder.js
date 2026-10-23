@@ -21,7 +21,7 @@ export function printBonDeCommande(commande, lignes) {
         <tr>
           <td style="padding:6px 4px;border-bottom:1px solid #ddd;">${esc(l.nom_produit || l.nom)}</td>
           <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:center;">${l.quantite || l.quantity}</td>
-          <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${(l.prix_unitaire ?? l.unitPrice).toFixed(2)} €</td>
+          <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${Number(l.prix_unitaire ?? l.unitPrice).toFixed(2)} €</td>
           <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${((l.prix_unitaire ?? l.unitPrice) * (l.quantite || l.quantity)).toFixed(2)} €</td>
         </tr>`
     )
@@ -70,13 +70,23 @@ export function printBonDeCommande(commande, lignes) {
         <tbody>
           ${lignesHtml}
           ${
+            commande.remise_code > 0
+              ? `<tr><td colspan="3" style="padding:6px 4px;">Code promo ${esc(commande.code_promo)}</td><td style="padding:6px 4px;text-align:right;">-${Number(commande.remise_code).toFixed(2)} €</td></tr>`
+              : ''
+          }
+          ${
+            commande.remise_bon > 0
+              ? `<tr><td colspan="3" style="padding:6px 4px;">Bon d'achat</td><td style="padding:6px 4px;text-align:right;">-${Number(commande.remise_bon).toFixed(2)} €</td></tr>`
+              : ''
+          }
+          ${
             commande.frais_livraison > 0
-              ? `<tr><td colspan="3" style="padding:6px 4px;">Frais de livraison</td><td style="padding:6px 4px;text-align:right;">${commande.frais_livraison.toFixed(2)} €</td></tr>`
+              ? `<tr><td colspan="3" style="padding:6px 4px;">Frais de livraison</td><td style="padding:6px 4px;text-align:right;">${Number(commande.frais_livraison).toFixed(2)} €</td></tr>`
               : ''
           }
           <tr class="total-row">
             <td colspan="3">Total</td>
-            <td style="text-align:right;">${commande.total.toFixed(2)} €</td>
+            <td style="text-align:right;">${Number(commande.total).toFixed(2)} €</td>
           </tr>
         </tbody>
       </table>

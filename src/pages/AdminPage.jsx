@@ -13,6 +13,7 @@ import OccasionsPanel from '../components/OccasionsPanel'
 import SuppliersPanel from '../components/SuppliersPanel'
 import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import CalendarPanel from '../components/CalendarPanel'
+import OffresPanel from '../components/OffresPanel'
 import ClientsPanel from '../components/ClientsPanel'
 import NewProductModal from '../components/NewProductModal'
 import { MESSAGE_MAINTENANCE_DEFAUT } from './MaintenancePage'
@@ -770,6 +771,12 @@ export default function AdminPage() {
           >
             Calendrier
           </button>
+          <button
+            onClick={() => setTab('offres')}
+            className={`px-4 py-2 border-l border-ink/40 ${tab === 'offres' ? 'bg-ink text-paper' : 'text-ink'}`}
+          >
+            Offres
+          </button>
         </div>
 
         {tab === 'commandes' ? (
@@ -784,6 +791,8 @@ export default function AdminPage() {
           <SuppliersPanel />
         ) : tab === 'zone' ? (
           <DeliveryZonePanel />
+        ) : tab === 'offres' ? (
+          <OffresPanel />
         ) : tab === 'calendrier' ? (
           <CalendarPanel />
         ) : (

@@ -139,6 +139,22 @@ export default function OrdersPanel() {
                       </td>
                     </tr>
                   ))}
+                  {order.remise_code > 0 && (
+                    <tr className="text-forest">
+                      <td className="py-1.5 font-body" colSpan={3}>
+                        Code promo {order.code_promo}
+                      </td>
+                      <td className="py-1.5 text-right font-tag font-semibold">-{Number(order.remise_code).toFixed(2)} €</td>
+                    </tr>
+                  )}
+                  {order.remise_bon > 0 && (
+                    <tr className="text-forest">
+                      <td className="py-1.5 font-body" colSpan={3}>
+                        Bon d'achat
+                      </td>
+                      <td className="py-1.5 text-right font-tag font-semibold">-{Number(order.remise_bon).toFixed(2)} €</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
 

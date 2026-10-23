@@ -21,6 +21,7 @@ import Breadcrumb from './components/Breadcrumb'
 import { mentionsLegales, cgv, cgu, confidentialite } from './data/legalContent'
 import MonComptePage from './pages/MonComptePage'
 import MaintenancePage from './pages/MaintenancePage'
+import ParrainagePage from './pages/ParrainagePage'
 import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
 import { supabase } from './lib/supabaseClient'
@@ -243,6 +244,7 @@ function App() {
   }
 
   const produitMatch = route.match(/^#produit\/(.+)$/)
+  const parrainageMatch = route.match(/^#parrainage(?:\/([^/]+))?$/)
   const categorieMatch = route.match(/^#categorie\/([^/]+)(?:\/(.+))?$/)
   const rechercheMatch = route.match(/^#recherche\/(.+)$/)
   const promoMatch = route === '#promo'
@@ -271,6 +273,8 @@ function App() {
             <LegalPage title="Mentions légales" content={mentionsLegales} />
           ) : route === '#confidentialite' ? (
             <LegalPage title="Politique de confidentialité" content={confidentialite} />
+          ) : parrainageMatch ? (
+            <ParrainagePage codeRecu={(parrainageMatch[1] || '').toUpperCase().replace(/[^A-Z0-9]/g, '')} />
           ) : route === '#mon-compte' ? (
             <MonComptePage />
           ) : route === '#cgv' ? (

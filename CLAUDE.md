@@ -60,6 +60,18 @@ retrouvées par ressemblance du nom, rayons par table de correspondance, sinon r
 `sitemap.xml`. Fonction `send-order-emails` sécurisée : reçoit seulement `commandeId`, relit la commande,
 vérifie propriétaire/admin, un seul envoi (`commandes.email_envoye_le`, `supabase-emails-commande.sql`),
 email client = adresse du compte (ou celle de la commande si saisie par un admin).
+**Codes promo et parrainage (23/10/2026)** : les commandes passent par la fonction serveur
+`passer-commande`, qui recalcule tout (prix, code, bon) avec le module partagé
+`supabase/functions/_shared/calculCommande.js` (aussi importé par `src/lib/pricing.js` et `CartPage` : une
+seule règle de prix pour le site et le serveur ; le panier lit les prix à jour via `usePrixPanier`).
+Codes promo : table `codes_promo` (admin → onglet « Offres », `OffresPanel.jsx`), vérifiés par la fonction
+SQL `verifier_code_promo`, 1 fois par compte, sur les produits hors livraison, cumulables avec tout ; code
+BIENVENUE10 (-10 %, 50 utilisations). Parrainage : `clients.code_parrain` (créé automatiquement) /
+`parrain_id`, code saisi à la création du compte (`creer-compte`, garde-fou même téléphone/adresse) ou lien
+`#parrainage/CODE` ; bons dans `bons_achat` (25 €, dès 50 € de produits, 1 mois, réglables dans Offres) ; le
+bon du parrain est créé par le déclencheur SQL `recompenser_parrain` quand la 1re commande ≥ minimum du
+filleul passe en « Livrée ». Pastilles en pied de page (`PastillesParrainage.jsx`), page `#parrainage`.
+SQL : `supabase-offres.sql` (appliqué) ; `supabase-verrou-commandes.sql` à appliquer APRÈS la mise en ligne.
 **Comptes clients** (21/10/2026) : compte obligatoire pour commander, créé dans le formulaire du
 panier (onglets « Je crée mon compte » / « J'ai déjà un compte ») ou dans « Mon compte »
 (`#mon-compte` : historique des commandes, modification des informations, désinscription des

@@ -64,6 +64,7 @@ export const cgv = `
 <p><strong>Les photographies présentées sur le site ne sont pas contractuelles et ne peuvent assurer une parfaite similitude avec le produit livré (variations possibles de présentation, taille, forme ou couleur).</strong></p>
 <h2>3. Prix et paiement</h2>
 <p>Les prix affichés sur le site sont exprimés en euros, toutes taxes comprises (TTC).<br>Les frais de livraison sont indiqués lors de la commande.<br>Le paiement s’effectue à la livraison (ou lors du retrait au dépôt), par carte bancaire, chèque ou espèces.</p>
+<p>Les codes promo et les bons d’achat (parrainage) s’appliquent sur le montant des produits, hors frais de livraison, selon les conditions indiquées sur le site au moment de la commande (page « Parrainage » pour le parrainage). Un code promo n’est utilisable qu’une fois par compte client ; un seul bon d’achat est utilisé par commande. Ils ne sont ni remboursables ni échangeables contre de l’argent.</p>
 <h2>4. Livraison</h2>
 <p>La livraison est effectuée à l’adresse indiquée par le client dans les zones géographiques desservies par le vendeur.<br>Le client s’engage à être présent au créneau convenu afin de réceptionner les produits.<br>En cas d’absence, la responsabilité du vendeur ne pourra être engagée pour la perte des produits, ceux-ci ne pouvant être représentés ultérieurement si la chaîne du froid n’a pas été respectée.</p>
 <h2>5. Droit de rétractation</h2>

@@ -1,5 +1,7 @@
 // Champs d'un compte client, utilisés à la création du compte (dans le panier ou dans
 // « Mon compte ») et pour modifier ses informations.
+import { codeParrainRetenu } from '../lib/offres'
+
 export const SOURCES = [
   'Facebook',
   'Instagram',
@@ -24,7 +26,11 @@ export const COMPTE_VIDE = {
   source: '',
   accepteCgv: false,
   accepteOffres: false,
+  codeParrain: '',
 }
+
+// Formulaire vierge de création de compte, avec le code parrain du lien suivi s'il y en a un.
+export const nouveauCompte = () => ({ ...COMPTE_VIDE, codeParrain: codeParrainRetenu() })
 
 const champ =
   'w-full border border-ink/20 p-2 font-body text-sm bg-paper focus:border-forest focus:outline-none'
@@ -41,7 +47,7 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
         id={id(nom)}
         required={props.required !== false}
         type={props.type || 'text'}
-        value={valeurs[nom]}
+        value={valeurs[nom] ?? ''}
         onChange={(e) => onChange(nom, e.target.value)}
         autoComplete={props.autoComplete}
         inputMode={props.inputMode}
@@ -106,6 +112,14 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
           </select>
         </div>
       )}
+
+      {creation &&
+        texte('codeParrain', 'Code parrain (facultatif)', {
+          required: false,
+          autoComplete: 'off',
+          maxLength: 30,
+          placeholder: 'Ex. : SYLVIE47',
+        })}
 
       <label className="flex items-start gap-2 font-body text-sm cursor-pointer">
         <input

@@ -1,52 +1,29 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
+// Envoi de la commande à la fonction serveur `passer-commande`, qui recalcule les prix et applique
+// le code promo et le bon d'achat avant d'enregistrer.
 export function useOrder() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  const submitOrder = async ({ nomClient, telephone, email, mode, note, adresseLivraison, codePostal, ville, creneauRetrait, creneauLivraison, items, total, fraisLivraison }) => {
+  const submitOrder = async (demande) => {
     setSubmitting(true)
     setError(null)
 
     try {
-      // La commande est rattachée au compte connecté (obligatoire depuis les comptes clients).
-      const { data: sessionData } = await supabase.auth.getSession()
-      const clientId = sessionData.session?.user?.id
-      if (!clientId) throw new Error('Connectez-vous pour valider votre commande.')
-
-      const { data: commande, error: commandeError } = await supabase
-        .from('commandes')
-        .insert({
-          client_id: clientId,
-          nom_client: nomClient,
-          telephone,
-          email: email || null,
-          mode,
-          note: note || null,
-          adresse_livraison: adresseLivraison || null,
-          code_postal: codePostal || null,
-          ville: ville || null,
-          creneau_retrait: creneauRetrait || null,
-          creneau_livraison: creneauLivraison || null,
-          total,
-          frais_livraison: fraisLivraison || 0,
-        })
-        .select()
-        .single()
-
-      if (commandeError) throw commandeError
-
-      const lignes = items.map((item) => ({
-        commande_id: commande.id,
-        produit_id: item.id,
-        nom_produit: item.nom,
-        prix_unitaire: item.unitPrice,
-        quantite: item.quantity,
-      }))
-
-      const { error: lignesError } = await supabase.from('commande_lignes').insert(lignes)
-      if (lignesError) throw lignesError
+      const { data, error: errFonction } = await supabase.functions.invoke('passer-commande', { body: demande })
+      if (errFonction) {
+        let message = "La commande n'a pas pu être enregistrée, réessayez."
+        try {
+          const corps = await errFonction.context.json()
+          if (corps?.erreur) message = corps.erreur
+        } catch {
+          // réponse illisible : message générique
+        }
+        throw new Error(message)
+      }
+      const commande = data.commande
 
       // L'envoi d'email ne doit jamais faire échouer la commande elle-même :
       // si Resend est mal configuré ou indisponible, la commande reste
