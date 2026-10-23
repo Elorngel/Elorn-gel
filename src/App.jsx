@@ -22,6 +22,7 @@ import { mentionsLegales, cgv, cgu, confidentialite } from './data/legalContent'
 import MonComptePage from './pages/MonComptePage'
 import MaintenancePage from './pages/MaintenancePage'
 import ParrainagePage from './pages/ParrainagePage'
+import RouePage from './pages/RouePage'
 import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
 import { supabase } from './lib/supabaseClient'
@@ -227,6 +228,15 @@ function App() {
   }, [])
 
   // L'admin reste accessible en maintenance : c'est par là qu'on se connecte et qu'on la lève.
+  // Roue de la carte privilège : essai réservé à l'admin (même connexion).
+  if (route === '#admin/roue') {
+    return (
+      <AdminGate>
+        <RouePage />
+      </AdminGate>
+    )
+  }
+
   if (route === '#admin') {
     return (
       <AdminGate>

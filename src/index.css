@@ -36,3 +36,10 @@ html, body {
 .legal-content p {
   margin-bottom: 0.75rem;
 }
+
+/* Roue de la carte privilège (essai, #admin/roue) : apparition du résultat gagnant. */
+@keyframes roue-pop {
+  0% { transform: scale(0.9); }
+  60% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
