@@ -52,27 +52,8 @@ export function useOrder() {
       // si Resend est mal configuré ou indisponible, la commande reste
       // enregistrée normalement, seul l'email manquera.
       try {
-        await supabase.functions.invoke('send-order-emails', {
-          body: {
-            nomClient,
-            telephone,
-            email,
-            mode,
-            note,
-            adresseLivraison,
-            codePostal,
-            ville,
-            creneauRetrait,
-            creneauLivraison,
-            total,
-            fraisLivraison,
-            lignes: items.map((item) => ({
-              nom: item.nom,
-              quantite: item.quantity,
-              prix_unitaire: item.unitPrice,
-            })),
-          },
-        })
+        // La fonction relit elle-même la commande dans la base (on ne lui envoie que son numéro).
+        await supabase.functions.invoke('send-order-emails', { body: { commandeId: commande.id } })
       } catch (emailErr) {
         console.error('Email de confirmation non envoyé :', emailErr)
       }

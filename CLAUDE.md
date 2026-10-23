@@ -53,6 +53,13 @@ Livraison, colonnes `adresse_livraison`/`code_postal`/`ville` de `commandes`).
 dans `AdminPage.jsx`, colonnes `en_maintenance`/`message_maintenance`, `supabase-maintenance.sql`) ; les
 visiteurs voient `MaintenancePage.jsx` (« On revient très vite » + téléphone), les admins connectés voient le
 site avec un bandeau rouge ; `#admin` reste accessible. Réglages relus à chaque changement de page (`rafraichir`).
+**Préparation de la bascule (23/10/2026)** : anciennes adresses PrestaShop redirigées vers la page
+équivalente (`src/lib/anciennesAdresses.js`, appelé au chargement dans `App.jsx` ; 128 fiches produit
+retrouvées par ressemblance du nom, rayons par table de correspondance, sinon recherche ou accueil) ;
+`vercel.json` (toutes les adresses servent le site + en-têtes de sécurité) ; `public/robots.txt` et
+`sitemap.xml`. Fonction `send-order-emails` sécurisée : reçoit seulement `commandeId`, relit la commande,
+vérifie propriétaire/admin, un seul envoi (`commandes.email_envoye_le`, `supabase-emails-commande.sql`),
+email client = adresse du compte (ou celle de la commande si saisie par un admin).
 **Comptes clients** (21/10/2026) : compte obligatoire pour commander, créé dans le formulaire du
 panier (onglets « Je crée mon compte » / « J'ai déjà un compte ») ou dans « Mon compte »
 (`#mon-compte` : historique des commandes, modification des informations, désinscription des

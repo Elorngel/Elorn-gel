@@ -23,6 +23,8 @@ import MonComptePage from './pages/MonComptePage'
 import MaintenancePage from './pages/MaintenancePage'
 import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
+import { supabase } from './lib/supabaseClient'
+import { pageEquivalente } from './lib/anciennesAdresses'
 
 function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading, error } = useProducts({ leger: true })
@@ -202,6 +204,26 @@ function App() {
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [rafraichir])
+
+  // Ancienne adresse du site PrestaShop (/pizzas/30-pizza-chorizo.html…) : on la remplace par
+  // la page équivalente du nouveau site, pour que les liens de Google et les favoris marchent.
+  useEffect(() => {
+    const { pathname, search } = window.location
+    if (pathname === '/' || pathname === '/index.html') return
+    let annule = false
+    supabase
+      .from('produits')
+      .select('id, nom, actif')
+      .then(({ data }) => {
+        if (annule) return
+        const page = pageEquivalente(pathname, search, data || [])
+        window.history.replaceState(null, '', `/${page}`)
+        setRoute(page)
+      })
+    return () => {
+      annule = true
+    }
+  }, [])
 
   // L'admin reste accessible en maintenance : c'est par là qu'on se connecte et qu'on la lève.
   if (route === '#admin') {
