@@ -104,7 +104,9 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    de telle heure à telle heure, séparément livraison/retrait, prioritaires sur la semaine) ;
    colonnes `jours_fermes`/`creneaux_indisponibles`/`horaires_speciaux` ;
    logique dans `src/lib/pickupSlots.js`, utilisée par `CartPage`). Vide au départ : à régler par Romuald.
-2. Abonnements : Supabase Pro avant la pub ; Vercel Pro (Hobby = non commercial) ou Cloudflare Pages.
+2. Abonnements : Supabase Pro avant la pub. Hébergement : DÉCIDÉ le 23/10/2026 = espace web IONOS déjà payé
+   (pas Vercel Pro) : `.htaccess` + envoi automatique SFTP par GitHub Actions, test sur `nouveau.bontin.fr`, puis
+   bontin.fr pointé vers ce dossier le jour J (sans toucher aux lignes DNS ni aux mails).
 3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
 4. IONOS (domaine, DNS et mails y sont) : une seule boîte, contact@bontin.fr (email affiché par le site depuis
    le 23/10/2026), à faire suivre vers logistique@elorngel.fr ; logistique@bontin.fr n'existe pas ; bascule DNS
