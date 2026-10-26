@@ -11,7 +11,7 @@ import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
+import { getBasePrice, getVarianteAffichee, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
@@ -52,10 +52,7 @@ export default function ProductDetailPage({ id }) {
   const isAvailableInMode = hasVariants ? availableVariants.length > 0 : productAvailableNoVariants
 
   const selectedVariant = hasVariants
-    ? availableVariants.find((v) => v.id === selectedVariantId) ||
-      availableVariants.find((v) => v.est_defaut) ||
-      availableVariants[0] ||
-      null
+    ? availableVariants.find((v) => v.id === selectedVariantId) || getVarianteAffichee(product, isPickup)
     : null
   const referencePrice = selectedVariant ? selectedVariant.prix_livraison : product.prix_livraison
   const displayWeight = selectedVariant ? selectedVariant.poids : product.poids

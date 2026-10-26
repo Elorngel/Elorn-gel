@@ -3,8 +3,27 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 
 const PriceModeContext = createContext(null)
 
+const CLE_MODE = 'bontin-mode'
+
+// Le site s'ouvre en mode Retrait ; le choix « Livraison » du visiteur est retenu sur son appareil.
+function modeInitial() {
+  try {
+    return localStorage.getItem(CLE_MODE) === 'livraison' ? 'livraison' : 'retrait'
+  } catch {
+    return 'retrait'
+  }
+}
+
 export function PriceModeProvider({ children }) {
-  const [mode, setMode] = useState('livraison')
+  const [mode, setModeEtat] = useState(modeInitial)
+  const setMode = (m) => {
+    setModeEtat(m)
+    try {
+      localStorage.setItem(CLE_MODE, m)
+    } catch {
+      // stockage indisponible : le choix vaut pour la visite en cours
+    }
+  }
   const { settings } = useSiteSettings()
 
   // Le pourcentage de remise se règle dans l'admin (Réglages du site).

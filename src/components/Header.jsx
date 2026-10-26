@@ -179,20 +179,20 @@ export default function Header({ activeCategory }) {
 
           <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase">
             <button
-              onClick={() => setMode('livraison')}
-              className={`px-3 py-1.5 transition-colors ${
-                mode === 'livraison' ? 'bg-ink text-paper' : 'text-ink'
-              }`}
-            >
-              Livraison
-            </button>
-            <button
               onClick={() => setMode('retrait')}
-              className={`px-3 py-1.5 border-l border-ink/40 transition-colors ${
+              className={`px-3 py-1.5 transition-colors ${
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
               Retrait{discountPercent > 0 ? ` -${discountPercent}%` : ''}
+            </button>
+            <button
+              onClick={() => setMode('livraison')}
+              className={`px-3 py-1.5 border-l border-ink/40 transition-colors ${
+                mode === 'livraison' ? 'bg-ink text-paper' : 'text-ink'
+              }`}
+            >
+              Livraison
             </button>
           </div>
 
@@ -358,20 +358,20 @@ export default function Header({ activeCategory }) {
 
           <div className="flex border border-ink/40 font-tag text-xs font-semibold uppercase mb-4">
             <button
-              onClick={() => setMode('livraison')}
-              className={`flex-1 py-2 transition-colors ${
-                mode === 'livraison' ? 'bg-ink text-paper' : 'text-ink'
-              }`}
-            >
-              Livraison
-            </button>
-            <button
               onClick={() => setMode('retrait')}
-              className={`flex-1 py-2 border-l border-ink/40 transition-colors ${
+              className={`flex-1 py-2 transition-colors ${
                 mode === 'retrait' ? 'bg-ink text-paper' : 'text-ink'
               }`}
             >
               Retrait{discountPercent > 0 ? ` -${discountPercent}%` : ''}
+            </button>
+            <button
+              onClick={() => setMode('livraison')}
+              className={`flex-1 py-2 border-l border-ink/40 transition-colors ${
+                mode === 'livraison' ? 'bg-ink text-paper' : 'text-ink'
+              }`}
+            >
+              Livraison
             </button>
           </div>
 

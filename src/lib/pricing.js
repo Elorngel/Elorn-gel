@@ -18,11 +18,19 @@ export function isDestockage(product) {
   return getDestockagePercent(product) > 0
 }
 
-// Renvoie le conditionnement à afficher par défaut dans le catalogue
-// (celui coché "par défaut"), ou null si le produit n'a pas de variantes.
-export function getDefaultVariant(product) {
-  if (!product.variantes || product.variantes.length === 0) return null
-  return product.variantes.find((v) => v.est_defaut) || product.variantes[0]
+// Conditionnement affiché d'office pour un produit, parmi ceux disponibles dans le mode :
+// - en retrait : le plus petit (le moins cher), pour afficher un prix d'appel ;
+// - en livraison : celui coché « par défaut » dans l'admin.
+// Renvoie null si le produit n'a pas de conditionnement disponible.
+export function getVarianteAffichee(product, isPickup) {
+  const dispo = getAvailableVariants(product, isPickup)
+  if (dispo.length === 0) return null
+  if (isPickup) {
+    return dispo.reduce((min, v) =>
+      v.prix_livraison < min.prix_livraison || (v.prix_livraison === min.prix_livraison && v.est_defaut) ? v : min
+    )
+  }
+  return dispo.find((v) => v.est_defaut) || dispo[0]
 }
 
 // Un produit (sans variantes) est-il disponible dans le mode courant ?

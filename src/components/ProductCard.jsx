@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
-import { getBasePrice, getDefaultVariant, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
+import { getBasePrice, getVarianteAffichee, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 
 // prioritaire : carte visible dès l'ouverture (première rangée) → photo chargée sans attendre.
@@ -18,9 +18,7 @@ export default function ProductCard({ product, supplierLogo, prioritaire = false
   // Produit avec variantes, mais aucune disponible dans ce mode : idem.
   if (hasVariants && availableVariants.length === 0) return null
 
-  const defaultVariant = hasVariants
-    ? availableVariants.find((v) => v.est_defaut) || availableVariants[0]
-    : null
+  const defaultVariant = hasVariants ? getVarianteAffichee(product, isPickup) : null
   const referencePrice = defaultVariant ? defaultVariant.prix_livraison : product.prix_livraison
   const displayWeight = defaultVariant ? defaultVariant.poids : product.poids
   const variantWeightKg = defaultVariant ? parseWeightToKg(defaultVariant.poids) : null
