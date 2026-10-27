@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://www.bontin.fr/sitemap.xml
+Sitemap: https://bontin.fr/sitemap.xml

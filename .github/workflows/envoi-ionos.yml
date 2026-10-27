@@ -1,0 +1,70 @@
+# Envoi automatique du site chez IONOS (hébergement web déjà payé), à chaque « Push » sur main.
+# ÉTEINT tant que la variable IONOS_ENVOI n'est pas réglée sur « oui » dans GitHub
+# (Settings → Secrets and variables → Actions → onglet Variables). Mode d'emploi : docs/IONOS.md.
+#
+# Secrets nécessaires (Settings → Secrets and variables → Actions → onglet Secrets) :
+#   IONOS_SFTP_HOTE      ex. access-5017900580.webspace-host.com
+#   IONOS_SFTP_UTILISATEUR, IONOS_SFTP_MOT_DE_PASSE   (accès SFTP créé dans IONOS)
+#   IONOS_DOSSIER        dossier réservé au nouveau site, ex. /bontin-site (jamais « / »)
+#   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY          (les mêmes que dans .env.local)
+name: Envoi du site chez IONOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # bouton « Run workflow » pour un envoi à la main
+
+concurrency:
+  group: envoi-ionos
+  cancel-in-progress: false
+
+jobs:
+  envoi:
+    if: vars.IONOS_ENVOI == 'oui'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Construction du site
+        run: |
+          npm ci
+          npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Vérifications avant envoi
+        env:
+          DOSSIER: ${{ secrets.IONOS_DOSSIER }}
+        run: |
+          # Garde-fou : on n'envoie que dans un dossier dédié, jamais à la racine de l'espace web
+          # (où se trouve l'ancien site PrestaShop).
+          case "$DOSSIER" in
+            ""|"/"|"."|"./"|"~"|"/.") echo "IONOS_DOSSIER manquant ou interdit : $DOSSIER" ; exit 1 ;;
+            /*) ;;
+            *) echo "IONOS_DOSSIER doit commencer par / (ex. /bontin-site)" ; exit 1 ;;
+          esac
+          test -f dist/index.html && test -f dist/.htaccess
+          grep -q "supabase.co" dist/assets/*.js || { echo "Adresse Supabase absente : secrets VITE_ manquants ?" ; exit 1 ; }
+
+      - name: Envoi SFTP
+        env:
+          HOTE: ${{ secrets.IONOS_SFTP_HOTE }}
+          UTILISATEUR: ${{ secrets.IONOS_SFTP_UTILISATEUR }}
+          LFTP_PASSWORD: ${{ secrets.IONOS_SFTP_MOT_DE_PASSE }}
+          DOSSIER: ${{ secrets.IONOS_DOSSIER }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          # mirror -R : copie dist/ vers le dossier ; --delete ne supprime que les anciens fichiers
+          # DE CE DOSSIER (versions précédentes du site), jamais ailleurs.
+          lftp --env-password -u "$UTILISATEUR" "sftp://$HOTE" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mkdir -p -f $DOSSIER;
+            mirror --reverse --delete --verbose --exclude-glob .DS_Store dist/ $DOSSIER;
+            bye"

@@ -109,17 +109,18 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    colonnes `jours_fermes`/`creneaux_indisponibles`/`horaires_speciaux` ;
    logique dans `src/lib/pickupSlots.js`, utilisée par `CartPage`). Vide au départ : à régler par Romuald.
 2. Abonnements : Supabase Pro avant la pub. Hébergement : DÉCIDÉ le 23/10/2026 = espace web IONOS déjà payé
-   (pas Vercel Pro) : `.htaccess` + envoi automatique SFTP par GitHub Actions, test sur `nouveau.bontin.fr`, puis
-   bontin.fr pointé vers ce dossier le jour J (sans toucher aux lignes DNS ni aux mails).
+   (pas Vercel Pro). PRÊT le 27/10/2026 : `public/.htaccess` (testé avec Apache) + robot
+   `.github/workflows/envoi-ionos.yml` (éteint tant que la variable GitHub `IONOS_ENVOI` ≠ `oui`) ; mode
+   d'emploi pas à pas dans `docs/IONOS.md` (SFTP, secrets, test sur `nouveau.bontin.fr`, bascule sans
+   toucher aux lignes DNS ni aux mails). Adresse officielle : https://bontin.fr (www redirigé), comme l'ancien site.
 3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
 4. IONOS (domaine, DNS et mails y sont) : une seule boîte, contact@bontin.fr (email affiché par le site depuis
    le 23/10/2026), à faire suivre vers logistique@elorngel.fr ; logistique@bontin.fr n'existe pas ; bascule DNS
    (A vers Vercel, supprimer l'AAAA, www en CNAME, ne pas toucher MX/SPF/DMARC) ; garder
    l'ancien PrestaShop un mois + export clients.
 5. CGV = copie de l'ancien site (19/10/2026), paiement et contact RGPD corrigés à la demande de
-   Romuald. Médiateur : CM2C conseillé, décision avec la direction prévue le 22/10/2026 ; une fois
-   inscrit, mettre à jour l'article 9 des CGV (et retirer le lien vers la plateforme européenne,
-   fermée) + mention sur le bon de commande. Pas de politique de confidentialité (l'ancien site
+   Romuald. Médiateur : décision du 27/10/2026 = pas de médiateur pour l'instant (Romuald informé
+   de l'obligation ; à ajouter dans l'article 9 des CGV seulement s'il le demande). Pas de politique de confidentialité (l'ancien site
    n'en avait pas).
 6. Données : commandes test du 10/09 supprimées le 23/10/2026 ; reste 16 produits sans ingrédients (INCO).
 7. Plus tard : redirections des anciennes adresses PrestaShop + robots/sitemap,

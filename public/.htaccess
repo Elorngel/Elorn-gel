@@ -1,0 +1,53 @@
+# Réglages du serveur IONOS (Apache) pour le site Bontin — équivalent de vercel.json.
+# Ce fichier est copié avec le site à chaque envoi (dossier dist/) ; Vercel l'ignore.
+
+DirectoryIndex index.html
+
+# Ce fichier de réglages ne doit pas être lisible depuis internet.
+<Files ".htaccess">
+  Require all denied
+</Files>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Une seule adresse officielle : https://bontin.fr (comme l'ancien site).
+  # Ne concerne que bontin.fr et www.bontin.fr : l'adresse de test (nouveau.bontin.fr) n'est pas redirigée.
+  RewriteCond %{HTTP_HOST} ^www\.bontin\.fr$ [NC]
+  RewriteRule ^ https://bontin.fr%{REQUEST_URI} [R=301,L]
+  RewriteCond %{HTTP_HOST} ^bontin\.fr$ [NC]
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://bontin.fr%{REQUEST_URI} [R=301,L]
+
+  # Toute adresse qui n'est pas un vrai fichier (anciennes pages PrestaShop comprises) ouvre le site,
+  # qui affiche la page équivalente (voir src/lib/anciennesAdresses.js).
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
+
+  # Fichiers du site (noms qui changent à chaque version) : gardés un an par le navigateur.
+  <If "%{REQUEST_URI} =~ m#^/assets/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  # La page d'accueil du site est toujours revérifiée, pour que chaque mise à jour se voie tout de suite.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+</IfModule>
