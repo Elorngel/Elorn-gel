@@ -11,6 +11,12 @@ L'ancien site PrestaShop n'est touché à aucun moment avant l'étape 5.
   un dossier dédié à chaque « Push » sur main. **Éteint** tant que la variable `IONOS_ENVOI` ≠ `oui`.
   Garde-fou : il refuse d'envoyer à la racine de l'espace web (là où est PrestaShop).
 
+- `public/photo-cache.php` + règle dans `.htaccess` : sur bontin.fr, chaque photo est copiée UNE fois
+  depuis Supabase dans `/bontin-site/photos/`, puis servie par IONOS (trafic illimité). Roue de secours :
+  en cas de souci, la photo vient de Supabase comme avant. Le robot d'envoi n'efface jamais `photos/`.
+- `.github/workflows/sauvegarde.yml` : copie chiffrée de la base chaque nuit sur IONOS (dossier non
+  visible depuis internet, ~1 mois gardé). **Éteint** tant que la variable `SAUVEGARDE` ≠ `oui`.
+
 ## 1. Créer l'accès SFTP (IONOS)
 
 Menu → Hébergement → **SFTP & SSH** → Créer un utilisateur. Noter :
@@ -38,11 +44,31 @@ Même page, onglet **Variables** → « New repository variable » : nom `IONOS_
 Puis onglet **Actions** du dépôt → « Envoi du site chez IONOS » → **Run workflow**.
 Le site arrive dans le dossier `/bontin-site` de l'espace web (invisible tant qu'aucune adresse n'y mène).
 
+## 3 bis. Allumer la sauvegarde de nuit
+
+1. Supabase → projet Elorn Gel → bouton **Connect** (en haut) → onglet **« Session pooler »** → copier
+   l'adresse (URI) qui commence par `postgresql://postgres.kydlnfchsgwsitwjonah:` et remplacer
+   `[YOUR-PASSWORD]` par le mot de passe de la base (si oublié : Project Settings → Database →
+   Reset database password).
+2. GitHub → Secrets, trois de plus :
+
+| Nom | Valeur |
+|---|---|
+| `SUPABASE_DB_URL` | l'adresse complète de l'étape 1 |
+| `SAUVEGARDE_PHRASE` | une longue phrase secrète inventée (à noter en lieu sûr : sans elle, les sauvegardes sont illisibles) |
+| `SAUVEGARDE_DOSSIER` | `/sauvegardes-bontin` |
+
+3. Onglet Variables : `SAUVEGARDE` = `oui`. Puis Actions → « Sauvegarde de la base » → **Run workflow**
+   pour un premier essai : un fichier `base-JJ.tar.gz.gpg` doit apparaître dans `/sauvegardes-bontin`.
+4. Pour relire une sauvegarde (en cas de besoin, Claude s'en charge) :
+   `gpg -d base-27.tar.gz.gpg > sauvegarde.tar.gz` puis `tar xzf sauvegarde.tar.gz`.
+
 ## 4. Adresse de test (sans toucher à bontin.fr)
 
 IONOS → Domaines & SSL → bontin.fr → **Sous-domaines** → créer `nouveau` → utilisation **Espace web**,
 dossier `/bontin-site`. Vérifier le certificat SSL (https). Tester tout sur https://nouveau.bontin.fr
-(commande d'essai comprise).
+(commande d'essai comprise). Vérifier aussi les photos : après une visite, le dossier `/bontin-site/photos/`
+doit se remplir (copies faites par photo-cache.php).
 
 ## 5. Jour J : la bascule
 

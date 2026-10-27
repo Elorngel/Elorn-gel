@@ -8,6 +8,7 @@ import SocialIcon from './SocialIcon'
 import { useAuth } from '../context/AuthContext'
 import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 import { isDestockage } from '../lib/pricing'
+import { urlPhoto, photoDeSecours } from '../lib/photos'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -133,10 +134,11 @@ export default function Header({ activeCategory }) {
       <div className="flex items-center justify-between gap-4 px-4 md:px-5 py-3">
         <a href="#" className="block h-9 md:h-10 relative shrink-0">
           <img
-            src={settings?.logo_url || '/logo.png'}
+            src={urlPhoto(settings?.logo_url) || '/logo.png'}
             alt="Bontin"
             className="h-9 md:h-10 w-auto"
             onError={(e) => {
+              if (photoDeSecours(e.currentTarget, settings?.logo_url)) return
               e.target.style.display = 'none'
               e.target.nextSibling.style.display = 'block'
             }}

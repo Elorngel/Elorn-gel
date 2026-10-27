@@ -113,6 +113,10 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    `.github/workflows/envoi-ionos.yml` (éteint tant que la variable GitHub `IONOS_ENVOI` ≠ `oui`) ; mode
    d'emploi pas à pas dans `docs/IONOS.md` (SFTP, secrets, test sur `nouveau.bontin.fr`, bascule sans
    toucher aux lignes DNS ni aux mails). Adresse officielle : https://bontin.fr (www redirigé), comme l'ancien site.
+   Photos servies par IONOS sur bontin.fr (`public/photo-cache.php` + `src/lib/photos.js`, roue de secours vers
+   Supabase) → l'offre gratuite Supabase suffit (~100 000 visites/mois) ; sauvegarde chiffrée de la base chaque
+   nuit sur IONOS (`.github/workflows/sauvegarde.yml`, éteinte tant que la variable `SAUVEGARDE` ≠ `oui`).
+   Décision du 27/10/2026 : rester en Supabase gratuit tant que le trafic le permet.
 3. Emails : FAIT le 27/10/2026 — bontin.fr vérifié dans Resend (3 lignes DNS IONOS : resend._domainkey,
    send MX, send TXT ; région Irlande), secret `FROM_EMAIL=commandes@bontin.fr` ; réponses des clients vers
    `REPLY_TO` (défaut contact@bontin.fr) ; avis de commande vers `ADMIN_EMAIL` (défaut logistique@elorngel.fr).

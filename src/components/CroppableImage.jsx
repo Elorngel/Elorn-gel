@@ -7,6 +7,8 @@
 // Le conteneur parent doit avoir "position: relative" et une hauteur définie
 // (ou "overflow-hidden" avec une hauteur fixée par ex. h-36) : cette image
 // se cale dessus en absolu, elle ne détermine jamais la taille du cadre.
+import { urlPhoto, photoDeSecours } from '../lib/photos'
+
 // loading 'lazy' (par défaut) : la photo ne se télécharge qu'en arrivant à l'écran, ce qui
 // économise le quota Supabase ; 'eager' pour une image visible dès l'arrivée (bannière).
 export default function CroppableImage({
@@ -21,7 +23,9 @@ export default function CroppableImage({
 }) {
   return (
     <img
-      src={src}
+      key={src}
+      src={urlPhoto(src)}
+      onError={(e) => photoDeSecours(e.currentTarget, src)}
       alt={alt}
       loading={loading}
       decoding="async"

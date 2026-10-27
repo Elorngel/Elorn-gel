@@ -1,0 +1,76 @@
+# Sauvegarde de la base Supabase chaque nuit (l'offre gratuite n'en fait pas).
+# Copie chiffrée envoyée sur l'hébergement IONOS (en France / Europe), dans un dossier qui n'est PAS
+# visible depuis internet. 31 copies tournantes (une par jour du mois) : on garde donc environ un mois.
+# ÉTEINT tant que la variable SAUVEGARDE n'est pas réglée sur « oui ». Mode d'emploi : docs/IONOS.md.
+#
+# Secrets nécessaires (en plus de ceux de l'envoi IONOS : IONOS_SFTP_HOTE, _UTILISATEUR, _MOT_DE_PASSE) :
+#   SUPABASE_DB_URL       adresse de connexion à la base (Supabase → Connect → « Session pooler »)
+#   SAUVEGARDE_PHRASE     phrase secrète de chiffrement (à garder aussi dans un endroit sûr)
+#   SAUVEGARDE_DOSSIER    ex. /sauvegardes-bontin (hors du dossier du site)
+name: Sauvegarde de la base
+
+on:
+  schedule:
+    - cron: '30 2 * * *' # chaque nuit vers 3h30-4h30, heure française
+  workflow_dispatch:
+
+jobs:
+  sauvegarde:
+    if: vars.SAUVEGARDE == 'oui'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifications
+        env:
+          DOSSIER: ${{ secrets.SAUVEGARDE_DOSSIER }}
+          DOSSIER_SITE: ${{ secrets.IONOS_DOSSIER }}
+        run: |
+          case "$DOSSIER" in
+            ""|"/"|"."|"./"|"~") echo "SAUVEGARDE_DOSSIER manquant ou interdit" ; exit 1 ;;
+            /*) ;;
+            *) echo "SAUVEGARDE_DOSSIER doit commencer par /" ; exit 1 ;;
+          esac
+          # Jamais dans le dossier du site : les sauvegardes seraient téléchargeables depuis internet.
+          if [ -n "$DOSSIER_SITE" ]; then
+            case "$DOSSIER/" in "$DOSSIER_SITE"/*) echo "Le dossier de sauvegarde ne doit pas être dans le site" ; exit 1 ;; esac
+          fi
+
+      - name: Copie de la base
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # pg_dump de la même version que la base (Postgres 17), lancé dans un conteneur officiel.
+          # 1) tout le schéma public : catalogue, clients, commandes, réglages, codes promo, bons…
+          docker run --rm -e DB="$SUPABASE_DB_URL" postgres:17 \
+            sh -c 'pg_dump "$DB" --schema=public --no-owner --no-privileges' > base.sql
+          # 2) les comptes de connexion (emails et mots de passe chiffrés), pour pouvoir tout reconstruire.
+          docker run --rm -e DB="$SUPABASE_DB_URL" postgres:17 \
+            sh -c 'pg_dump "$DB" --data-only --table=auth.users --table=auth.identities --no-owner --no-privileges' > comptes.sql
+          test -s base.sql && grep -q "CREATE TABLE public.commandes" base.sql
+          tar czf sauvegarde.tar.gz base.sql comptes.sql
+          ls -la sauvegarde.tar.gz
+
+      - name: Chiffrement
+        env:
+          PHRASE: ${{ secrets.SAUVEGARDE_PHRASE }}
+        run: |
+          test -n "$PHRASE"
+          printf '%s' "$PHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 -o "base-$(date +%d).tar.gz.gpg" sauvegarde.tar.gz
+          rm -f base.sql comptes.sql sauvegarde.tar.gz
+
+      - name: Envoi chez IONOS
+        env:
+          HOTE: ${{ secrets.IONOS_SFTP_HOTE }}
+          UTILISATEUR: ${{ secrets.IONOS_SFTP_UTILISATEUR }}
+          LFTP_PASSWORD: ${{ secrets.IONOS_SFTP_MOT_DE_PASSE }}
+          DOSSIER: ${{ secrets.SAUVEGARDE_DOSSIER }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          F=$(ls base-*.tar.gz.gpg)
+          lftp --env-password -u "$UTILISATEUR" "sftp://$HOTE" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mkdir -p -f $DOSSIER;
+            put -O $DOSSIER $F;
+            bye"
+          echo "Sauvegarde envoyée : $DOSSIER/$F"

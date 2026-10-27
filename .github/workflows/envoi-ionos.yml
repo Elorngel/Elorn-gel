@@ -61,10 +61,11 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
           # mirror -R : copie dist/ vers le dossier ; --delete ne supprime que les anciens fichiers
-          # DE CE DOSSIER (versions précédentes du site), jamais ailleurs.
+          # DE CE DOSSIER (versions précédentes du site), jamais ailleurs. Le sous-dossier photos/
+          # (copies des photos faites par photo-cache.php) est exclu : il n'est jamais effacé.
           lftp --env-password -u "$UTILISATEUR" "sftp://$HOTE" -e "
             set sftp:auto-confirm yes;
             set net:max-retries 3;
             mkdir -p -f $DOSSIER;
-            mirror --reverse --delete --verbose --exclude-glob .DS_Store dist/ $DOSSIER;
+            mirror --reverse --delete --verbose --exclude-glob .DS_Store --exclude ^photos/ dist/ $DOSSIER;
             bye"

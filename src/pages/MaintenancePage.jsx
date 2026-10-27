@@ -1,4 +1,5 @@
 import SocialIcon from '../components/SocialIcon'
+import { urlPhoto, photoDeSecours } from '../lib/photos'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE } from '../lib/siteDefaults'
 
 export const MESSAGE_MAINTENANCE_DEFAUT =
@@ -17,7 +18,12 @@ export default function MaintenancePage({ settings }) {
       <main className="flex-1 flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-xl bg-paper border border-ink/15">
           <div className="border-b border-ink/15 px-6 py-5 flex items-center justify-between gap-4">
-            <img src={settings?.logo_url || '/logo.png'} alt="Bontin" className="h-10 w-auto" />
+            <img
+              src={urlPhoto(settings?.logo_url) || '/logo.png'}
+              onError={(e) => photoDeSecours(e.currentTarget, settings?.logo_url)}
+              alt="Bontin"
+              className="h-10 w-auto"
+            />
             <span className="font-tag text-[11px] uppercase font-semibold tracking-wide bg-rust text-paper px-2 py-1">
               Maintenance
             </span>
