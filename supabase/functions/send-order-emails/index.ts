@@ -5,6 +5,7 @@
 // l'email qu'à l'adresse de son propre compte. Sans ça, n'importe qui aurait pu faire partir
 // des emails « Bontin » au contenu inventé vers n'importe quelle adresse.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4'
+import { emailClient, emailAdmin, numeroCommande } from './gabarit.js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,71 +20,13 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 //   supabase secrets set FROM_EMAIL=commandes@bontin.fr
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'logistique@elorngel.fr'
+// Adresse qui reçoit les réponses des clients à leur confirmation (l'expéditeur commandes@ n'a pas de boîte).
+const REPLY_TO = Deno.env.get('REPLY_TO') ?? 'contact@bontin.fr'
+// Adresse du site dans les boutons des emails (à passer sur https://bontin.fr le jour de la bascule).
+const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://elorn-gel.vercel.app'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-
-// Les champs saisis par les clients sont insérés dans du HTML : on les échappe
-// pour qu'un nom ou une note ne puisse pas injecter de code dans l'email.
-function esc(value: unknown) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-const euros = (v: unknown) => `${Number(v ?? 0).toFixed(2)} €`
-
-function buildHtml(c: any) {
-  const lignesHtml = (c.commande_lignes || [])
-    .map(
-      (l: any) => `
-        <tr>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${esc(l.nom_produit)}</td>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center;">${Number(l.quantite)}</td>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">${euros(Number(l.prix_unitaire) * Number(l.quantite))}</td>
-        </tr>`
-    )
-    .join('')
-
-  const retrait = c.mode === 'retrait'
-  const creneau = retrait ? c.creneau_retrait : c.creneau_livraison
-
-  return `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1b231a;">
-      <h2 style="color:#23422b;">BONTIN</h2>
-      <p>
-        <strong>Client :</strong> ${esc(c.nom_client)}<br/>
-        <strong>Téléphone :</strong> ${esc(c.telephone)}<br/>
-        ${c.email ? `<strong>Email :</strong> ${esc(c.email)}<br/>` : ''}
-        <strong>Mode :</strong> ${retrait ? 'Retrait au dépôt' : 'Livraison'}<br/>
-        ${creneau ? `<strong>Créneau :</strong> ${esc(creneau)}<br/>` : ''}
-        ${c.adresse_livraison ? `<strong>Adresse :</strong> ${esc(c.adresse_livraison)}, ${esc(c.code_postal)} ${esc(c.ville)}<br/>` : ''}
-        ${c.note ? `<strong>Note :</strong> ${esc(c.note)}<br/>` : ''}
-      </p>
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr>
-            <th style="text-align:left;padding:4px 8px;">Produit</th>
-            <th style="padding:4px 8px;">Qté</th>
-            <th style="text-align:right;padding:4px 8px;">Sous-total</th>
-          </tr>
-        </thead>
-        <tbody>${lignesHtml}</tbody>
-      </table>
-      ${Number(c.remise_code) > 0 ? `<p style="text-align:right;color:#23422b;">Code promo ${esc(c.code_promo)} : -${euros(c.remise_code)}</p>` : ''}
-      ${Number(c.remise_bon) > 0 ? `<p style="text-align:right;color:#23422b;">Bon d'achat : -${euros(c.remise_bon)}</p>` : ''}
-      ${Number(c.frais_livraison) > 0 ? `<p style="text-align:right;">Frais de livraison : ${euros(c.frais_livraison)}</p>` : ''}
-      <p style="text-align:right;font-size:18px;font-weight:bold;">
-        Total : ${euros(c.total)}
-      </p>
-      <p style="font-size:13px;color:#666;">
-        Paiement sur place, à ${retrait ? 'la récupération' : 'la livraison'}.
-      </p>
-    </div>
-  `
-}
 
 async function envoyer(message: Record<string, unknown>) {
   const res = await fetch('https://api.resend.com/emails', {
@@ -130,20 +73,35 @@ Deno.serve(async (req) => {
       .select('id')
     if (!reserve?.length) return json({ ok: true, dejaEnvoye: true })
 
-    const html = buildHtml(commande)
+    // Coordonnées et logo : réglages du site (admin), comme sur le site.
+    const { data: reglages } = await admin
+      .from('parametres_site')
+      .select('logo_url, contact_telephone, adresse')
+      .eq('id', 1)
+      .maybeSingle()
+    const infos = {
+      logo: reglages?.logo_url || `${SITE_URL}/logo.png`,
+      telephone: reglages?.contact_telephone || '02 56 31 11 97',
+      adresse: reglages?.adresse || 'ZI de Keriel Nord, 29800 Plouédern',
+      site: SITE_URL,
+    }
+    const retrait = commande.mode === 'retrait'
+    const creneau = retrait ? commande.creneau_retrait : commande.creneau_livraison
+
     // Client : uniquement l'adresse de son compte. Commande saisie par un admin (au téléphone) :
     // l'adresse notée sur la commande.
-    const emailClient = estAdmin ? commande.email : user.email
+    const destinataire = estAdmin ? commande.email : user.email
     const results: Record<string, unknown>[] = []
 
-    if (emailClient) {
+    if (destinataire) {
       results.push({
         cible: 'client',
         ...(await envoyer({
           from: `Bontin <${FROM_EMAIL}>`,
-          to: emailClient,
-          subject: 'Votre commande Bontin est confirmée',
-          html: `<p>Bonjour ${esc(commande.nom_client)},</p><p>Votre commande a bien été enregistrée, merci !</p>${html}`,
+          to: destinataire,
+          reply_to: REPLY_TO,
+          subject: `Votre commande Bontin n° ${numeroCommande(commande)} est confirmée`,
+          html: emailClient(commande, infos),
         })),
       })
     }
@@ -153,9 +111,9 @@ Deno.serve(async (req) => {
       ...(await envoyer({
         from: `Site Bontin <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
-        reply_to: emailClient || undefined,
-        subject: `Nouvelle commande — ${String(commande.nom_client).slice(0, 80)}`,
-        html,
+        reply_to: destinataire || undefined,
+        subject: `Nouvelle commande ${retrait ? 'retrait' : 'livraison'} — ${String(commande.nom_client).slice(0, 80)}${creneau ? ` — ${String(creneau).slice(0, 60)}` : ''}`,
+        html: emailAdmin(commande, infos),
       })),
     })
 

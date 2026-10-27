@@ -113,7 +113,9 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
    `.github/workflows/envoi-ionos.yml` (éteint tant que la variable GitHub `IONOS_ENVOI` ≠ `oui`) ; mode
    d'emploi pas à pas dans `docs/IONOS.md` (SFTP, secrets, test sur `nouveau.bontin.fr`, bascule sans
    toucher aux lignes DNS ni aux mails). Adresse officielle : https://bontin.fr (www redirigé), comme l'ancien site.
-3. Emails : domaine bontin.fr à vérifier dans Resend, puis secrets `FROM_EMAIL`/`ADMIN_EMAIL`.
+3. Emails : FAIT le 27/10/2026 — bontin.fr vérifié dans Resend (3 lignes DNS IONOS : resend._domainkey,
+   send MX, send TXT ; région Irlande), secret `FROM_EMAIL=commandes@bontin.fr` ; réponses des clients vers
+   `REPLY_TO` (défaut contact@bontin.fr) ; avis de commande vers `ADMIN_EMAIL` (défaut logistique@elorngel.fr).
 4. IONOS (domaine, DNS et mails y sont) : une seule boîte, contact@bontin.fr (email affiché par le site depuis
    le 23/10/2026), à faire suivre vers logistique@elorngel.fr ; logistique@bontin.fr n'existe pas ; bascule DNS
    (A vers Vercel, supprimer l'AAAA, www en CNAME, ne pas toucher MX/SPF/DMARC) ; garder
@@ -161,10 +163,8 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
   `supabase secrets set FROM_EMAIL=commandes@bontin.fr` (ADMIN_EMAIL reste logistique@elorngel.fr, la boîte
   lue par Romuald). ATTENTION : le domaine bontin.fr est dans le contrat « Hébergement Web Plus » IONOS du
   PrestaShop — ne pas résilier l'hébergement sans en sortir d'abord le domaine et les mails.
-- **Resend** : le domaine `elorngel.fr` n'est pas encore vérifié → les emails
-  clients (confirmation de commande, réinitialisation de mot de passe) ne
-  partent pas encore. Ne pas être surpris si un test d'email échoue
-  silencieusement, c'est attendu tant que ce n'est pas débloqué.
+- **Resend** : bontin.fr vérifié le 27/10/2026, les confirmations clients partent (testé, livrées par Resend).
+  « Mot de passe oublié » et bon d'anniversaire sont désormais possibles techniquement (pas encore codés).
 - **Sécurité admin et base (21/10/2026)** : l'admin passe par de vrais comptes Supabase
   (`AdminGate.jsx` : nom d'utilisateur « sylvie » → identifiant interne
   `sylvie@admin.bontin.fr`, voir `emailAdmin`), reconnus par la table `admins` et la

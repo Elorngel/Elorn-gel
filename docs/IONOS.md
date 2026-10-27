@@ -47,8 +47,8 @@ dossier `/bontin-site`. Vérifier le certificat SSL (https). Tester tout sur htt
 ## 5. Jour J : la bascule
 
 1. Exporter clients et commandes de PrestaShop.
-2. Resend : ajouter bontin.fr, recopier ses lignes DNS chez IONOS, puis
-   `supabase secrets set FROM_EMAIL=commandes@bontin.fr`.
+2. Emails : déjà faits le 27/10/2026 (Resend vérifié). Seulement passer les boutons des emails sur la vraie
+   adresse : `supabase secrets set SITE_URL=https://bontin.fr`.
 3. IONOS → Domaines & SSL → bontin.fr (puis www.bontin.fr) → **Modifier le type d'utilisation** →
    Espace web → dossier `/bontin-site`. Aucune ligne DNS ni mail n'est modifiée.
 4. Vérifier https://bontin.fr, une ancienne adresse (ex. /pizzas/30-pizza-chorizo.html), une commande,
