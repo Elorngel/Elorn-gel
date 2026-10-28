@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { PriceModeProvider } from './context/PriceModeContext'
 import { CartProvider } from './context/CartContext'
 import { ConseilProvider } from './context/ConseilContext'
@@ -11,7 +11,6 @@ import { isPromoActive, isDestockage } from './lib/pricing'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductCard from './components/ProductCard'
-import AdminPage from './pages/AdminPage'
 import AdminGate from './components/AdminGate'
 import ProductDetailPage from './pages/ProductDetailPage'
 import CartPage from './pages/CartPage'
@@ -22,10 +21,15 @@ import { mentionsLegales, cgv, cgu, confidentialite } from './data/legalContent'
 import MonComptePage from './pages/MonComptePage'
 import MaintenancePage from './pages/MaintenancePage'
 import ParrainagePage from './pages/ParrainagePage'
-import RouePage from './pages/RouePage'
 import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
 import { supabase } from './lib/supabaseClient'
+
+// L'administration et la roue ne sont chargées qu'à l'ouverture de /admin : les clients ne
+// téléchargent pas ce code, le site s'ouvre plus vite.
+const AdminPage = lazy(() => import('./pages/AdminPage'))
+const RouePage = lazy(() => import('./pages/RouePage'))
+const Chargement = () => <div className="p-8 font-body text-sm text-muted">Chargement…</div>
 import { pageEquivalente } from './lib/anciennesAdresses'
 import { lirePage, depuisAncienLien, slug, urlRayon } from './lib/adresses'
 import { aller, ecouterPages, interceptionLiens } from './lib/navigation'
@@ -284,7 +288,9 @@ function App() {
   if (page.type === 'roue') {
     return (
       <AdminGate>
-        <RouePage />
+        <Suspense fallback={<Chargement />}>
+          <RouePage />
+        </Suspense>
       </AdminGate>
     )
   }
@@ -292,7 +298,9 @@ function App() {
   if (page.type === 'admin') {
     return (
       <AdminGate>
-        <AdminPage />
+        <Suspense fallback={<Chargement />}>
+          <AdminPage />
+        </Suspense>
       </AdminGate>
     )
   }

@@ -41,6 +41,10 @@ DirectoryIndex index.html
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
   Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
+  # Liste des seules sources autorisées (scripts, images, polices, connexions) : un code malveillant
+  # glissé dans une fiche produit ne pourrait pas s'exécuter. À compléter si on ajoute un service
+  # externe (ex. Matomo pour les statistiques).
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://kydlnfchsgwsitwjonah.supabase.co; connect-src 'self' https://kydlnfchsgwsitwjonah.supabase.co wss://kydlnfchsgwsitwjonah.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
   # Fichiers du site (noms qui changent à chaque version) : gardés un an par le navigateur.
   <If "%{REQUEST_URI} =~ m#^/(assets|photos)/#">

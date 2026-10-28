@@ -77,8 +77,19 @@ doit se remplir (copies faites par photo-cache.php).
    adresse : `supabase secrets set SITE_URL=https://bontin.fr`.
 3. IONOS → Domaines & SSL → bontin.fr (puis www.bontin.fr) → **Modifier le type d'utilisation** →
    Espace web → dossier `/bontin-site`. Aucune ligne DNS ni mail n'est modifiée.
-4. Vérifier https://bontin.fr, une ancienne adresse (ex. /pizzas/30-pizza-chorizo.html), une commande,
-   les emails ; envoyer https://bontin.fr/sitemap.xml à Google Search Console.
+4. Supabase → Authentication → URL Configuration : « Site URL » = `https://bontin.fr` (utile pour les
+   futurs emails « mot de passe oublié »).
+5. Vérifier https://bontin.fr, une ancienne adresse (ex. /pizzas/30-pizza-chorizo.html → doit arriver sur
+   /produit/pizza-chorizo-…), une commande d'essai, les emails, les mentions légales (hébergeur = IONOS,
+   automatique).
+6. Google Search Console : ajouter bontin.fr (ligne TXT chez IONOS), puis envoyer https://bontin.fr/sitemap.xml.
+7. Statistiques Matomo sur l'hébergement IONOS (sans cookies) : ajouter son adresse dans la règle
+   « Content-Security-Policy » de `public/.htaccess` et mettre à jour la rubrique « Cookies » de la politique
+   de confidentialité (`src/data/legalContent.js`), qui dit aujourd'hui « pas de mesure d'audience ».
+8. Fiche Google Business (Romuald) : mettre le lien https://bontin.fr.
+9. Surveillance gratuite du site (ex. UptimeRobot) : un email si bontin.fr ne répond plus.
+
+À savoir : Resend (emails) en offre gratuite = 100 emails par jour (2 par commande → ~50 commandes/jour).
 
 Retour arrière possible à tout moment : remettre bontin.fr sur le dossier de PrestaShop (étape 3 inversée).
 Ne jamais résilier l'hébergement IONOS : le domaine et les mails sont dans le même contrat.

@@ -57,6 +57,11 @@ les `<a href="/…">` sont interceptés dans `App.jsx` ; anciens liens en « # �
 adresse officielle et « noindex » par page : `useSeo` (`src/lib/seo.js`). Après chaque `npm run build`,
 `scripts/generer-seo.mjs` (postbuild) fabrique `dist/sitemap.xml` (~310 pages) et les redirections 301 des
 anciennes adresses PrestaShop (`scripts/anciennes-adresses.txt`) dans `dist/.htaccess`.
+Audit du 28/10/2026 : admin et roue chargés à la demande (`lazy` dans App.jsx) ; pages hors bontin.fr marquées
+« noindex » ; hébergeur des textes légaux choisi selon l'adresse (`avecHebergeur` dans legalContent.js) ;
+Content-Security-Policy dans `public/.htaccess` (testée avec Apache, à compléter si on ajoute un service externe).
+Test de non-régression des commandes : `scripts/test-commandes.mjs` (15 vérifications sur la vraie base, nettoie
+ses données ; lancer avec la clé service_role en variable d'environnement, voir l'en-tête du fichier).
 **Mode Retrait par défaut** (26/10/2026) : le site s'ouvre en Retrait (bouton en premier), le choix Livraison est
 retenu sur l'appareil (`PriceModeContext`, clé `bontin-mode`) ; en Retrait, la carte et la fiche produit montrent
 d'office le plus petit conditionnement (le moins cher) disponible au retrait, en Livraison celui coché « par
@@ -148,8 +153,10 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
   perçue pour l'instant. Désactivé en retirant simplement le bouton d'accès
   dans `Header.jsx` (desktop + mobile) — tout le reste (table `occasions` et
   son contenu, la fonction Edge, `ConseilProvider`/`ConseilAssistant` montés
-  dans `App.jsx`) est intact. À la réactivation, penser à aligner le calcul de
-  promo de la fonction Edge (`conseil.ts`) sur `pricing.js` (prix promo + dates). Pour réactiver : remettre le bouton "Besoin d'un
+  dans `App.jsx`) est intact. Le 28/10/2026, la fonction Edge `conseil-produit` a été
+  DÉBRANCHÉE de Supabase (supprimée en ligne, code conservé dans `supabase/functions/conseil-produit/`) pour
+  qu'elle ne puisse plus être appelée (coût IA). À la réactivation : `supabase functions deploy conseil-produit
+  --use-api`, et aligner le calcul de promo de la fonction (`conseil.ts`) sur `pricing.js` (prix promo + dates). Pour réactiver : remettre le bouton "Besoin d'un
   conseil ?" dans `Header.jsx` (voir l'historique git pour le code exact
   retiré).
 

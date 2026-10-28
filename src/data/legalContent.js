@@ -25,8 +25,7 @@ Contact : contact@bontin.fr — 02 56 31 11 97.
 
 <h2>Hébergement</h2>
 <p>
-Le site est hébergé par la société Vercel Inc., 340 S Lemon Ave #4133,
-Walnut, CA 91789, États-Unis.
+Le site est hébergé par {{HEBERGEUR}}.
 </p>
 <p>
 La base de données et le stockage des images du site sont assurés par
@@ -164,8 +163,8 @@ naissance sert à ce bon d'anniversaire.<br>
 <p>
 Uniquement le personnel d'ELORN GEL chargé des commandes. Nous ne vendons ni ne louons vos données.
 Elles sont hébergées par nos prestataires techniques : Supabase (base de données, serveurs situés en
-Irlande, Union européenne), Vercel (hébergement du site) et Resend (envoi des emails). Lorsque ces
-prestataires, basés aux États-Unis, peuvent accéder aux données, ce transfert est encadré par les clauses
+Irlande, Union européenne), {{HEBERGEUR_COURT}} (hébergement du site) et Resend (envoi des emails). Lorsque
+certains de ces prestataires, basés aux États-Unis, peuvent accéder aux données, ce transfert est encadré par les clauses
 contractuelles types de la Commission européenne.
 </p>
 
@@ -198,3 +197,17 @@ Les échanges avec le site sont chiffrés (HTTPS) et l'accès aux données est l
 que ses propres informations, et seules les personnes habilitées d'ELORN GEL accèdent à l'administration.
 </p>
 `
+
+// Hébergeur réellement utilisé, selon l'adresse du site : IONOS sur bontin.fr (depuis la bascule),
+// Vercel pour les préversions. Les textes légaux restent ainsi toujours exacts.
+export function avecHebergeur(html) {
+  const ionos = typeof window !== 'undefined' && /(^|\.)bontin\.fr$/i.test(window.location.hostname)
+  return html
+    .replaceAll(
+      '{{HEBERGEUR}}',
+      ionos
+        ? 'la société IONOS SARL, 7 place de la Gare, BP 70109, 57201 Sarreguemines Cedex, France (www.ionos.fr)'
+        : 'la société Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis'
+    )
+    .replaceAll('{{HEBERGEUR_COURT}}', ionos ? 'IONOS (France)' : 'Vercel')
+}

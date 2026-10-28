@@ -1,5 +1,6 @@
 import Header from '../components/Header'
 import { useSeo } from '../lib/seo'
+import { avecHebergeur } from '../data/legalContent'
 
 export default function LegalPage({ title, content }) {
   useSeo({ titre: title })
@@ -13,7 +14,7 @@ export default function LegalPage({ title, content }) {
         <h1 className="font-display text-4xl text-ink mt-3 mb-6">{title}</h1>
         <div
           className="bg-paper border border-ink/15 p-6 font-body text-sm text-ink leading-relaxed legal-content"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: avecHebergeur(content) }}
         />
       </div>
     </div>

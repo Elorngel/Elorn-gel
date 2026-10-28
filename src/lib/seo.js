@@ -57,6 +57,9 @@ export function useSeo({ titre, description, chemin, indexer = true }) {
       l.setAttribute('rel', 'canonical')
       return l
     }).setAttribute('href', url)
-    meta('robots').setAttribute('content', indexer ? 'index, follow' : 'noindex, follow')
+    // Seule l'adresse officielle (bontin.fr) doit apparaître dans Google : les copies de travail
+    // (préversions Vercel, ordinateur) sont marquées « ne pas indexer ».
+    const officiel = /^(www\.)?bontin\.fr$/i.test(window.location.hostname)
+    meta('robots').setAttribute('content', indexer && officiel ? 'index, follow' : 'noindex, follow')
   }, [titre, description, chemin, indexer])
 }
