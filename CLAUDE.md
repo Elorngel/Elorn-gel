@@ -49,6 +49,14 @@ possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
 possibles "5 min à feu vif puis 10 min à feu moyen" ; cases "Décongélation
 préalable nécessaire" / "Sans décongélation préalable"), admin complet, **liens Facebook/Instagram** (réglables dans l'admin → Réglages du site, colonnes `lien_facebook`/`lien_instagram`, affichés via `SocialIcon.jsx` dans le bandeau du haut et le pied de page), **zone de livraison** (admin → onglet « Zone de livraison » : liste des communes cochées dans `parametres_site.zone_livraison` ; liste des communes et codes postaux dans `src/data/communesZone.js`, contrôle dans `src/lib/zoneLivraison.js` appelé par `CartPage` : le code postal est vérifié, et le nom de la ville quand le code est partagé avec une commune non desservie ; liste vide = aucune restriction), **photo vitrine au format fixe 16:9** (+ bouton « Choisir une photo déjà sur le site » : copie côté stockage d'une photo produit, `ExistingPhotoPicker.jsx` / `copySiteImage` — surtout ne pas faire pointer deux champs vers le même fichier, le nettoyage à chaque changement supprimerait l'autre) (même cadre dans l'éditeur admin et sur le site, `Hero.jsx` + `PhotoEditorModal aspect`), **déstockage** (case + prix sur la fiche produit admin → rubrique « Déstockage » du menu, route `#destockage`, colonnes `en_destockage`/`prix_destockage`, logique dans `src/lib/pricing.js`, passe avant la promo), **adresse de livraison** (adresse/code postal/ville demandés en mode
 Livraison, colonnes `adresse_livraison`/`code_postal`/`ville` de `commandes`).
+**Vraies adresses de pages pour Google** (28/10/2026) : fini les « # ». Pages : `/`, `/catalogue`, `/promotions`,
+`/destockage`, `/petits-formats`, `/rayon/<rayon>[/<sous-rayon>]`, `/produit/<nom>-<8 premiers caractères de l'id>`,
+`/recherche/<texte>`, `/panier`, `/mon-compte`, `/parrainage[/<CODE>]`, `/cgv`, `/cgu`, `/mentions-legales`,
+`/confidentialite`, `/admin`, `/admin/roue` (`src/lib/adresses.js` ; navigation sans rechargement `src/lib/navigation.js`,
+les `<a href="/…">` sont interceptés dans `App.jsx` ; anciens liens en « # » convertis automatiquement). Titre, résumé,
+adresse officielle et « noindex » par page : `useSeo` (`src/lib/seo.js`). Après chaque `npm run build`,
+`scripts/generer-seo.mjs` (postbuild) fabrique `dist/sitemap.xml` (~310 pages) et les redirections 301 des
+anciennes adresses PrestaShop (`scripts/anciennes-adresses.txt`) dans `dist/.htaccess`.
 **Mode Retrait par défaut** (26/10/2026) : le site s'ouvre en Retrait (bouton en premier), le choix Livraison est
 retenu sur l'appareil (`PriceModeContext`, clé `bontin-mode`) ; en Retrait, la carte et la fiche produit montrent
 d'office le plus petit conditionnement (le moins cher) disponible au retrait, en Livraison celui coché « par

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useAuth, emailAdmin } from '../context/AuthContext'
+import { useSeo } from '../lib/seo'
 
 // Accès à l'admin : vrai compte Supabase (mot de passe vérifié par le serveur), reconnu comme
 // administrateur par la table `admins`. Les droits d'écriture sont contrôlés par la base
 // elle-même (règles d'accès), pas seulement par cet écran.
 export default function AdminGate({ children }) {
+  useSeo({ titre: 'Administration', indexer: false })
   const { chargement, user, estAdmin, connexion, deconnexion } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')

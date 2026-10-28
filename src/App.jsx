@@ -27,10 +27,21 @@ import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
 import { supabase } from './lib/supabaseClient'
 import { pageEquivalente } from './lib/anciennesAdresses'
+import { lirePage, depuisAncienLien, slug, urlRayon } from './lib/adresses'
+import { aller, ecouterPages, interceptionLiens } from './lib/navigation'
+import { useSeo } from './lib/seo'
 
-function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
-  const { products, loading, error } = useProducts({ leger: true })
-  const { subcategoriesByCategory } = useCategories()
+function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
+  const { products, loading: produitsEnCours, error } = useProducts({ leger: true })
+  const { categories, subcategoriesByCategory, loading: rayonsEnCours } = useCategories()
+  // Adresse /rayon/viandes/boeuf → noms réels « Viandes » / « Boeuf ».
+  const activeCategory = rayon ? categories.find((c) => slug(c) === rayon) || null : null
+  const activeSubcategory =
+    activeCategory && sousRayon
+      ? (subcategoriesByCategory[activeCategory] || []).find((s) => slug(s) === sousRayon) || null
+      : null
+  const rayonInconnu = !!rayon && !rayonsEnCours && (!activeCategory || (!!sousRayon && !activeSubcategory))
+  const loading = produitsEnCours || (!!rayon && rayonsEnCours)
   const { suppliers } = useSuppliers()
 
   const publishedProducts = products.filter((p) => p.actif !== false)
@@ -45,7 +56,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
   const isHomepage =
-    !promoOnly && !destockageOnly && !searchQuery && !activeCategory && !showFullCatalog && !petitsFormatsOnly
+    !promoOnly && !destockageOnly && !searchQuery && !rayon && !showFullCatalog && !petitsFormatsOnly
 
   if (promoOnly) {
     visibleProducts = publishedProducts.filter(isPromoActive)
@@ -60,6 +71,9 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
     const q = searchQuery.toLowerCase()
     visibleProducts = publishedProducts.filter((p) => p.nom.toLowerCase().includes(q))
     title = `Résultats pour « ${searchQuery} »`
+  } else if (rayonInconnu) {
+    visibleProducts = []
+    title = 'Rayon introuvable'
   } else if (activeCategory) {
     visibleProducts = publishedProducts.filter((p) => p.categorie === activeCategory)
     title = activeCategory
@@ -77,6 +91,30 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
   const subcategoryOptions =
     activeCategory && !promoOnly ? subcategoriesByCategory[activeCategory] || [] : []
 
+  // Ce que Google affiche pour cette page.
+  const lieu = 'livrés autour de Landerneau ou à retirer au dépôt de Plouédern (Finistère)'
+  useSeo(
+    isHomepage
+      ? { chemin: '/' }
+      : searchQuery
+        ? { titre: title, indexer: false }
+        : promoOnly
+          ? { titre: 'Promotions sur les surgelés', description: `Les promotions du moment sur nos produits surgelés, ${lieu}.` }
+          : destockageOnly
+            ? { titre: 'Déstockage', description: `Produits surgelés en déstockage à prix réduit, ${lieu}.` }
+            : petitsFormatsOnly
+              ? { titre: 'Petits formats', description: 'Petits formats de surgelés, exclusivement en retrait au dépôt de Plouédern.' }
+              : showFullCatalog
+                ? { titre: 'Tout le catalogue', description: `Tout le catalogue Bontin : plus de 250 produits surgelés, ${lieu}.` }
+                : activeCategory
+                  ? {
+                      titre: activeSubcategory ? `Surgelés : ${activeSubcategory} (${activeCategory})` : `Surgelés : ${activeCategory}`,
+                      description: `${activeSubcategory || activeCategory} : nos produits surgelés, ${lieu}.`,
+                      chemin: urlRayon(activeCategory, activeSubcategory),
+                    }
+                  : { titre: title, indexer: !rayonInconnu }
+  )
+
   return (
     <>
       <Header activeCategory={destockageOnly ? 'Déstockage' : activeCategory} />
@@ -86,7 +124,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
         {!isHomepage && !searchQuery && (
           <Breadcrumb
             items={[
-              { label: 'Accueil', href: '#' },
+              { label: 'Accueil', href: '/' },
               ...(promoOnly
                 ? [{ label: 'Promotions' }]
                 : destockageOnly
@@ -97,10 +135,10 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
                   ? [{ label: 'Tout le catalogue' }]
                   : activeSubcategory
                     ? [
-                        { label: activeCategory, href: `#categorie/${encodeURIComponent(activeCategory)}` },
+                        { label: activeCategory, href: urlRayon(activeCategory) },
                         { label: activeSubcategory },
                       ]
-                    : [{ label: activeCategory }]),
+                    : [{ label: activeCategory || 'Rayon introuvable' }]),
             ]}
           />
         )}
@@ -109,7 +147,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
           <h2 className="font-display text-2xl text-ink">{title}</h2>
           {isHomepage && (
             <a
-              href="#catalogue"
+              href="/catalogue"
               className="font-tag text-xs uppercase font-semibold text-forest hover:underline"
             >
               Voir tout le catalogue →
@@ -120,7 +158,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
         {activeCategory && subcategoryOptions.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-5">
             <a
-              href={`#categorie/${encodeURIComponent(activeCategory)}`}
+              href={urlRayon(activeCategory)}
               className={`font-tag text-[11px] uppercase px-3 py-1.5 border ${
                 !activeSubcategory
                   ? 'border-ink bg-ink text-paper'
@@ -132,7 +170,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
             {subcategoryOptions.map((sub) => (
               <a
                 key={sub}
-                href={`#categorie/${encodeURIComponent(activeCategory)}/${encodeURIComponent(sub)}`}
+                href={urlRayon(activeCategory, sub)}
                 className={`font-tag text-[11px] uppercase px-3 py-1.5 border ${
                   activeSubcategory === sub
                     ? 'border-ink bg-ink text-paper'
@@ -158,7 +196,7 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
         {!loading && !error && visibleProducts.length === 0 && isHomepage && (
           <p className="font-body text-sm text-muted">
             Aucun produit mis en avant pour l'instant.{' '}
-            <a href="#catalogue" className="underline">
+            <a href="/catalogue" className="underline">
               Voir tout le catalogue
             </a>
             .
@@ -191,45 +229,59 @@ function Shop({ activeCategory, activeSubcategory, searchQuery, promoOnly, desto
   )
 }
 
+// Ancien lien en « # » (avant le 28/10/2026) : on le remplace tout de suite par la nouvelle adresse.
+function adresseInitiale() {
+  const nouvelle = depuisAncienLien(window.location.hash)
+  if (nouvelle) window.history.replaceState(null, '', nouvelle)
+  return window.location.pathname
+}
+
 function App() {
-  const [route, setRoute] = useState(window.location.hash)
+  const [chemin, setChemin] = useState(adresseInitiale)
   const { settings, loading: reglagesEnCours, rafraichir } = useSiteSettings()
   const { chargement: connexionEnCours, estAdmin } = useAuth()
+  const page = lirePage(chemin)
 
   useEffect(() => {
-    const onHashChange = () => {
-      setRoute(window.location.hash)
+    const changement = () => {
+      const nouvelle = depuisAncienLien(window.location.hash)
+      if (nouvelle) window.history.replaceState(null, '', nouvelle)
+      setChemin(window.location.pathname)
       // Relit les réglages à chaque page : la mise en maintenance (ou sa levée) s'applique
       // sans que le visiteur ait à recharger.
       rafraichir()
     }
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+    const arreter = ecouterPages(changement)
+    window.addEventListener('hashchange', changement)
+    document.addEventListener('click', interceptionLiens)
+    return () => {
+      arreter()
+      window.removeEventListener('hashchange', changement)
+      document.removeEventListener('click', interceptionLiens)
+    }
   }, [rafraichir])
 
-  // Ancienne adresse du site PrestaShop (/pizzas/30-pizza-chorizo.html…) : on la remplace par
-  // la page équivalente du nouveau site, pour que les liens de Google et les favoris marchent.
+  // Adresse inconnue : sans doute une ancienne page du site PrestaShop (/pizzas/30-pizza-chorizo.html…).
+  // On la remplace par la page équivalente du nouveau site (le serveur IONOS le fait déjà pour les
+  // anciennes adresses connues ; ceci couvre les autres et la préversion Vercel).
+  const inconnue = page.type === 'inconnue'
   useEffect(() => {
-    const { pathname, search } = window.location
-    if (pathname === '/' || pathname === '/index.html') return
+    if (!inconnue) return
     let annule = false
     supabase
       .from('produits')
       .select('id, nom, actif')
       .then(({ data }) => {
-        if (annule) return
-        const page = pageEquivalente(pathname, search, data || [])
-        window.history.replaceState(null, '', `/${page}`)
-        setRoute(page)
+        if (!annule) aller(pageEquivalente(window.location.pathname, window.location.search, data || []), { remplacer: true })
       })
     return () => {
       annule = true
     }
-  }, [])
+  }, [inconnue, chemin])
 
   // L'admin reste accessible en maintenance : c'est par là qu'on se connecte et qu'on la lève.
   // Roue de la carte privilège : essai réservé à l'admin (même connexion).
-  if (route === '#admin/roue') {
+  if (page.type === 'roue') {
     return (
       <AdminGate>
         <RouePage />
@@ -237,7 +289,7 @@ function App() {
     )
   }
 
-  if (route === '#admin') {
+  if (page.type === 'admin') {
     return (
       <AdminGate>
         <AdminPage />
@@ -253,57 +305,45 @@ function App() {
     return <MaintenancePage settings={settings} />
   }
 
-  const produitMatch = route.match(/^#produit\/(.+)$/)
-  const parrainageMatch = route.match(/^#parrainage(?:\/([^/]+))?$/)
-  const categorieMatch = route.match(/^#categorie\/([^/]+)(?:\/(.+))?$/)
-  const rechercheMatch = route.match(/^#recherche\/(.+)$/)
-  const promoMatch = route === '#promo'
-  const destockageMatch = route === '#destockage'
-  const catalogueMatch = route === '#catalogue'
-  const petitsFormatsMatch = route === '#petits-formats'
-
-  const activeCategory = categorieMatch ? decodeURIComponent(categorieMatch[1]) : null
-  const activeSubcategory =
-    categorieMatch && categorieMatch[2] ? decodeURIComponent(categorieMatch[2]) : null
-  const searchQuery = rechercheMatch ? decodeURIComponent(rechercheMatch[1]) : null
-
   return (
     <PriceModeProvider>
       <CartProvider>
         <ConseilProvider>
           {settings?.en_maintenance && (
             <a
-              href="#admin"
+              href="/admin"
               className="block bg-rust text-paper text-center font-tag text-xs uppercase font-semibold tracking-wide px-4 py-2"
             >
               Site en maintenance : les visiteurs voient la page « On revient très vite ». Pour la lever : admin → Réglages du site
             </a>
           )}
-          {route === '#mentions-legales' ? (
+          {page.type === 'mentions-legales' ? (
             <LegalPage title="Mentions légales" content={mentionsLegales} />
-          ) : route === '#confidentialite' ? (
+          ) : page.type === 'confidentialite' ? (
             <LegalPage title="Politique de confidentialité" content={confidentialite} />
-          ) : parrainageMatch ? (
-            <ParrainagePage codeRecu={(parrainageMatch[1] || '').toUpperCase().replace(/[^A-Z0-9]/g, '')} />
-          ) : route === '#mon-compte' ? (
+          ) : page.type === 'parrainage' ? (
+            <ParrainagePage codeRecu={page.code} />
+          ) : page.type === 'mon-compte' ? (
             <MonComptePage />
-          ) : route === '#cgv' ? (
+          ) : page.type === 'cgv' ? (
             <LegalPage title="Conditions générales de vente" content={cgv} />
-          ) : route === '#cgu' ? (
+          ) : page.type === 'cgu' ? (
             <LegalPage title="Conditions générales d'utilisation" content={cgu} />
-          ) : produitMatch ? (
-            <ProductDetailPage id={produitMatch[1]} />
-          ) : route === '#panier' ? (
+          ) : page.type === 'produit' ? (
+            <ProductDetailPage key={page.id8} id={page.id8} />
+          ) : page.type === 'panier' ? (
             <CartPage />
+          ) : inconnue ? (
+            <div className="min-h-screen bg-stone" />
           ) : (
             <Shop
-              activeCategory={activeCategory}
-              activeSubcategory={activeSubcategory}
-              searchQuery={searchQuery}
-              promoOnly={promoMatch}
-              destockageOnly={destockageMatch}
-              showFullCatalog={catalogueMatch}
-              petitsFormatsOnly={petitsFormatsMatch}
+              rayon={page.type === 'rayon' ? page.categorie : null}
+              sousRayon={page.type === 'rayon' ? page.sousCategorie : null}
+              searchQuery={page.type === 'recherche' ? page.texte : null}
+              promoOnly={page.type === 'promotions'}
+              destockageOnly={page.type === 'destockage'}
+              showFullCatalog={page.type === 'catalogue'}
+              petitsFormatsOnly={page.type === 'petits-formats'}
             />
           )}
           <ConseilAssistant />

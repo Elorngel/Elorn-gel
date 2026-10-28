@@ -27,7 +27,7 @@ export default function Hero() {
             : ''}
         </p>
         <a
-          href={promoCount > 0 ? '#promo' : '#catalogue'}
+          href={promoCount > 0 ? '/promotions' : '/catalogue'}
           className="w-fit bg-rust text-paper font-tag text-sm font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-rust/90 transition-colors"
         >
           {promoCount > 0 ? 'Voir les promos' : 'Voir le catalogue'}

@@ -14,11 +14,13 @@ export function useProduct(id) {
 
     async function load() {
       setLoading(true)
-      const { data: productData, error: productError } = await supabase
-        .from('produits')
-        .select('*')
-        .eq('id', id)
-        .single()
+      // L'adresse de la page ne contient que les 8 premiers caractères de l'identifiant
+      // (/produit/filet-cabillaud-4cef388c) : on cherche le produit dont l'identifiant commence ainsi.
+      const court = /^[0-9a-f]{8}$/i.test(id)
+      const requete = supabase.from('produits').select('*')
+      const { data: productData, error: productError } = await (court
+        ? requete.gte('id', `${id}-0000-0000-0000-000000000000`).lte('id', `${id}-ffff-ffff-ffff-ffffffffffff`).limit(1).single()
+        : requete.eq('id', id).single())
 
       if (cancelled) return
 
@@ -31,7 +33,7 @@ export function useProduct(id) {
       const { data: variantesData } = await supabase
         .from('variantes_produit')
         .select('*')
-        .eq('produit_id', id)
+        .eq('produit_id', productData.id)
         .order('ordre', { ascending: true })
 
       setProduct({ ...productData, variantes: variantesData || [] })
@@ -50,7 +52,7 @@ export function useProduct(id) {
       const { data: accompRows } = await supabase
         .from('produits_accompagnements')
         .select('*')
-        .eq('produit_id', id)
+        .eq('produit_id', productData.id)
         .order('ordre', { ascending: true })
 
       const associeIds = (accompRows || []).map((r) => r.produit_associe_id)
@@ -76,7 +78,7 @@ export function useProduct(id) {
         .from('produits')
         .select('*')
         .eq('categorie', productData.categorie)
-        .neq('id', id)
+        .neq('id', productData.id)
         .eq('actif', true)
         .limit(4)
 

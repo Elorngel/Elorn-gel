@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /panier
+Disallow: /mon-compte
+Disallow: /recherche/
 
 Sitemap: https://bontin.fr/sitemap.xml

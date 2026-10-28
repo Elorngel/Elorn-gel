@@ -19,6 +19,7 @@ import NewProductModal from '../components/NewProductModal'
 import { MESSAGE_MAINTENANCE_DEFAUT } from './MaintenancePage'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
+import { aller } from '../lib/navigation'
 
 const NO_SPINNER =
   '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
@@ -689,16 +690,16 @@ export default function AdminPage() {
       <header className="bg-ink text-paper px-6 py-4 flex items-center justify-between">
         <h1 className="font-display text-2xl tracking-wide">BONTIN — Administration</h1>
         <div className="flex gap-4">
-          <a href="#admin/roue" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
+          <a href="/admin/roue" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
             Roue (essai)
           </a>
-          <a href="#" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
+          <a href="/" className="font-tag text-xs uppercase text-stone/80 hover:text-paper">
             Voir le site
           </a>
           <button
             onClick={async () => {
               await deconnexion()
-              window.location.hash = ''
+              aller('/')
             }}
             className="font-tag text-xs uppercase text-stone/80 hover:text-paper"
           >

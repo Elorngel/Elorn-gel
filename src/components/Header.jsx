@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext'
 import { DEFAULT_TELEPHONE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 import { isDestockage } from '../lib/pricing'
 import { urlPhoto, photoDeSecours } from '../lib/photos'
+import { urlProduit, urlRayon, urlRecherche } from '../lib/adresses'
+import { aller } from '../lib/navigation'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -20,7 +22,7 @@ function SearchSuggestions({ suggestions, onSelect }) {
         <button
           key={p.id}
           type="button"
-          onClick={() => onSelect(p.id)}
+          onClick={() => onSelect(p)}
           className="w-full text-left px-3 py-2 hover:bg-stone flex items-baseline justify-between gap-2"
         >
           <span className="font-body text-sm text-ink truncate">{p.nom}</span>
@@ -89,11 +91,11 @@ export default function Header({ activeCategory }) {
       .slice(0, MAX_SUGGESTIONS)
   }, [searchText, searchProducts])
 
-  const goToProduct = (id) => {
+  const goToProduct = (produit) => {
     setShowSuggestions(false)
     setMenuOpen(false)
     setSearchText('')
-    window.location.hash = `#produit/${id}`
+    aller(urlProduit(produit))
   }
 
   const handleSearch = (e) => {
@@ -102,7 +104,7 @@ export default function Header({ activeCategory }) {
     if (query) {
       setShowSuggestions(false)
       setMenuOpen(false)
-      window.location.hash = `#recherche/${encodeURIComponent(query)}`
+      aller(urlRecherche(query))
     }
   }
 
@@ -124,7 +126,7 @@ export default function Header({ activeCategory }) {
             {settings?.contact_telephone || DEFAULT_TELEPHONE}
           </a>
           {estAdmin && (
-            <a href="#admin" className="text-stone/60 hover:text-stone">
+            <a href="/admin" className="text-stone/60 hover:text-stone">
               Administration
             </a>
           )}
@@ -132,7 +134,7 @@ export default function Header({ activeCategory }) {
       </div>
 
       <div className="flex items-center justify-between gap-4 px-4 md:px-5 py-3">
-        <a href="#" className="block h-9 md:h-10 relative shrink-0">
+        <a href="/" className="block h-9 md:h-10 relative shrink-0">
           <img
             src={urlPhoto(settings?.logo_url) || '/logo.png'}
             alt="Bontin"
@@ -200,7 +202,7 @@ export default function Header({ activeCategory }) {
 
           {mode === 'retrait' && (
             <a
-              href="#petits-formats"
+              href="/petits-formats"
               className="border border-forest bg-forest/10 text-forest px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-forest hover:text-paper transition-colors"
             >
               Petits formats
@@ -208,14 +210,14 @@ export default function Header({ activeCategory }) {
           )}
 
           <a
-            href="#mon-compte"
+            href="/mon-compte"
             className="border border-ink/40 px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-stone"
           >
             {client ? client.prenom : 'Mon compte'}
           </a>
 
           <a
-            href="#panier"
+            href="/panier"
             className="relative border border-ink/40 px-3 py-1.5 font-tag text-xs uppercase font-semibold hover:bg-stone"
           >
             Panier
@@ -229,10 +231,10 @@ export default function Header({ activeCategory }) {
 
         {/* Panier + burger : visibles seulement en dessous de md */}
         <div className="flex md:hidden items-center gap-3 shrink-0">
-          <a href="#mon-compte" aria-label="Mon compte" className="font-tag text-xs uppercase font-semibold border border-ink/40 px-2.5 py-1.5">
+          <a href="/mon-compte" aria-label="Mon compte" className="font-tag text-xs uppercase font-semibold border border-ink/40 px-2.5 py-1.5">
             Compte
           </a>
-          <a href="#panier" className="relative" aria-label="Voir le panier">
+          <a href="/panier" className="relative" aria-label="Voir le panier">
             <span className="font-tag text-xs uppercase font-semibold border border-ink/40 px-2.5 py-1.5 block">
               Panier
             </span>
@@ -295,7 +297,7 @@ export default function Header({ activeCategory }) {
               {isOpen && subcats.length > 0 && (
                 <div className="absolute left-0 top-full mt-1 bg-paper border border-ink/20 shadow-sm z-30 min-w-[180px] py-1">
                   <a
-                    href={`#categorie/${encodeURIComponent(cat)}`}
+                    href={urlRayon(cat)}
                     onClick={() => setOpenCategory(null)}
                     className="block px-3 py-2 font-tag text-xs uppercase font-semibold text-forest hover:bg-stone border-b border-ink/10"
                   >
@@ -304,7 +306,7 @@ export default function Header({ activeCategory }) {
                   {subcats.map((sub) => (
                     <a
                       key={sub}
-                      href={`#categorie/${encodeURIComponent(cat)}/${encodeURIComponent(sub)}`}
+                      href={urlRayon(cat, sub)}
                       onClick={() => setOpenCategory(null)}
                       className="block px-3 py-2 font-body text-sm text-ink hover:bg-stone"
                     >
@@ -318,7 +320,7 @@ export default function Header({ activeCategory }) {
         })}
         {hasDestockage && (
           <a
-            href="#destockage"
+            href="/destockage"
             className={`font-body pb-0.5 border-b-2 transition-colors ${
               activeCategory === 'Déstockage'
                 ? 'border-rust text-rust font-semibold'
@@ -386,7 +388,7 @@ export default function Header({ activeCategory }) {
                 <div key={cat}>
                   <div className="flex items-center justify-between py-3">
                     <a
-                      href={`#categorie/${encodeURIComponent(cat)}`}
+                      href={urlRayon(cat)}
                       onClick={() => setMenuOpen(false)}
                       className={`font-body text-sm ${
                         activeCategory === cat ? 'text-forest font-semibold' : 'text-ink'
@@ -411,7 +413,7 @@ export default function Header({ activeCategory }) {
                       {subcats.map((sub) => (
                         <a
                           key={sub}
-                          href={`#categorie/${encodeURIComponent(cat)}/${encodeURIComponent(sub)}`}
+                          href={urlRayon(cat, sub)}
                           onClick={() => setMenuOpen(false)}
                           className="font-tag text-xs uppercase text-muted hover:text-ink"
                         >
@@ -426,7 +428,7 @@ export default function Header({ activeCategory }) {
             {hasDestockage && (
               <div className="py-3">
                 <a
-                  href="#destockage"
+                  href="/destockage"
                   onClick={() => setMenuOpen(false)}
                   className="font-body text-sm text-rust font-semibold"
                 >
@@ -438,7 +440,7 @@ export default function Header({ activeCategory }) {
 
           {mode === 'retrait' && (
             <a
-              href="#petits-formats"
+              href="/petits-formats"
               onClick={() => setMenuOpen(false)}
               className="block mt-4 font-tag text-xs uppercase font-semibold text-forest"
             >

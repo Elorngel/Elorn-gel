@@ -5,10 +5,16 @@ import PastillesParrainage from '../components/PastillesParrainage'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useAuth } from '../context/AuthContext'
 import { eurosTexte as euros, lienParrainage, retenirCodeParrain } from '../lib/offres'
+import { useSeo } from '../lib/seo'
 
 // Page « Parrainage » (#parrainage). Arrivé par un lien #parrainage/CODE, le visiteur voit le code
 // de son parrain, retenu pour la création de son compte (voir App.jsx).
 export default function ParrainagePage({ codeRecu }) {
+  useSeo({
+    titre: 'Parrainage',
+    description: 'Parrainez vos proches chez Bontin : un bon d’achat pour vous et pour votre filleul sur vos commandes de surgelés.',
+    chemin: '/parrainage',
+  })
   const { settings } = useSiteSettings()
   const { client } = useAuth()
   const [copie, setCopie] = useState(false)
@@ -59,7 +65,7 @@ export default function ParrainagePage({ codeRecu }) {
               déduits de votre première commande dès {euros(minimum)} d'achats.
             </p>
             <a
-              href="#catalogue"
+              href="/catalogue"
               className="inline-block mt-3 bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-4 py-2.5 hover:bg-forest"
             >
               Voir le catalogue
@@ -89,7 +95,7 @@ export default function ParrainagePage({ codeRecu }) {
               {client ? 'Partagez votre code ou votre lien (ci-dessus, et dans « Mon compte »).' : (
                 <>
                   Créez votre compte Bontin : votre code parrain apparaît dans{' '}
-                  <a href="#mon-compte" className="underline">
+                  <a href="/mon-compte" className="underline">
                     « Mon compte »
                   </a>
                   .

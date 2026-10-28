@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useProduct } from '../hooks/useProduct'
 import { useSuppliers } from '../hooks/useSuppliers'
 import { usePriceMode } from '../context/PriceModeContext'
@@ -11,6 +11,9 @@ import { getSupplierLogo } from '../lib/suppliers'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
+import { urlProduit, urlRayon } from '../lib/adresses'
+import { aller } from '../lib/navigation'
+import { useSeo, nomLisible, resume } from '../lib/seo'
 import { getBasePrice, getVarianteAffichee, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 
 export default function ProductDetailPage({ id }) {
@@ -22,6 +25,25 @@ export default function ProductDetailPage({ id }) {
   const [activeTab, setActiveTab] = useState('description')
   const [justAdded, setJustAdded] = useState(false)
   const [selectedVariantId, setSelectedVariantId] = useState(null)
+
+  // Ce que Google affiche pour cette fiche, et adresse officielle (avec le nom à jour du produit).
+  const adresse = product ? urlProduit(product) : null
+  const nomPage = product ? nomLisible(product.nom) : ''
+  useSeo(
+    product
+      ? {
+          titre: nomPage,
+          description:
+            resume(product.description) ||
+            `${nomPage} surgelé${product.poids ? `, ${product.poids}` : ''} : livraison autour de Landerneau ou retrait au dépôt de Plouédern (Finistère).`,
+          chemin: adresse,
+          indexer: product.actif !== false,
+        }
+      : { titre: loading ? 'Chargement' : 'Produit introuvable', indexer: false }
+  )
+  useEffect(() => {
+    if (adresse && window.location.pathname !== adresse) aller(adresse, { remplacer: true })
+  }, [adresse])
 
   if (loading) {
     return (
@@ -38,7 +60,7 @@ export default function ProductDetailPage({ id }) {
         <Header activeCategory={null} />
         <div className="p-8 font-body text-sm text-rust">
           Produit introuvable.{' '}
-          <a href="#" className="underline">
+          <a href="/" className="underline">
             Retour au catalogue
           </a>
         </div>
@@ -87,15 +109,15 @@ export default function ProductDetailPage({ id }) {
       <div className="max-w-5xl mx-auto px-5 py-6">
         <Breadcrumb
           items={[
-            { label: 'Accueil', href: '#' },
+            { label: 'Accueil', href: '/' },
             ...(product.categorie
-              ? [{ label: product.categorie, href: `#categorie/${encodeURIComponent(product.categorie)}` }]
+              ? [{ label: product.categorie, href: urlRayon(product.categorie) }]
               : []),
             ...(product.sous_categorie
               ? [
                   {
                     label: product.sous_categorie,
-                    href: `#categorie/${encodeURIComponent(product.categorie)}/${encodeURIComponent(product.sous_categorie)}`,
+                    href: urlRayon(product.categorie, product.sous_categorie),
                   },
                 ]
               : []),
@@ -358,7 +380,7 @@ export default function ProductDetailPage({ id }) {
                   className="flex items-center gap-3 bg-paper border border-ink/15 p-2 w-full sm:w-72"
                 >
                   <a
-                    href={`#produit/${assoc.id}`}
+                    href={urlProduit(assoc)}
                     className="relative w-24 h-24 shrink-0 bg-stone overflow-hidden"
                   >
                     {assoc.photo_url && (
@@ -371,7 +393,7 @@ export default function ProductDetailPage({ id }) {
                       />
                     )}
                   </a>
-                  <a href={`#produit/${assoc.id}`} className="flex-1 min-w-0">
+                  <a href={urlProduit(assoc)} className="flex-1 min-w-0">
                     <p className="font-body text-xs font-semibold leading-snug">
                       {getDisplayName(assoc, isPickup)}
                     </p>

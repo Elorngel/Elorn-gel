@@ -441,7 +441,7 @@ export default function RouePage() {
     <div className="min-h-screen bg-stone text-ink font-body">
       <div className="bg-ink text-stone font-tag text-xs font-medium uppercase tracking-[0.14em] px-4 py-2.5 flex justify-between gap-3">
         <span>Jeu de la carte privilège — essai</span>
-        <a href="#admin" className="hover:text-paper">
+        <a href="/admin" className="hover:text-paper">
           Retour à l'admin
         </a>
       </div>

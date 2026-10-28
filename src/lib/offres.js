@@ -1,3 +1,5 @@
+import { urlParrainage } from './adresses'
+
 // Libellés des bons d'achat (parrainage, anniversaire…), utilisés dans le panier, « Mon compte » et l'admin.
 export const MOTIFS_BON = {
   parrainage_filleul: 'Bon de bienvenue (parrainage)',
@@ -15,7 +17,7 @@ export const eurosTexte = (n) => {
 }
 
 // Lien de parrainage à partager : ouvre la page parrainage avec le code déjà retenu.
-export const lienParrainage = (code) => `${window.location.origin}/#parrainage/${encodeURIComponent(code)}`
+export const lienParrainage = (code) => `${window.location.origin}${urlParrainage(code)}`
 
 // Code parrain retenu quand un visiteur arrive par un lien de parrainage (repris à la création du compte).
 const CLE_CODE = 'bontin-code-parrain'

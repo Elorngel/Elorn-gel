@@ -19,6 +19,10 @@ DirectoryIndex index.html
   RewriteCond %{HTTPS} !=on
   RewriteRule ^ https://bontin.fr%{REQUEST_URI} [R=301,L]
 
+  # Anciennes adresses du site PrestaShop → page équivalente (redirection définitive « 301 »).
+  # Liste fabriquée à chaque construction du site par scripts/generer-seo.mjs.
+  # {{REDIRECTIONS_ANCIENNES_ADRESSES}}
+
   # Photos des produits : une photo déjà copiée dans photos/ est servie directement ; sinon
   # photo-cache.php va la chercher une fois chez Supabase et la garde (voir ce fichier).
   RewriteCond %{REQUEST_FILENAME} !-f

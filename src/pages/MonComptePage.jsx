@@ -8,6 +8,8 @@ import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
 import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import { MOTIFS_BON, euros, eurosTexte, lienParrainage } from '../lib/offres'
+import { aller } from '../lib/navigation'
+import { useSeo } from '../lib/seo'
 
 const STATUTS = { nouvelle: 'Reçue', preparee: 'Préparée', livree: 'Livrée / retirée' }
 const champ = 'w-full border border-ink/20 p-2 font-body text-sm bg-paper focus:border-forest focus:outline-none'
@@ -122,7 +124,7 @@ function MesCommandes({ userId }) {
     return (
       <p className="font-body text-sm text-muted">
         Aucune commande pour le moment.{' '}
-        <a href="#catalogue" className="underline">
+        <a href="/catalogue" className="underline">
           Voir le catalogue
         </a>
       </p>
@@ -236,7 +238,7 @@ function Parrainage({ client }) {
           <p className="font-body text-sm mb-2">
             Parrainez vos proches : ils ont {eurosTexte(settings?.parrainage_montant ?? 25)} sur leur première commande, et
             vous aussi dès que leur commande est livrée.{' '}
-            <a href="#parrainage" className="underline">
+            <a href="/parrainage" className="underline">
               Comment ça marche ?
             </a>
           </p>
@@ -350,7 +352,7 @@ function SupprimerCompte() {
       return
     }
     await deconnexion()
-    window.location.hash = ''
+    aller('/')
   }
 
   if (etape === 0) {
@@ -380,6 +382,7 @@ function SupprimerCompte() {
 }
 
 export default function MonComptePage() {
+  useSeo({ titre: 'Mon compte', indexer: false })
   const { chargement, user, client, estAdmin, deconnexion, rechargerProfil } = useAuth()
 
   let contenu
@@ -397,7 +400,7 @@ export default function MonComptePage() {
         </p>
         <div className="flex gap-4">
           {estAdmin && (
-            <a href="#admin" className={bouton}>
+            <a href="/admin" className={bouton}>
               Aller à l'administration
             </a>
           )}

@@ -3,6 +3,7 @@ import { usePriceMode } from '../context/PriceModeContext'
 import { useCart } from '../context/CartContext'
 import { getBasePrice, getVarianteAffichee, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
+import { urlProduit } from '../lib/adresses'
 
 // prioritaire : carte visible dès l'ouverture (première rangée) → photo chargée sans attendre.
 export default function ProductCard({ product, supplierLogo, prioritaire = false }) {
@@ -45,7 +46,7 @@ export default function ProductCard({ product, supplierLogo, prioritaire = false
         product.en_rupture ? 'opacity-60' : ''
       }`}
     >
-      <a href={`#produit/${product.id}`} className="relative aspect-square bg-stone flex items-center justify-center overflow-hidden">
+      <a href={urlProduit(product)} className="relative aspect-square bg-stone flex items-center justify-center overflow-hidden">
         {product.photo_url ? (
           <CroppableImage
             src={product.photo_url}
@@ -86,7 +87,7 @@ export default function ProductCard({ product, supplierLogo, prioritaire = false
       </a>
 
       <div className="p-3 flex flex-col grow">
-        <a href={`#produit/${product.id}`}>
+        <a href={urlProduit(product)}>
           <h3 className="font-body font-semibold text-sm leading-snug mb-1.5 hover:underline">
             {displayName}
           </h3>

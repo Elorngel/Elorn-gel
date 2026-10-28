@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { ecouterPages } from '../lib/navigation'
 
 // Ouvre/ferme l'assistant "Besoin d'un conseil ?" depuis n'importe quelle page
 // (le bouton est dans l'en-tête, l'assistant est affiché une seule fois dans App).
@@ -9,12 +10,8 @@ export function ConseilProvider({ children }) {
   const open = useCallback(() => setIsOpen(true), [])
   const close = useCallback(() => setIsOpen(false), [])
 
-  // Cliquer sur une fiche produit change l'adresse (#produit/…) : on referme
-  // l'assistant pour que le client voie la page.
-  useEffect(() => {
-    window.addEventListener('hashchange', close)
-    return () => window.removeEventListener('hashchange', close)
-  }, [close])
+  // Cliquer sur une fiche produit change de page : on referme l'assistant pour que le client voie la page.
+  useEffect(() => ecouterPages(close), [close])
 
   const value = useMemo(() => ({ isOpen, open, close }), [isOpen, open, close])
 

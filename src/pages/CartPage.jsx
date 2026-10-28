@@ -16,10 +16,13 @@ import CroppableImage from '../components/CroppableImage'
 import ChampsCompte, { nouveauCompte } from '../components/ChampsCompte'
 import { useAuth } from '../context/AuthContext'
 import { MOTIFS_BON, euros, eurosTexte } from '../lib/offres'
+import { urlProduit } from '../lib/adresses'
+import { useSeo } from '../lib/seo'
 
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear } = useCart()
+  useSeo({ titre: 'Votre panier', indexer: false })
   const { mode, setMode, isPickup, discountPercent } = usePriceMode()
   const { submitOrder, submitting, error } = useOrder()
   const { settings } = useSiteSettings()
@@ -278,7 +281,7 @@ export default function CartPage() {
               Imprimer le bon de commande
             </button>
             <a
-              href="#"
+              href="/"
               className="inline-block bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-5 py-2.5 hover:bg-forest transition-colors"
             >
               Retour au catalogue
@@ -299,7 +302,7 @@ export default function CartPage() {
         {items.length === 0 ? (
           <p className="font-body text-sm text-muted">
             Ton panier est vide.{' '}
-            <a href="#" className="underline">
+            <a href="/" className="underline">
               Retour au catalogue
             </a>
           </p>
@@ -312,7 +315,7 @@ export default function CartPage() {
                   className="flex gap-3 p-3 border-b border-ink/10 last:border-b-0"
                 >
                   <a
-                    href={`#produit/${item.id}`}
+                    href={urlProduit({ id: item.id, nom: item.nom })}
                     className="relative w-16 h-16 bg-stone overflow-hidden shrink-0"
                   >
                     {item.photo_url && (
@@ -327,7 +330,7 @@ export default function CartPage() {
                   </a>
 
                   <div className="flex-1 min-w-0">
-                    <a href={`#produit/${item.id}`}>
+                    <a href={urlProduit({ id: item.id, nom: item.nom })}>
                       <h3 className="font-body font-semibold text-sm hover:underline truncate">
                         {item.nom}
                       </h3>

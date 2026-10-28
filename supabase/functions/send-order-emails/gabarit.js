@@ -122,7 +122,7 @@ export function emailClient(c, infos) {
         Rien n'a été débité en ligne.
       </td></tr>
     </table>
-    ${bouton(`${infos.site}/#mon-compte`, 'Voir mes commandes')}`
+    ${bouton(`${infos.site}/mon-compte`, 'Voir mes commandes')}`
   return cadre({
     infos,
     apercu: `Commande n° ${numeroCommande(c)} — ${retrait ? 'retrait' : 'livraison'}${creneau ? ` ${creneau}` : ''}`,
@@ -152,7 +152,7 @@ export function emailAdmin(c, infos) {
     ${blocCreneau(c, infos)}
     ${c.note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6e3dc;border-left:4px solid ${C.rust};margin:0 0 20px;"><tr><td style="padding:10px 14px;font:14px/1.45 ${TEXTE};"><strong>Note du client :</strong> ${esc(c.note)}</td></tr></table>` : ''}
     ${tableauProduits(c)}
-    ${bouton(`${infos.site}/#admin`, "Ouvrir l'administration")}`
+    ${bouton(`${infos.site}/admin`, "Ouvrir l'administration")}`
   return cadre({
     infos,
     apercu: `${c.nom_client} — ${retrait ? 'retrait' : 'livraison'} — ${Number(c.total).toFixed(2)} €`,

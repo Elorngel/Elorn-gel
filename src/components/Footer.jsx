@@ -15,10 +15,10 @@ export default function Footer() {
       {settings && settings.parrainage_actif !== false && (
         <div className="border-b border-stone/15 px-5 py-8 text-center">
           <p className="font-display text-3xl text-paper mb-5">Parrainez vos proches</p>
-          <a href="#parrainage" className="block w-fit mx-auto" aria-label="Le parrainage Bontin : comment ça marche">
+          <a href="/parrainage" className="block w-fit mx-auto" aria-label="Le parrainage Bontin : comment ça marche">
             <PastillesParrainage montant={settings.parrainage_montant} />
           </a>
-          <a href="#parrainage" className="inline-block mt-5 font-tag text-xs uppercase font-semibold underline hover:text-paper">
+          <a href="/parrainage" className="inline-block mt-5 font-tag text-xs uppercase font-semibold underline hover:text-paper">
             Comment ça marche ?
           </a>
         </div>
@@ -30,22 +30,22 @@ export default function Footer() {
           </h3>
           <ul className="flex flex-col gap-2 font-body text-sm">
             <li>
-              <a href="#mentions-legales" className="hover:underline">
+              <a href="/mentions-legales" className="hover:underline">
                 Mentions légales
               </a>
             </li>
             <li>
-              <a href="#cgv" className="hover:underline">
+              <a href="/cgv" className="hover:underline">
                 Conditions générales de vente (CGV)
               </a>
             </li>
             <li>
-              <a href="#cgu" className="hover:underline">
+              <a href="/cgu" className="hover:underline">
                 Conditions générales d'utilisation (CGU)
               </a>
             </li>
             <li>
-              <a href="#confidentialite" className="hover:underline">
+              <a href="/confidentialite" className="hover:underline">
                 Politique de confidentialité
               </a>
             </li>

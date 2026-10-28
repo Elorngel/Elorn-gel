@@ -1,11 +1,13 @@
 // Anciennes adresses du site PrestaShop (bontin.fr avant la bascule) : liens gardés par
-// Google, les favoris des clients ou Facebook. Le nouveau site navigue avec des « # »,
-// donc on traduit ici une ancienne adresse en page équivalente :
+// Google, les favoris des clients ou Facebook. On traduit ici une ancienne adresse en page équivalente
+// (utilisé par le site, et par scripts/generer-seo.mjs pour les redirections du serveur IONOS) :
 //   /pizzas/30-pizza-chorizo.html  →  la fiche du produit le plus ressemblant
 //   /54-pizzas                     →  le rayon correspondant
 // (liste des anciennes adresses : sitemap PrestaShop relevé le 23/10/2026)
 
 // Ancien rayon (sans son numéro) → [catégorie, sous-catégorie] du nouveau site.
+import { urlProduit, urlRayon, urlRecherche } from './adresses.js'
+
 const RAYONS = {
   poissons: ['Poissons et fruits de mer'],
   'poissons-blancs': ['Poissons et fruits de mer', 'Poissons blancs'],
@@ -58,14 +60,14 @@ const RAYONS = {
 
 // Pages fixes de PrestaShop (mots présents dans l'adresse) → page du nouveau site.
 const PAGES = [
-  [/mentions/, '#mentions-legales'],
-  [/conditions-generales-de-vente|cgv/, '#cgv'],
-  [/conditions-(generales-)?d-?utilisation|cgu/, '#cgu'],
-  [/confidentialite|donnees-personnelles/, '#confidentialite'],
-  [/connexion|mon-compte|identite|adresses?$|historique-commandes|order-history/, '#mon-compte'],
-  [/panier|commande|cart|order/, '#panier'],
-  [/promotions?|prices-drop|avantages-privilege/, '#promo'],
-  [/nouveaux-produits|new-products|nouveautes|meilleures-ventes|best-sales/, '#catalogue'],
+  [/mentions/, '/mentions-legales'],
+  [/conditions-generales-de-vente|cgv/, '/cgv'],
+  [/conditions-(generales-)?d-?utilisation|cgu/, '/cgu'],
+  [/confidentialite|donnees-personnelles/, '/confidentialite'],
+  [/connexion|mon-compte|identite|adresses?$|historique-commandes|order-history/, '/mon-compte'],
+  [/panier|commande|cart|order/, '/panier'],
+  [/promotions?|prices-drop|avantages-privilege/, '/promotions'],
+  [/nouveaux-produits|new-products|nouveautes|meilleures-ventes|best-sales/, '/catalogue'],
 ]
 
 const MOTS_VIDES = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'et', 'a', 'au', 'aux', 'en', 'html', 'x'])
@@ -81,8 +83,8 @@ export function normaliser(texte) {
 
 const mots = (texte) => normaliser(texte).split(' ').filter((m) => m && !MOTS_VIDES.has(m))
 
-function hashRayon([categorie, sousCategorie]) {
-  return `#categorie/${encodeURIComponent(categorie)}${sousCategorie ? `/${encodeURIComponent(sousCategorie)}` : ''}`
+function adresseRayon([categorie, sousCategorie]) {
+  return urlRayon(categorie, sousCategorie)
 }
 
 // Produit dont le nom ressemble le plus aux mots de l'ancienne adresse (au moins 70 % des mots retrouvés ;
@@ -103,19 +105,19 @@ function produitRessemblant(motsAdresse, produits) {
   return meilleur?.p ?? null
 }
 
-// Renvoie le « # » de la page équivalente, ou '' (accueil). `produits` : catalogue du site.
+// Renvoie l'adresse de la page équivalente (« / » = accueil). `produits` : catalogue du site.
 export function pageEquivalente(chemin, recherche, produits = []) {
   let morceaux
   try {
     morceaux = decodeURIComponent(chemin).toLowerCase().split('/').filter(Boolean)
   } catch {
-    return ''
+    return '/'
   }
-  if (morceaux.length === 0) return ''
+  if (morceaux.length === 0) return '/'
 
   // Recherche PrestaShop : /recherche?s=frites ou /index.php?controller=search&s=frites
   const motCherche = new URLSearchParams(recherche).get('s') || new URLSearchParams(recherche).get('search_query')
-  if (motCherche) return `#recherche/${encodeURIComponent(motCherche)}`
+  if (motCherche) return urlRecherche(motCherche)
 
   const dernier = morceaux[morceaux.length - 1].replace(/\.html?$/, '')
   const toutLeChemin = morceaux.join('/')
@@ -124,17 +126,17 @@ export function pageEquivalente(chemin, recherche, produits = []) {
   if (/\.html?$/.test(morceaux[morceaux.length - 1]) && /^\d+-/.test(dernier)) {
     const motsProduit = mots(dernier.replace(/^\d+-/, ''))
     const produit = produitRessemblant(motsProduit, produits)
-    if (produit) return `#produit/${produit.id}`
+    if (produit) return urlProduit(produit)
     const rayon = RAYONS[morceaux[0]]
-    if (rayon) return hashRayon(rayon)
-    return `#recherche/${encodeURIComponent(motsProduit.filter((m) => !/^\d+$/.test(m)).join(' '))}`
+    if (rayon) return adresseRayon(rayon)
+    return urlRecherche(motsProduit.filter((m) => !/^\d+$/.test(m)).join(' '))
   }
 
   for (const [motif, page] of PAGES) if (motif.test(toutLeChemin)) return page
 
   // Rayon : /54-pizzas (le numéro distingue les deux anciens rayons « specialites »)
   const rayon = RAYONS[dernier] || RAYONS[dernier.replace(/^\d+-/, '')]
-  if (rayon) return hashRayon(rayon)
+  if (rayon) return adresseRayon(rayon)
 
-  return ''
+  return '/'
 }

@@ -145,11 +145,11 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
           />
           <span>
             J'accepte les{' '}
-            <a href="#cgv" target="_blank" rel="noopener noreferrer" className="underline">
+            <a href="/cgv" target="_blank" rel="noopener noreferrer" className="underline">
               conditions générales de vente
             </a>{' '}
             et la{' '}
-            <a href="#confidentialite" target="_blank" rel="noopener noreferrer" className="underline">
+            <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="underline">
               politique de confidentialité
             </a>
             .
