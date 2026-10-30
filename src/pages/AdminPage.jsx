@@ -20,6 +20,8 @@ import { MESSAGE_MAINTENANCE_DEFAUT } from './MaintenancePage'
 import { getPricePerUnitLabel, getPromoStatus } from '../lib/pricing'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } from '../lib/siteDefaults'
 import { aller } from '../lib/navigation'
+import { correspond } from '../lib/texte'
+import AutresRayons from '../components/AutresRayons'
 
 const NO_SPINNER =
   '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
@@ -664,11 +666,11 @@ export default function AdminPage() {
   }
 
   const promoCount = products.filter((p) => p.en_promo).length
-  const q = searchText.trim().toLowerCase()
+  const q = searchText.trim()
   const filteredProducts = products.filter(
     (p) =>
       (!promoOnly || p.en_promo) &&
-      (!q || p.nom?.toLowerCase().includes(q) || p.code_article?.toLowerCase().includes(q))
+      (!q || correspond(p.nom, q) || correspond(p.code_article, q))
   )
 
   if (loading) {
@@ -913,6 +915,12 @@ export default function AdminPage() {
                       value={product.sous_categorie}
                       onSave={(v) => updateProduct(product.id, { sous_categorie: v })}
                       subcategoriesByCategory={subcategoriesByCategory}
+                    />
+                    <AutresRayons
+                      product={product}
+                      categories={categories}
+                      subcategoriesByCategory={subcategoriesByCategory}
+                      onSave={(changes) => updateProduct(product.id, changes)}
                     />
                   </td>
                   <td className="px-1.5 py-2 align-top">

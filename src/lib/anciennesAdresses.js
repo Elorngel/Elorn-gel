@@ -7,6 +7,7 @@
 
 // Ancien rayon (sans son numéro) → [catégorie, sous-catégorie] du nouveau site.
 import { urlProduit, urlRayon, urlRecherche } from './adresses.js'
+import { normaliser } from './texte.js'
 
 const RAYONS = {
   poissons: ['Poissons et fruits de mer'],
@@ -71,15 +72,6 @@ const PAGES = [
 ]
 
 const MOTS_VIDES = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'et', 'a', 'au', 'aux', 'en', 'html', 'x'])
-
-export function normaliser(texte) {
-  return String(texte || '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-}
 
 const mots = (texte) => normaliser(texte).split(' ').filter((m) => m && !MOTS_VIDES.has(m))
 

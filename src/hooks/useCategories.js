@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { requeteMemo, oublierRequetes } from '../lib/requeteMemo'
+import { rayonsApresRenommage, rayonsApresSuppression } from '../lib/rayons'
 
 export function useCategories() {
   const [categoriesFull, setCategoriesFull] = useState([])
@@ -37,6 +38,21 @@ export function useCategories() {
       .map((s) => s.nom)
   })
 
+  const nomDuRayonParent = (sousId) => {
+    const sous = subcategoriesFull.find((s) => s.id === sousId)
+    return categoriesFull.find((c) => c.id === sous?.categorie_id)?.nom
+  }
+
+  // Rayon renommé ou supprimé : on répercute sur les produits qui y sont en rayon supplémentaire.
+  const majAutresRayons = async (transformer) => {
+    const { data } = await supabase.from('produits').select('id, autres_rayons').neq('autres_rayons', '[]')
+    for (const p of data || []) {
+      const suite = transformer(p.autres_rayons || [])
+      if (suite) await supabase.from('produits').update({ autres_rayons: suite }).eq('id', p.id)
+    }
+    oublierRequetes('produits')
+  }
+
   const addCategory = async (nom) => {
     const { error } = await supabase
       .from('categories')
@@ -51,12 +67,15 @@ export function useCategories() {
     // Met aussi à jour les produits déjà classés dans cette catégorie,
     // pour ne pas les rendre orphelins.
     await supabase.from('produits').update({ categorie: newNom }).eq('categorie', oldNom)
+    await majAutresRayons((liste) => rayonsApresRenommage(liste, oldNom, newNom))
     await fetchAll()
   }
 
   const deleteCategory = async (id) => {
+    const nom = categoriesFull.find((c) => c.id === id)?.nom
     const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) throw error
+    await majAutresRayons((liste) => rayonsApresSuppression(liste, nom))
     await fetchAll()
   }
 
@@ -76,12 +95,17 @@ export function useCategories() {
       .eq('id', id)
     if (error) throw error
     await supabase.from('produits').update({ sous_categorie: newNom }).eq('sous_categorie', oldNom)
+    const categorie = nomDuRayonParent(id)
+    await majAutresRayons((liste) => rayonsApresRenommage(liste, categorie, categorie, oldNom, newNom))
     await fetchAll()
   }
 
   const deleteSubcategory = async (id) => {
+    const categorie = nomDuRayonParent(id)
+    const nom = subcategoriesFull.find((s) => s.id === id)?.nom
     const { error } = await supabase.from('sous_categories').delete().eq('id', id)
     if (error) throw error
+    await majAutresRayons((liste) => rayonsApresSuppression(liste, categorie, nom))
     await fetchAll()
   }
 

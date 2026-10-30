@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { correspond } from '../lib/texte'
 
 const MAX_SHOWN = 40
 
@@ -22,8 +23,8 @@ export default function ExistingPhotoPicker({ onPick, disabled }) {
 
   const filtered = useMemo(() => {
     if (!photos) return []
-    const q = query.trim().toLowerCase()
-    return q ? photos.filter((p) => p.nom.toLowerCase().includes(q)) : photos
+    const q = query.trim()
+    return q ? photos.filter((p) => correspond(p.nom, q)) : photos
   }, [photos, query])
 
   return (

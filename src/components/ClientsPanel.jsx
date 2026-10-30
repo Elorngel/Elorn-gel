@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { correspond } from '../lib/texte'
 
 const age = (date) => {
   const n = new Date(`${date}T12:00:00`)
@@ -32,11 +33,11 @@ export default function ClientsPanel() {
   }, [])
 
   const visibles = useMemo(() => {
-    const q = recherche.trim().toLowerCase()
+    const q = recherche.trim()
     if (!clients) return []
     if (!q) return clients
     return clients.filter((c) =>
-      [c.nom, c.prenom, c.email, c.telephone, c.ville].some((v) => (v || '').toLowerCase().includes(q))
+      correspond([c.nom, c.prenom, c.email, c.telephone, c.ville].join(' '), q)
     )
   }, [clients, recherche])
 

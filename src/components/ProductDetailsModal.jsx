@@ -1,3 +1,4 @@
+import { correspond } from '../lib/texte'
 import { useState } from 'react'
 import RichTextEditor from './RichTextEditor'
 import { getPricePerUnitLabel } from '../lib/pricing'
@@ -71,7 +72,7 @@ export default function ProductDetailsModal({
           (p) =>
             p.id !== product.id &&
             !accompItems.some((row) => row.produit_associe_id === p.id) &&
-            p.nom.toLowerCase().includes(associeSearch.trim().toLowerCase())
+            correspond(p.nom, associeSearch)
         )
         .slice(0, 8)
     : []
@@ -242,7 +243,7 @@ export default function ProductDetailsModal({
 
   const fournisseurResults = fournisseurSearch.trim()
     ? suppliers.filter((s) =>
-        s.nom.toLowerCase().includes(fournisseurSearch.trim().toLowerCase())
+        correspond(s.nom, fournisseurSearch)
       )
     : []
 

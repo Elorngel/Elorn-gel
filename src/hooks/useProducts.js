@@ -19,7 +19,7 @@ const COLONNES_SITE =
   'id, nom, nom_retrait, categorie, sous_categorie, fournisseur, actif, mis_en_avant, en_rupture, ' +
   'en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, ' +
   'prix_livraison, prix_par_kg, poids, poids_reference, unite_reference, tags, dispo_livraison, ' +
-  'dispo_retrait, photo_url, photo_zoom, photo_pos_x, photo_pos_y'
+  'dispo_retrait, photo_url, photo_zoom, photo_pos_x, photo_pos_y, autres_rayons'
 
 // Produits et conditionnements demandés en même temps (et non l'un après l'autre).
 function chargerProduits(leger) {

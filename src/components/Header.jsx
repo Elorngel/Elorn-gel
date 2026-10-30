@@ -11,6 +11,7 @@ import { isDestockage } from '../lib/pricing'
 import { urlPhoto, photoDeSecours } from '../lib/photos'
 import { urlProduit, urlRayon, urlRecherche } from '../lib/adresses'
 import { aller } from '../lib/navigation'
+import { correspond } from '../lib/texte'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -84,10 +85,10 @@ export default function Header({ activeCategory }) {
   const hasDestockage = useMemo(() => searchProducts.some(isDestockage), [searchProducts])
 
   const suggestions = useMemo(() => {
-    const q = searchText.trim().toLowerCase()
+    const q = searchText.trim()
     if (q.length < MIN_CHARS_SUGGESTIONS) return []
     return searchProducts
-      .filter((p) => p.nom.toLowerCase().includes(q))
+      .filter((p) => correspond(p.nom, q))
       .slice(0, MAX_SUGGESTIONS)
   }, [searchText, searchProducts])
 

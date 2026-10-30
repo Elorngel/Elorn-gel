@@ -34,6 +34,8 @@ import { pageEquivalente } from './lib/anciennesAdresses'
 import { lirePage, depuisAncienLien, slug, urlRayon } from './lib/adresses'
 import { aller, ecouterPages, interceptionLiens } from './lib/navigation'
 import { useSeo } from './lib/seo'
+import { correspond } from './lib/texte'
+import { estDansRayon } from './lib/rayons'
 
 function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
   const { products, loading: produitsEnCours, error } = useProducts({ leger: true })
@@ -72,19 +74,15 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
     visibleProducts = publishedProducts.filter(isExclusiveRetrait)
     title = 'Petits formats — exclusif retrait'
   } else if (searchQuery) {
-    const q = searchQuery.toLowerCase()
-    visibleProducts = publishedProducts.filter((p) => p.nom.toLowerCase().includes(q))
+    visibleProducts = publishedProducts.filter((p) => correspond(p.nom, searchQuery))
     title = `Résultats pour « ${searchQuery} »`
   } else if (rayonInconnu) {
     visibleProducts = []
     title = 'Rayon introuvable'
   } else if (activeCategory) {
-    visibleProducts = publishedProducts.filter((p) => p.categorie === activeCategory)
+    visibleProducts = publishedProducts.filter((p) => estDansRayon(p, activeCategory, activeSubcategory))
     title = activeCategory
     if (activeSubcategory) {
-      visibleProducts = visibleProducts.filter(
-        (p) => p.sous_categorie === activeSubcategory
-      )
       title = `${activeCategory} — ${activeSubcategory}`
     }
   } else if (isHomepage) {
