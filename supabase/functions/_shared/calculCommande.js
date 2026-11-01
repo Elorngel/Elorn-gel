@@ -99,3 +99,17 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
   return { lignes: detail, sousTotal, remiseCode, remiseBon, bonUtilisable, frais, total }
 }
+
+// Montant de produits (promos et remise retrait comprises, avant code promo et bon d'achat) qu'il manque
+// pour atteindre le minimum de commande en livraison. 0 = minimum atteint, ou retrait.
+export function manqueLivraison(sousTotal, mode, minimum) {
+  if (mode === 'retrait') return 0
+  return Math.max(0, arrondi(Number(minimum || 0) - Number(sousTotal || 0)))
+}
+
+// Le client a-t-il 18 ans ? (date de naissance au format AAAA-MM-JJ). Date absente ou illisible = non.
+export function estMajeur(dateNaissance, today = aujourdhuiParis()) {
+  const m = String(dateNaissance || '').match(/^(\d{4})-(\d{2}-\d{2})/)
+  if (!m) return false
+  return today >= `${Number(m[1]) + 18}-${m[2]}`
+}

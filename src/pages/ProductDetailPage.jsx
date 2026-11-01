@@ -15,6 +15,7 @@ import { urlProduit, urlRayon } from '../lib/adresses'
 import { aller } from '../lib/navigation'
 import { useSeo, nomLisible, resume } from '../lib/seo'
 import { getBasePrice, getVarianteAffichee, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
+import MentionAlcool from '../components/MentionAlcool'
 
 export default function ProductDetailPage({ id }) {
   const { product, related, associatedProducts, supplierLogo, loading, error } = useProduct(id)
@@ -348,6 +349,8 @@ export default function ProductDetailPage({ id }) {
                 Bientôt de retour
               </span>
             ) : null}
+
+            {product.alcool && <MentionAlcool />}
 
             {(product.necessite_decongelation || product.sans_decongelation) && (
               <div className="border-t border-ink/15 mt-4 pt-4 flex flex-col gap-1">

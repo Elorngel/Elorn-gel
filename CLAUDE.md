@@ -49,6 +49,12 @@ possible "10-15 min", réglage en °C (four, airfryer, friteuse), en W
 possibles "5 min à feu vif puis 10 min à feu moyen" ; cases "Décongélation
 préalable nécessaire" / "Sans décongélation préalable"), admin complet, **liens Facebook/Instagram** (réglables dans l'admin → Réglages du site, colonnes `lien_facebook`/`lien_instagram`, affichés via `SocialIcon.jsx` dans le bandeau du haut et le pied de page), **zone de livraison** (admin → onglet « Zone de livraison » : liste des communes cochées dans `parametres_site.zone_livraison` ; liste des communes et codes postaux dans `src/data/communesZone.js`, contrôle dans `src/lib/zoneLivraison.js` appelé par `CartPage` : le code postal est vérifié, et le nom de la ville quand le code est partagé avec une commune non desservie ; liste vide = aucune restriction), **photo vitrine au format fixe 16:9** (+ bouton « Choisir une photo déjà sur le site » : copie côté stockage d'une photo produit, `ExistingPhotoPicker.jsx` / `copySiteImage` — surtout ne pas faire pointer deux champs vers le même fichier, le nettoyage à chaque changement supprimerait l'autre) (même cadre dans l'éditeur admin et sur le site, `Hero.jsx` + `PhotoEditorModal aspect`), **déstockage** (case + prix sur la fiche produit admin → rubrique « Déstockage » du menu, route `#destockage`, colonnes `en_destockage`/`prix_destockage`, logique dans `src/lib/pricing.js`, passe avant la promo), **adresse de livraison** (adresse/code postal/ville demandés en mode
 Livraison, colonnes `adresse_livraison`/`code_postal`/`ville` de `commandes`).
+**Alcool et minimum de livraison** (01/11/2026, `supabase-alcool-minimum.sql`) : case « Boisson alcoolisée » sur la
+fiche admin (`produits.alcool`) → mentions légales (`MentionAlcool.jsx` : carte, fiche, panier, pied de page, CGV
+art. 2) et achat réservé aux 18 ans et plus (date de naissance du compte, `estMajeur`). Minimum de commande en
+livraison réglable dans l'admin → Réglages du site (`parametres_site.minimum_livraison`, 30 € ; sur les produits hors
+frais, avant code et bon ; `manqueLivraison`, CGV art. 4 automatique). Contrôlés dans le panier ET par `passer-commande`
+(commandes saisies par un admin non bloquées). Le test `scripts/test-commandes.mjs` compte 19 vérifications.
 **Plusieurs rayons par produit** (30/10/2026) : rayon principal + colonne `produits.autres_rayons` (liste de
 {categorie, sous_categorie}, `supabase-autres-rayons.sql`) ; réglage « + autre rayon » dans le tableau admin
 (`AutresRayons.jsx`), logique dans `src/lib/rayons.js` (renommage/suppression d'un rayon répercutés).
@@ -64,7 +70,7 @@ anciennes adresses PrestaShop (`scripts/anciennes-adresses.txt`) dans `dist/.hta
 Audit du 28/10/2026 : admin et roue chargés à la demande (`lazy` dans App.jsx) ; pages hors bontin.fr marquées
 « noindex » ; hébergeur des textes légaux choisi selon l'adresse (`avecHebergeur` dans legalContent.js) ;
 Content-Security-Policy dans `public/.htaccess` (testée avec Apache, à compléter si on ajoute un service externe).
-Test de non-régression des commandes : `scripts/test-commandes.mjs` (15 vérifications sur la vraie base, nettoie
+Test de non-régression des commandes : `scripts/test-commandes.mjs` (vérifications sur la vraie base, nettoie
 ses données ; lancer avec la clé service_role en variable d'environnement, voir l'en-tête du fichier).
 **Mode Retrait par défaut** (26/10/2026) : le site s'ouvre en Retrait (bouton en premier), le choix Livraison est
 retenu sur l'appareil (`PriceModeContext`, clé `bontin-mode`) ; en Retrait, la carte et la fiche produit montrent

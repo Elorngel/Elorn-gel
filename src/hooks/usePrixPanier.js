@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 const COLONNES =
-  'id, nom, nom_retrait, actif, en_rupture, en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, prix_livraison, dispo_livraison, dispo_retrait'
+  'id, nom, nom_retrait, actif, en_rupture, en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, prix_livraison, dispo_livraison, dispo_retrait, alcool'
 
 export const varianteDuPanier = (item) => item.cartKey.split('::')[1] || null
 

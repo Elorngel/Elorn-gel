@@ -32,6 +32,7 @@ export default function ProductDetailsModal({
   const [prixDestockageDraft, setPrixDestockageDraft] = useState(product.prix_destockage ?? '')
   const [dispoLivraison, setDispoLivraison] = useState(product.dispo_livraison !== false)
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
+  const [alcool, setAlcool] = useState(product.alcool === true)
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
   const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
@@ -149,6 +150,12 @@ export default function ProductDetailsModal({
     const newValue = !dispoLivraison
     setDispoLivraison(newValue)
     updateProduct(product.id, { dispo_livraison: newValue })
+  }
+
+  const toggleAlcool = () => {
+    const newValue = !alcool
+    setAlcool(newValue)
+    updateProduct(product.id, { alcool: newValue })
   }
 
   const toggleDispoRetrait = () => {
@@ -294,7 +301,7 @@ export default function ProductDetailsModal({
             />
             <span className="font-body text-sm">Disponible en livraison</span>
           </label>
-          <label className="flex items-center gap-2 mb-4 cursor-pointer">
+          <label className="flex items-center gap-2 mb-1 cursor-pointer">
             <input
               type="checkbox"
               checked={dispoRetrait}
@@ -302,6 +309,17 @@ export default function ProductDetailsModal({
               className="w-4 h-4"
             />
             <span className="font-body text-sm">Disponible en retrait</span>
+          </label>
+          <label className="flex items-center gap-2 mb-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={alcool}
+              onChange={toggleAlcool}
+              className="w-4 h-4"
+            />
+            <span className="font-body text-sm">
+              Boisson alcoolisée (mention légale affichée, achat réservé aux majeurs)
+            </span>
           </label>
 
           <label className="block font-tag text-xs uppercase text-muted mb-1">

@@ -4,7 +4,7 @@
 // fichier partagé ../_shared/calculCommande.js). Un client ne peut donc ni changer un prix, ni
 // réutiliser un code, ni utiliser un bon qui n'est pas le sien.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4'
-import { calculerCommande, articleIndisponible, nomLigne, aujourdhuiParis } from '../_shared/calculCommande.js'
+import { calculerCommande, articleIndisponible, nomLigne, aujourdhuiParis, manqueLivraison, estMajeur } from '../_shared/calculCommande.js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +18,7 @@ const texte = (v: unknown, max = 200) => (typeof v === 'string' ? v.trim().slice
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const COLONNES_PRODUIT =
-  'id, nom, nom_retrait, actif, en_rupture, en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, prix_livraison, dispo_livraison, dispo_retrait'
+  'id, nom, nom_retrait, actif, en_rupture, en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, prix_livraison, dispo_livraison, dispo_retrait, alcool'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -68,12 +68,12 @@ Deno.serve(async (req) => {
     const produitIds = [...new Set(demandes.map((l: any) => l.produitId))]
     const varianteIds = [...new Set(demandes.map((l: any) => l.varianteId).filter(Boolean))]
     const [reglagesR, produitsR, variantesR, ficheR, adminR] = await Promise.all([
-      admin.from('parametres_site').select('remise_retrait, frais_livraison, en_maintenance').eq('id', 1).single(),
+      admin.from('parametres_site').select('remise_retrait, frais_livraison, en_maintenance, minimum_livraison').eq('id', 1).single(),
       admin.from('produits').select(COLONNES_PRODUIT).in('id', produitIds),
       varianteIds.length
         ? admin.from('variantes_produit').select('id, produit_id, poids, prix_livraison, dispo_livraison, dispo_retrait').in('id', varianteIds)
         : Promise.resolve({ data: [] as any[] }),
-      admin.from('clients').select('email').eq('id', user.id).maybeSingle(),
+      admin.from('clients').select('email, date_naissance').eq('id', user.id).maybeSingle(),
       admin.from('admins').select('user_id').eq('user_id', user.id).maybeSingle(),
     ])
     const reglages = reglagesR.data
@@ -144,6 +144,17 @@ Deno.serve(async (req) => {
       bon,
       today,
     })
+
+    // Règles réservées aux clients : une commande saisie par un admin (au téléphone) n'est pas bloquée.
+    if (!estAdmin) {
+      const manque = manqueLivraison(calcul.sousTotal, mode, reglages.minimum_livraison)
+      if (manque > 0) {
+        return json({ erreur: `Minimum de commande en livraison : ${Number(reglages.minimum_livraison)} € de produits. Il manque ${manque.toFixed(2)} €.` }, 409)
+      }
+      if (lignes.some((l: any) => l.produit.alcool) && !estMajeur(ficheR.data?.date_naissance, today)) {
+        return json({ erreur: "La vente d'alcool est interdite aux mineurs de moins de 18 ans : retirez ces produits de votre panier." }, 403)
+      }
+    }
 
     // Le panier affichait un autre total (prix modifié entre-temps) : on prévient au lieu d'enregistrer.
     if (typeof d.totalAttendu === 'number' && Math.abs(d.totalAttendu - calcul.total) > 0.01) {

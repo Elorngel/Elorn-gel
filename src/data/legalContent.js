@@ -61,11 +61,12 @@ export const cgv = `
 <h2>2. Produits</h2>
 <p>Les produits proposés à la vente sont des <strong>produits alimentaires surgelés</strong>. Ils doivent être conservés immédiatement au congélateur après livraison afin de garantir leur qualité et leur sécurité alimentaire.</p>
 <p><strong>Les photographies présentées sur le site ne sont pas contractuelles et ne peuvent assurer une parfaite similitude avec le produit livré (variations possibles de présentation, taille, forme ou couleur).</strong></p>
+<p><strong>Boissons alcoolisées.</strong> La vente d’alcool est interdite aux mineurs de moins de 18 ans (article L3342-1 du Code de la santé publique). En commandant ces produits, le client atteste être majeur ; la date de naissance de son compte est vérifiée et une pièce d’identité peut être demandée à la remise de la commande, qui peut être refusée à défaut. L’abus d’alcool est dangereux pour la santé, à consommer avec modération.</p>
 <h2>3. Prix et paiement</h2>
 <p>Les prix affichés sur le site sont exprimés en euros, toutes taxes comprises (TTC).<br>Les frais de livraison sont indiqués lors de la commande.<br>Le paiement s’effectue à la livraison (ou lors du retrait au dépôt), par carte bancaire, chèque ou espèces.</p>
 <p>Les codes promo et les bons d’achat (parrainage) s’appliquent sur le montant des produits, hors frais de livraison, selon les conditions indiquées sur le site au moment de la commande (page « Parrainage » pour le parrainage). Un code promo n’est utilisable qu’une fois par compte client ; un seul bon d’achat est utilisé par commande. Ils ne sont ni remboursables ni échangeables contre de l’argent.</p>
 <h2>4. Livraison</h2>
-<p>La livraison est effectuée à l’adresse indiquée par le client dans les zones géographiques desservies par le vendeur.<br>Le client s’engage à être présent au créneau convenu afin de réceptionner les produits.<br>En cas d’absence, la responsabilité du vendeur ne pourra être engagée pour la perte des produits, ceux-ci ne pouvant être représentés ultérieurement si la chaîne du froid n’a pas été respectée.</p>
+<p>La livraison est effectuée à l’adresse indiquée par le client dans les zones géographiques desservies par le vendeur.<br>Un minimum de commande de {{MINIMUM_LIVRAISON}} de produits (hors frais de livraison, avant code promo et bon d’achat) est requis pour la livraison ; il ne s’applique pas au retrait au dépôt.<br>Le client s’engage à être présent au créneau convenu afin de réceptionner les produits.<br>En cas d’absence, la responsabilité du vendeur ne pourra être engagée pour la perte des produits, ceux-ci ne pouvant être représentés ultérieurement si la chaîne du froid n’a pas été respectée.</p>
 <h2>5. Droit de rétractation</h2>
 <p>Conformément à l’article <strong>L221-28 du Code de la consommation</strong>, le droit de rétractation ne s’applique pas à la fourniture de biens susceptibles de se détériorer ou de se périmer rapidement, tels que les <strong>produits alimentaires surgelés</strong>.<br>En conséquence, toute commande est <strong>ferme et définitive</strong> après validation.</p>
 <h2>6. Réclamations</h2>
@@ -155,7 +156,7 @@ forme chiffrée que personne, y compris nous, ne peut relire.
 service client) : c'est nécessaire à l'exécution de votre commande.<br>
 <strong>Vous envoyer nos offres par email, dont votre bon d'achat d'anniversaire</strong> : uniquement si
 vous l'avez accepté. Vous pouvez retirer cet accord à tout moment depuis « Mon compte ». Votre date de
-naissance sert à ce bon d'anniversaire.<br>
+naissance sert à ce bon d'anniversaire et à vérifier votre majorité pour l'achat de boissons alcoolisées (obligation légale).<br>
 <strong>Mieux comprendre comment nos clients nous connaissent</strong>, pour améliorer notre communication.
 </p>
 
@@ -200,7 +201,7 @@ que ses propres informations, et seules les personnes habilitées d'ELORN GEL ac
 
 // Hébergeur réellement utilisé, selon l'adresse du site : IONOS sur bontin.fr (depuis la bascule),
 // Vercel pour les préversions. Les textes légaux restent ainsi toujours exacts.
-export function avecHebergeur(html) {
+export function avecHebergeur(html, minimumLivraison = 30) {
   const ionos = typeof window !== 'undefined' && /(^|\.)bontin\.fr$/i.test(window.location.hostname)
   return html
     .replaceAll(
@@ -210,4 +211,5 @@ export function avecHebergeur(html) {
         : 'la société Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis'
     )
     .replaceAll('{{HEBERGEUR_COURT}}', ionos ? 'IONOS (France)' : 'Vercel')
+    .replaceAll('{{MINIMUM_LIVRAISON}}', `${String(Number(minimumLivraison)).replace('.', ',')} €`)
 }

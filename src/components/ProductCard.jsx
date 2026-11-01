@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext'
 import { getBasePrice, getVarianteAffichee, isProductAvailable, getAvailableVariants, getPricePerUnitLabel, getDisplayName, parseWeightToKg, parseWeightUnit, getDiscountPercent, isDestockage } from '../lib/pricing'
 import CroppableImage from './CroppableImage'
 import { urlProduit } from '../lib/adresses'
+import { MENTION_MINEURS } from './MentionAlcool'
 
 // prioritaire : carte visible dès l'ouverture (première rangée) → photo chargée sans attendre.
 export default function ProductCard({ product, supplierLogo, prioritaire = false }) {
@@ -108,6 +109,9 @@ export default function ProductCard({ product, supplierLogo, prioritaire = false
         )}
 
         <div className="mt-auto">
+          {product.alcool && (
+            <p className="font-tag text-[10px] leading-tight text-rust mb-1">{MENTION_MINEURS}</p>
+          )}
           <p className="font-tag text-[10px] text-muted mb-0.5 text-right">
             {/* Conditionnement au poids illisible : pas de prix au kg plutôt qu'un prix faux. */}
             {defaultVariant && variantWeightKg === null

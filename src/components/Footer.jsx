@@ -2,6 +2,7 @@ import { useSiteSettings } from '../hooks/useSiteSettings'
 import SocialIcon from './SocialIcon'
 import PastillesParrainage from './PastillesParrainage'
 import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE } from '../lib/siteDefaults'
+import { MENTION_MINEURS, MENTION_SANTE } from './MentionAlcool'
 
 export default function Footer() {
   const { settings } = useSiteSettings()
@@ -78,6 +79,9 @@ export default function Footer() {
         </div>
       </div>
 
+      <p className="border-t border-stone/15 px-5 py-3 text-center font-tag text-[11px] text-stone/70">
+        {MENTION_MINEURS} {MENTION_SANTE}
+      </p>
       <div className="border-t border-stone/15 px-5 py-3 text-center font-tag text-[11px] text-stone/50">
         © {new Date().getFullYear()} Elorn Gel — SAS au capital de 8 000,00 €
       </div>

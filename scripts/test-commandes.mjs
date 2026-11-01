@@ -27,8 +27,8 @@ const post = async (c, b, j) => {
   return { status: r.status, d: await r.json().catch(() => null) }
 }
 const get = async (c, headers = hs) => (await fetch(URL_ + c, { headers })).json()
-const compte = (email, tel, adresse, codeParrain) =>
-  post('/functions/v1/creer-compte', { email, motDePasse: MDP, prenom: 'Testclaude', nom: 'ESSAI', telephone: tel, dateNaissance: '1990-01-01', adresse, codePostal: '29800', ville: 'Plouedern', accepteCgv: true, codeParrain })
+const compte = (email, tel, adresse, codeParrain, dateNaissance = '1990-01-01') =>
+  post('/functions/v1/creer-compte', { email, motDePasse: MDP, prenom: 'Testclaude', nom: 'ESSAI', telephone: tel, dateNaissance, adresse, codePostal: '29800', ville: 'Plouedern', accepteCgv: true, codeParrain })
 const jeton = async (email) => (await post('/auth/v1/token?grant_type=password', { email, password: MDP })).d.access_token
 
 async function nettoyer() {
@@ -83,6 +83,25 @@ async function tests() {
   }
   r = await post('/functions/v1/passer-commande', { ...demande, codePromo: null, lignes: [{ produitId: '00000000-0000-0000-0000-000000000000', varianteId: null, quantite: 1 }] }, JF)
   ok(r.status === 409, 'produit inexistant refusé')
+
+  // Minimum de commande en livraison
+  const reglagesMin = (await get('/rest/v1/parametres_site?select=minimum_livraison&id=eq.1'))[0]
+  const petit = (await get('/rest/v1/produits?select=id,prix_livraison,dispo_livraison&actif=eq.true&en_rupture=eq.false&alcool=eq.false&prix_livraison=gt.1&order=prix_livraison.asc&limit=30')).find((p) => !avecVariantes.has(p.id) && p.dispo_livraison !== false && p.prix_livraison < reglagesMin.minimum_livraison)
+  const livraison = { mode: 'livraison', nom: 'TEST CLAUDE (essai)', telephone: '0622222222', creneau: 'essai', adresse: '3 rue du Filleul', codePostal: '29800', ville: 'Plouedern' }
+  r = await post('/functions/v1/passer-commande', { ...livraison, lignes: [{ produitId: petit.id, varianteId: null, quantite: 1 }] }, JF)
+  ok(r.status === 409 && /Minimum/.test(r.d?.erreur), `livraison sous le minimum refusée (${r.d?.erreur})`)
+  r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0622222222', creneau: 'essai', lignes: [{ produitId: petit.id, varianteId: null, quantite: 1 }] }, JF)
+  ok(r.d?.ok, 'même petit panier accepté en retrait (pas de minimum)')
+
+  // Alcool réservé aux majeurs
+  const alcool = (await get('/rest/v1/produits?select=id&actif=eq.true&en_rupture=eq.false&alcool=eq.true&limit=30')).find((p) => !avecVariantes.has(p.id))
+  const lignesAlcool = [{ produitId: alcool.id, varianteId: null, quantite: 1 }]
+  r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0622222222', creneau: 'essai', lignes: lignesAlcool }, JF)
+  ok(r.d?.ok, 'alcool accepté pour un client majeur')
+  await compte(`${PREFIXE}mineur@example.com`, '0633333333', '4 rue du Mineur', undefined, '2015-01-01')
+  const JM = await jeton(`${PREFIXE}mineur@example.com`)
+  r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0633333333', creneau: 'essai', lignes: lignesAlcool }, JM)
+  ok(r.status === 403, 'alcool refusé pour un client mineur')
 
   // Livraison → bon du parrain
   if (C1) await fetch(`${URL_}/rest/v1/commandes?id=eq.${C1.id}`, { method: 'PATCH', headers: hs, body: JSON.stringify({ statut: 'livree' }) })

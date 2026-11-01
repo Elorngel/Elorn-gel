@@ -4,7 +4,7 @@ import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getDatesDisponibles, getCreneauxDisponibles } from '../lib/pickupSlots'
-import { calculerCommande, articleIndisponible } from '../../supabase/functions/_shared/calculCommande.js'
+import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur } from '../../supabase/functions/_shared/calculCommande.js'
 import { usePrixPanier, varianteDuPanier } from '../hooks/usePrixPanier'
 import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext'
 import { MOTIFS_BON, euros, eurosTexte } from '../lib/offres'
 import { urlProduit } from '../lib/adresses'
 import { useSeo } from '../lib/seo'
+import MentionAlcool from '../components/MentionAlcool'
 
 
 export default function CartPage() {
@@ -123,6 +124,14 @@ export default function CartPage() {
   const calcul = calculerCommande({ ...parametresCalcul, bon })
   const prixLigne = new Map(calcul.lignes.map((l) => [l.item.cartKey, l.prixUnitaire]))
 
+  // Minimum de commande en livraison (réglé dans l'admin) et vente d'alcool réservée aux majeurs.
+  // Le serveur refait ces contrôles ; une commande saisie par un admin n'est pas bloquée.
+  const minimumLivraison = Number(settings?.minimum_livraison ?? 30)
+  const manque = prix.pret && !estAdmin ? manqueLivraison(calcul.sousTotal, mode, minimumLivraison) : 0
+  const contientAlcool = lignesValides.some((l) => l.produit?.alcool)
+  const naissance = source === 'creation' ? compte.dateNaissance : client?.date_naissance
+  const alcoolRefuse = contientAlcool && !estAdmin && !!naissance && !estMajeur(naissance)
+
   const appliquerCode = async () => {
     const code = codeSaisi.trim()
     if (!code) return
@@ -170,7 +179,7 @@ export default function CartPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (items.length === 0) return
-    if (livraisonRefusee) return
+    if (livraisonRefusee || manque > 0 || alcoolRefuse) return
     setErreurCompte('')
 
     if (!user) {
@@ -404,6 +413,26 @@ export default function CartPage() {
                   <span className="font-tag text-xs uppercase text-muted">Total</span>
                   <span className="font-display text-3xl text-ink">{prix.pret ? euros(calcul.total) : '…'}</span>
                 </div>
+                {manque > 0 && (
+                  <div className="border border-rust bg-rust/5 p-2 mt-2" role="alert">
+                    <p className="font-body text-sm text-ink">
+                      <strong>Minimum de commande en livraison : {eurosTexte(minimumLivraison)}</strong> de produits, hors
+                      frais de livraison. Il manque {euros(manque)}.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setMode('retrait')}
+                      className="mt-2 border border-ink font-tag text-xs font-semibold uppercase px-3 py-1.5 hover:bg-stone"
+                    >
+                      Passer en retrait au dépôt (sans minimum)
+                    </button>
+                  </div>
+                )}
+                {contientAlcool && (
+                  <div className="mt-2">
+                    <MentionAlcool />
+                  </div>
+                )}
                 {bonEnAttente && (
                   <p className="font-body text-xs text-forest mt-2">
                     Vous avez un {MOTIFS_BON[bonEnAttente.motif]?.toLowerCase() || 'bon'} de {eurosTexte(bonEnAttente.montant)} :
@@ -742,6 +771,13 @@ export default function CartPage() {
                 </>
                 )}
 
+                {alcoolRefuse && (
+                  <p className="font-body text-sm text-rust" role="alert">
+                    La vente d’alcool est interdite aux mineurs de moins de 18 ans : retirez ces produits de votre panier
+                    pour commander.
+                  </p>
+                )}
+
                 {erreurCompte && (
                   <p className="font-body text-sm text-rust" role="alert">
                     {erreurCompte}
@@ -763,7 +799,9 @@ export default function CartPage() {
                     authChargement ||
                     !prix.pret ||
                     indisponibles.length > 0 ||
-                    lignesValides.length === 0
+                    lignesValides.length === 0 ||
+                    manque > 0 ||
+                    alcoolRefuse
                   }
                   className="bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide py-2.5 hover:bg-forest transition-colors disabled:bg-muted"
                 >

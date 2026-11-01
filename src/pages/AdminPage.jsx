@@ -297,6 +297,7 @@ function SiteSettingsPanel() {
   const [emailDraft, setEmailDraft] = useState(null)
   const [telDraft, setTelDraft] = useState(null)
   const [adresseDraft, setAdresseDraft] = useState(null)
+  const [minimumDraft, setMinimumDraft] = useState(null)
   const [facebookDraft, setFacebookDraft] = useState(null)
   const [instagramDraft, setInstagramDraft] = useState(null)
 
@@ -304,6 +305,7 @@ function SiteSettingsPanel() {
     if (settings && discountDraft === null) {
       setDiscountDraft(settings.remise_retrait ?? 10)
       setDeliveryFeeDraft(settings.frais_livraison ?? 7)
+      setMinimumDraft(settings.minimum_livraison ?? 30)
       setBadgeDraft(settings.hero_badge ?? '250 références')
       setTitreDraft(settings.hero_titre ?? 'Le surgelé, en livraison ou en retrait')
       setSousTitreDraft(
@@ -325,6 +327,13 @@ function SiteSettingsPanel() {
     const value = parseFloat(discountDraft)
     if (!isNaN(value) && value !== settings.remise_retrait) {
       updateSettings({ remise_retrait: value })
+    }
+  }
+
+  const saveMinimum = () => {
+    const value = parseFloat(minimumDraft)
+    if (!isNaN(value) && value >= 0 && value !== Number(settings.minimum_livraison)) {
+      updateSettings({ minimum_livraison: value })
     }
   }
 
@@ -447,6 +456,26 @@ function SiteSettingsPanel() {
                 value={deliveryFeeDraft ?? ''}
                 onChange={(e) => setDeliveryFeeDraft(e.target.value)}
                 onBlur={saveDeliveryFee}
+                className="w-16 border border-ink/20 p-1.5 font-body text-sm text-center focus:border-forest focus:outline-none"
+              />
+              <span className="font-tag text-sm">€</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 border border-ink/20 p-2">
+          <div>
+            <label className="block font-tag text-[10px] uppercase text-muted mb-1">
+              Minimum de commande en livraison
+            </label>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={minimumDraft ?? ''}
+                onChange={(e) => setMinimumDraft(e.target.value)}
+                onBlur={saveMinimum}
                 className="w-16 border border-ink/20 p-1.5 font-body text-sm text-center focus:border-forest focus:outline-none"
               />
               <span className="font-tag text-sm">€</span>
