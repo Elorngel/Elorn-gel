@@ -13,7 +13,7 @@ const SLIDES_FIXES = [
   { src: '/hero/zone-livraison.jpg', alt: 'Carte de la zone de livraison BONTIN autour de Plouédern', fit: 'contain' },
   { src: '/hero/cassoulet.jpg', alt: 'Cassoulet de canard BONTIN', fit: 'cover' },
 ]
-const DELAI_DIAPO_MS = 4000
+const DELAI_DIAPO_MS = 3000
 
 export default function Hero() {
   const { settings } = useSiteSettings()
@@ -58,7 +58,7 @@ export default function Hero() {
         </a>
       </div>
       {/* Format 16:9 fixe : le cadre de réglage de la photo dans l'admin a le même format.
-          Diaporama automatique (4 s), en pause quand la souris est dessus. */}
+          Diaporama automatique (3 s), en pause quand la souris est dessus. */}
       <div
         className="relative bg-stone aspect-video lg:self-stretch overflow-hidden"
         onMouseEnter={() => setEnPause(true)}
