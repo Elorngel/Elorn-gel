@@ -286,7 +286,7 @@ function MaintenancePanel() {
 
 function SiteSettingsPanel() {
   const { settings, loading, updateSettings, uploadSiteImage, copySiteImage } = useSiteSettings()
-  const [editing, setEditing] = useState(null) // 'hero' | 'logo' | null
+  const [editing, setEditing] = useState(null) // 'hero' | 'hero2' | 'hero3' | 'logo' | null
   const [expanded, setExpanded] = useState(false)
   const [discountDraft, setDiscountDraft] = useState(null)
   const [deliveryFeeDraft, setDeliveryFeeDraft] = useState(null)
@@ -394,22 +394,31 @@ function SiteSettingsPanel() {
       {expanded && (
         <div className="mt-3">
       <div className="flex gap-4 flex-wrap">
-        <button
-          onClick={() => setEditing('hero')}
-          className="flex items-center gap-3 border border-ink/20 p-2 hover:border-ink/40"
-        >
-          <span className="block w-20 h-14 bg-stone overflow-hidden relative">
-            {settings.hero_url && (
-              <CroppableImage
-                src={settings.hero_url}
-                zoom={settings.hero_zoom}
-                posX={settings.hero_pos_x}
-                posY={settings.hero_pos_y}
-              />
-            )}
-          </span>
-          <span className="font-tag text-xs uppercase">Photo vitrine</span>
-        </button>
+        {[['', 'hero', 'Diaporama · photo 1'], ['_2', 'hero2', 'Diaporama · photo 2'], ['_3', 'hero3', 'Diaporama · photo 3']].map(
+          ([suf, cle, libelle]) => (
+            <button
+              key={cle}
+              onClick={() => setEditing(cle)}
+              className="flex items-center gap-3 border border-ink/20 p-2 hover:border-ink/40"
+            >
+              <span className="block w-20 h-14 bg-stone overflow-hidden relative">
+                {settings[`hero_url${suf}`] ? (
+                  <CroppableImage
+                    src={settings[`hero_url${suf}`]}
+                    zoom={settings[`hero_zoom${suf}`]}
+                    posX={settings[`hero_pos_x${suf}`]}
+                    posY={settings[`hero_pos_y${suf}`]}
+                  />
+                ) : suf === '_2' ? (
+                  <img src="/hero/zone-livraison.jpg" alt="" className="absolute inset-0 w-full h-full object-contain" />
+                ) : suf === '_3' ? (
+                  <img src="/hero/cassoulet.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+                ) : null}
+              </span>
+              <span className="font-tag text-xs uppercase">{libelle}</span>
+            </button>
+          )
+        )}
 
         <button
           onClick={() => setEditing('logo')}
@@ -612,27 +621,30 @@ function SiteSettingsPanel() {
         </div>
       )}
 
-      {editing === 'hero' && (
-        <PhotoEditorModal
-          title="Photo vitrine (page d'accueil)"
-          aspect={16 / 9}
-          hint="Ce cadre a exactement le format de la photo sur le site (16 de large pour 9 de haut), sur ordinateur comme sur mobile : ce que vous voyez ici est ce qui s'affiche."
-          initialUrl={settings.hero_url}
-          initialZoom={settings.hero_zoom ?? 1}
-          initialPosX={settings.hero_pos_x ?? 50}
-          initialPosY={settings.hero_pos_y ?? 50}
-          onUpload={(file) => uploadSiteImage(file, 'vitrine')}
-          onPickExisting={(url) => copySiteImage(url, 'vitrine')}
-          onSave={({ url, zoom, posX, posY }) =>
-            updateSettings({
-              hero_url: url,
-              hero_zoom: zoom,
-              hero_pos_x: posX,
-              hero_pos_y: posY,
-            })
-          }
-          onClose={() => setEditing(null)}
-        />
+      {[['', 'hero', 1], ['_2', 'hero2', 2], ['_3', 'hero3', 3]].map(([suf, cle, n]) =>
+        editing === cle ? (
+          <PhotoEditorModal
+            key={cle}
+            title={`Diaporama de la page d'accueil · photo ${n} sur 3`}
+            aspect={16 / 9}
+            hint="Les 3 photos défilent toutes seules sur la page d'accueil. Ce cadre a exactement le format de la photo sur le site (16 de large pour 9 de haut) : ce que vous voyez ici est ce qui s'affiche."
+            initialUrl={settings[`hero_url${suf}`]}
+            initialZoom={settings[`hero_zoom${suf}`] ?? 1}
+            initialPosX={settings[`hero_pos_x${suf}`] ?? 50}
+            initialPosY={settings[`hero_pos_y${suf}`] ?? 50}
+            onUpload={(file) => uploadSiteImage(file, `vitrine${suf}`)}
+            onPickExisting={(url) => copySiteImage(url, `vitrine${suf}`)}
+            onSave={({ url, zoom, posX, posY }) =>
+              updateSettings({
+                [`hero_url${suf}`]: url,
+                [`hero_zoom${suf}`]: zoom,
+                [`hero_pos_x${suf}`]: posX,
+                [`hero_pos_y${suf}`]: posY,
+              })
+            }
+            onClose={() => setEditing(null)}
+          />
+        ) : null
       )}
 
       {editing === 'logo' && (

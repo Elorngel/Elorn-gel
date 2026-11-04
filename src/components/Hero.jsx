@@ -5,15 +5,34 @@ import { usePriceMode } from '../context/PriceModeContext'
 import CroppableImage from './CroppableImage'
 import { isPromoActive } from '../lib/pricing'
 
-// Diaporama de la bannière : la photo vitrine (réglée dans l'admin), puis les
-// images ci-dessous (fichiers du dossier public/hero). Pour changer, ajouter ou
-// retirer une image, modifier cette liste ; 'contain' montre l'image entière
-// (fond pierre), 'cover' remplit tout le cadre.
-const SLIDES_FIXES = [
-  { src: '/hero/zone-livraison.jpg', alt: 'Carte de la zone de livraison BONTIN autour de Plouédern', fit: 'contain' },
-  { src: '/hero/cassoulet.jpg', alt: 'Cassoulet de canard BONTIN', fit: 'cover' },
-]
+// Diaporama de la bannière : 3 images réglables dans l'admin (Réglages du site →
+// photos 1, 2 et 3 du diaporama). Tant que la photo 2 ou 3 n'est pas choisie dans
+// l'admin, une image par défaut (dossier public/hero) s'affiche à sa place.
+// 'contain' montre l'image entière (fond pierre), 'cover' remplit tout le cadre.
+const DIAPOS_PAR_DEFAUT = {
+  2: { src: '/hero/zone-livraison.jpg', alt: 'Carte de la zone de livraison BONTIN autour de Plouédern', fit: 'contain' },
+  3: { src: '/hero/cassoulet.jpg', alt: 'Cassoulet de canard BONTIN', fit: 'cover' },
+}
 const DELAI_DIAPO_MS = 3000
+
+function diaposDepuisReglages(settings) {
+  if (!settings) return []
+  const liste = []
+  ;[['', 1], ['_2', 2], ['_3', 3]].forEach(([suffixe, n]) => {
+    const url = settings[`hero_url${suffixe}`]
+    if (url) {
+      liste.push({
+        url,
+        zoom: settings[`hero_zoom${suffixe}`] ?? 1,
+        posX: settings[`hero_pos_x${suffixe}`] ?? 50,
+        posY: settings[`hero_pos_y${suffixe}`] ?? 50,
+      })
+    } else if (DIAPOS_PAR_DEFAUT[n]) {
+      liste.push(DIAPOS_PAR_DEFAUT[n])
+    }
+  })
+  return liste
+}
 
 export default function Hero() {
   const { settings } = useSiteSettings()
@@ -21,8 +40,8 @@ export default function Hero() {
   const { mode, setMode } = usePriceMode()
   const promoCount = products.filter((p) => p.actif !== false && isPromoActive(p)).length
 
-  // Diapositive 0 = photo vitrine (si elle existe), puis les images fixes.
-  const nbDiapos = (settings?.hero_url ? 1 : 0) + SLIDES_FIXES.length
+  const diapos = diaposDepuisReglages(settings)
+  const nbDiapos = diapos.length
   const [diapo, setDiapo] = useState(0)
   const [enPause, setEnPause] = useState(false)
   const mouvementReduit =
@@ -64,41 +83,37 @@ export default function Hero() {
         onMouseEnter={() => setEnPause(true)}
         onMouseLeave={() => setEnPause(false)}
       >
-        {settings?.hero_url ? (
-          <div
-            className={`absolute inset-0 transition-opacity duration-700 ${diapo === 0 ? 'opacity-100' : 'opacity-0'}`}
-            aria-hidden={diapo !== 0}
-          >
-            <CroppableImage
-              src={settings.hero_url}
-              alt="Bontin"
-              loading="eager"
-              zoom={settings.hero_zoom ?? 1}
-              posX={settings.hero_pos_x ?? 50}
-              posY={settings.hero_pos_y ?? 50}
-            />
-          </div>
-        ) : (
+        {nbDiapos === 0 && (
           <span className="absolute inset-0 flex items-center justify-center font-tag text-xs uppercase text-muted">
             Photo produit / vitrine
           </span>
         )}
-        {SLIDES_FIXES.map((sl, i) => {
-          const index = i + (settings?.hero_url ? 1 : 0)
-          return (
-            <img
-              key={sl.src}
-              src={sl.src}
-              alt={sl.alt}
-              loading="eager"
-              decoding="async"
-              aria-hidden={diapo !== index}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${
-                sl.fit === 'contain' ? 'object-contain' : 'object-cover'
-              } ${diapo === index ? 'opacity-100' : 'opacity-0'}`}
-            />
-          )
-        })}
+        {diapos.map((d, i) => (
+          <div
+            key={d.url || d.src}
+            className={`absolute inset-0 transition-opacity duration-700 ${diapo === i ? 'opacity-100' : 'opacity-0'}`}
+            aria-hidden={diapo !== i}
+          >
+            {d.url ? (
+              <CroppableImage
+                src={d.url}
+                alt="Bontin"
+                loading="eager"
+                zoom={d.zoom}
+                posX={d.posX}
+                posY={d.posY}
+              />
+            ) : (
+              <img
+                src={d.src}
+                alt={d.alt}
+                loading="eager"
+                decoding="async"
+                className={`absolute inset-0 w-full h-full ${d.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
+              />
+            )}
+          </div>
+        ))}
         {nbDiapos > 1 && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
             {Array.from({ length: nbDiapos }).map((_, i) => (

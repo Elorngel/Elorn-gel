@@ -11,7 +11,7 @@ function storageFileName(url) {
 }
 
 // Champs "image" des réglages : quand l'un change, l'ancienne photo peut être supprimée.
-const IMAGE_FIELDS = ['hero_url', 'logo_url']
+const IMAGE_FIELDS = ['hero_url', 'hero_url_2', 'hero_url_3', 'logo_url']
 
 export function useSiteSettings() {
   const [settings, setSettings] = useState(null)
