@@ -151,6 +151,8 @@ export default function CartPage() {
   // Jours et créneaux proposés : calendrier réglé dans l'admin (jours fermés, créneaux
   // indisponibles selon le jour de la semaine).
   const calendrier = {
+    semaine: settings?.horaires_semaine,
+    jours: settings?.horaires_jours,
     joursFermes: settings?.jours_fermes,
     indispo: settings?.creneaux_indisponibles,
     speciaux: settings?.horaires_speciaux,

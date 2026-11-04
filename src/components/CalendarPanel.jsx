@@ -7,15 +7,19 @@ import {
   dateDepuisCle,
   libelleDate,
   joursFeries,
-  creneauxDuJour,
-  bornesCreneau,
-  TOUS_CRENEAUX,
+  heureTexte,
+  PLAGES_DEFAUT,
+  plagesSemaine,
+  plagesPourDate,
 } from '../lib/pickupSlots'
 
-// Calendrier de l'admin (refait le 04/11/2026 pour être plus simple) :
-// 1. « Semaine type » : les horaires proposés d'office chaque lundi, mardi… (colonne creneaux_indisponibles) ;
-// 2. calendrier : pour une date précise, on change ces horaires ou on ferme (colonne horaires_speciaux,
-//    où une liste vide = fermé). Les anciens « jours fermés » (jours_fermes) sont repris dans horaires_speciaux.
+// Calendrier de l'admin (05/11/2026) : de vraies heures, en une ou plusieurs plages par jour.
+// 1. « Semaine type » (colonne horaires_semaine) : les horaires proposés d'office chaque lundi, mardi…
+//    Retrait : plages libres découpées en créneaux de 30 min. Livraison : chaque plage = un créneau
+//    (par défaut matin 9h-12h, midi 12h-14h, après-midi 14h-18h, heures modifiables).
+// 2. Calendrier (colonne horaires_jours) : pour une date précise, d'autres horaires ou fermé ([]).
+// Les anciens réglages (jours_fermes, creneaux_indisponibles, horaires_speciaux) sont repris à l'ouverture
+// et vidés à l'enregistrement.
 
 const TYPES = [
   { cle: 'livraison', titre: 'Livraison', court: 'Liv.' },
@@ -25,109 +29,82 @@ const MOIS = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
 ]
-const CHOIX = [
-  { cle: 'journee', label: 'Toute la journée' },
-  { cle: 'matin', label: 'Le matin seulement' },
-  { cle: 'apresmidi', label: "L'après-midi seulement" },
-  { cle: 'ferme', label: 'Fermé' },
-  { cle: 'perso', label: 'Personnalisé (choisir les créneaux)…' },
-]
 
-function creneauxDuChoix(type, choix) {
-  const tous = TOUS_CRENEAUX[type]
-  if (choix === 'journee') return [...tous]
-  if (choix === 'matin') return tous.filter((c) => bornesCreneau(c).fin <= 12 * 60)
-  if (choix === 'apresmidi') return tous.filter((c) => bornesCreneau(c).debut >= 14 * 60)
-  return []
+const versChamp = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+const depuisChamp = (v) => {
+  const [h, m] = String(v || '').split(':').map(Number)
+  return Number.isFinite(h) ? h * 60 + (m || 0) : null
+}
+const trier = (plages) => [...plages].sort((a, b) => a[0] - b[0])
+const memes = (a, b) => JSON.stringify(trier(a || [])) === JSON.stringify(trier(b || []))
+
+// « 8h30–12h et 14h–17h30 », ou « Fermé ».
+function resume(plages, court = false) {
+  const valides = trier(plages || []).filter(([d, f]) => f > d)
+  if (valides.length === 0) return 'Fermé'
+  const h = (m) => (court ? heureTexte(m).replace(/h00$/, 'h') : heureTexte(m))
+  return valides.map(([d, f]) => `${h(d)}–${h(f)}`).join(court ? ', ' : ' · ')
 }
 
-const memes = (a, b) => a.length === b.length && a.every((x) => b.includes(x))
-
-function choixDe(type, liste) {
-  for (const c of ['journee', 'matin', 'apresmidi', 'ferme']) if (memes(liste, creneauxDuChoix(type, c))) return c
-  return 'perso'
-}
-
-const fmt = (m) => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`
-
-// Les plages horaires : « 9h00 à 12h00 et 14h00 à 18h00 », ou « Fermé ».
-function heures(type, liste) {
-  if (liste.length === 0) return 'Fermé'
-  const plages = []
-  TOUS_CRENEAUX[type]
-    .filter((c) => liste.includes(c))
-    .map(bornesCreneau)
-    .forEach((b) => {
-      const derniere = plages[plages.length - 1]
-      if (derniere && derniere.fin === b.debut) derniere.fin = b.fin
-      else plages.push({ ...b })
-    })
-  return plages.map((p) => `${fmt(p.debut)} à ${fmt(p.fin)}`).join(' et ')
-}
-
-// « Toute la journée », « Fermé », ou les plages.
-const resume = (type, liste) =>
-  liste.length && memes(liste, TOUS_CRENEAUX[type]) ? 'Toute la journée' : heures(type, liste)
-
-const resumeCourt = (type, liste) => resume(type, liste).replace(/h00/g, 'h').replace(/ à /g, '–')
-
-// Menu « Toute la journée / Matin / Après-midi / Fermé / Personnalisé » (+ « Comme d'habitude » pour une date).
-function ChoixHoraires({ type, liste, onChange, habituel = null }) {
-  const [persoOuvert, setPersoOuvert] = useState(false)
-  const courant = habituel && liste === null ? 'habitude' : choixDe(type, liste ?? [])
-  const affiche = liste ?? habituel ?? []
-  const montrerCases = persoOuvert || courant === 'perso'
+// Liste de plages modifiables : « de [8:30] à [12:00] × », « + ajouter une plage », raccourcis.
+function Plages({ type, plages, onChange }) {
+  const modifier = (i, borne, valeur) => {
+    const m = depuisChamp(valeur)
+    if (m === null) return
+    onChange(plages.map((p, j) => (j === i ? (borne === 0 ? [m, p[1]] : [p[0], m]) : p)))
+  }
+  const ajouter = () => {
+    const derniere = trier(plages)[plages.length - 1]
+    const debut = derniere ? Math.min(derniere[1], 21 * 60) : 9 * 60
+    onChange([...plages, [debut, Math.min(debut + 120, 22 * 60)]])
+  }
+  const champ = 'border border-ink/30 bg-paper px-1.5 py-1 font-body text-sm focus:border-forest focus:outline-none'
+  const petitBouton = 'font-tag text-[11px] uppercase font-semibold border px-2 py-1'
 
   return (
     <div>
-      <select
-        value={montrerCases && courant !== 'habitude' ? 'perso' : courant}
-        onChange={(e) => {
-          const v = e.target.value
-          if (v === 'perso') {
-            setPersoOuvert(true)
-            onChange([...affiche])
-            return
-          }
-          setPersoOuvert(false)
-          onChange(v === 'habitude' ? null : creneauxDuChoix(type, v))
-        }}
-        className="w-full border border-ink/30 bg-paper p-2 font-body text-sm focus:border-forest focus:outline-none"
-      >
-        {habituel && <option value="habitude">Comme d'habitude ({resume(type, habituel).toLowerCase()})</option>}
-        {CHOIX.map((c) => (
-          <option key={c.cle} value={c.cle}>
-            {c.label}
-          </option>
-        ))}
-      </select>
-      <p className={`mt-1 font-tag text-xs ${affiche.length === 0 ? 'text-rust' : 'text-forest'}`}>
-        {heures(type, affiche)}
-      </p>
-      {montrerCases && (
-        <div
-          className={`mt-2 grid gap-x-3 gap-y-1 border border-ink/15 p-2 ${type === 'retrait' ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1'}`}
-        >
-          {TOUS_CRENEAUX[type].map((c) => (
-            <label key={c} className="flex items-center gap-1.5 font-tag text-xs cursor-pointer">
-              <input
-                type="checkbox"
-                checked={affiche.includes(c)}
-                onChange={() =>
-                  onChange(TOUS_CRENEAUX[type].filter((x) => (x === c ? !affiche.includes(c) : affiche.includes(x))))
-                }
-                className="w-3.5 h-3.5 accent-forest"
-              />
-              {c}
-            </label>
-          ))}
+      {plages.length === 0 && <p className="font-tag text-sm font-semibold text-rust mb-1">Fermé</p>}
+      {plages.map(([d, f], i) => (
+        <div key={i} className="flex flex-wrap items-center gap-1.5 mb-1.5">
+          <span className="font-tag text-[11px] uppercase text-muted">de</span>
+          <input type="time" step="300" value={versChamp(d)} onChange={(e) => modifier(i, 0, e.target.value)} className={champ} />
+          <span className="font-tag text-[11px] uppercase text-muted">à</span>
+          <input type="time" step="300" value={versChamp(f)} onChange={(e) => modifier(i, 1, e.target.value)} className={champ} />
+          <button
+            type="button"
+            onClick={() => onChange(plages.filter((_, j) => j !== i))}
+            className="font-bold text-muted hover:text-rust px-1"
+            aria-label="Supprimer cette plage"
+          >
+            ×
+          </button>
+          {f <= d && <span className="font-tag text-[11px] text-rust">la fin doit être après le début</span>}
         </div>
+      ))}
+      <div className="flex flex-wrap gap-1.5 mt-1">
+        <button type="button" onClick={ajouter} className={`${petitBouton} border-forest text-forest hover:bg-forest hover:text-paper`}>
+          + ajouter une plage
+        </button>
+        <button type="button" onClick={() => onChange(PLAGES_DEFAUT[type].map((p) => [...p]))} className={`${petitBouton} border-ink/30 text-ink hover:bg-stone`}>
+          {type === 'livraison' ? 'Matin / midi / après-midi' : '8h à 18h'}
+        </button>
+        {plages.length > 0 && (
+          <button type="button" onClick={() => onChange([])} className={`${petitBouton} border-rust/50 text-rust hover:bg-rust hover:text-paper`}>
+            Fermé
+          </button>
+        )}
+      </div>
+      {type === 'retrait' && plages.length > 0 && (
+        <p className="font-tag text-[10px] text-muted mt-1">Le client choisit un créneau de 30 minutes dans ces plages.</p>
+      )}
+      {type === 'livraison' && plages.length > 0 && (
+        <p className="font-tag text-[10px] text-muted mt-1">Chaque plage est un créneau de livraison proposé au client.</p>
       )}
     </div>
   )
 }
 
-function Calendrier({ mois, speciaux, jourEdite, aujourdhui, onClic }) {
+function Calendrier({ mois, jours, jourEdite, aujourdhui, onClic }) {
   const premier = new Date(mois.getFullYear(), mois.getMonth(), 1)
   const decalage = (premier.getDay() + 6) % 7 // lundi en premier
   const nbJours = new Date(mois.getFullYear(), mois.getMonth() + 1, 0).getDate()
@@ -155,8 +132,8 @@ function Calendrier({ mois, speciaux, jourEdite, aujourdhui, onClic }) {
             </div>
           )
         }
-        const lignes = TYPES.map((t) => ({ ...t, liste: speciaux[cle]?.[t.cle] })).filter((t) => Array.isArray(t.liste))
-        const toutFerme = lignes.length === 2 && lignes.every((t) => t.liste.length === 0)
+        const lignes = TYPES.map((t) => ({ ...t, plages: jours[cle]?.[t.cle] })).filter((t) => Array.isArray(t.plages))
+        const toutFerme = lignes.length === 2 && lignes.every((t) => t.plages.length === 0)
         return (
           <button
             key={cle}
@@ -171,11 +148,8 @@ function Calendrier({ mois, speciaux, jourEdite, aujourdhui, onClic }) {
               <span className="block font-tag text-[10px] uppercase leading-tight">Fermé</span>
             ) : (
               lignes.map((t) => (
-                <span
-                  key={t.cle}
-                  className={`block font-tag text-[9px] leading-tight ${t.liste.length === 0 ? 'text-rust font-semibold' : 'text-ink'}`}
-                >
-                  {t.court} {resumeCourt(t.cle, t.liste)}
+                <span key={t.cle} className={`block font-tag text-[9px] leading-tight ${t.plages.length === 0 ? 'text-rust font-semibold' : 'text-ink'}`}>
+                  {t.court} {resume(t.plages, true)}
                 </span>
               ))
             )}
@@ -186,10 +160,10 @@ function Calendrier({ mois, speciaux, jourEdite, aujourdhui, onClic }) {
   )
 }
 
-function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
-  const [indispo, setIndispo] = useState(initialIndispo)
-  const [speciaux, setSpeciaux] = useState(initialSpeciaux)
-  const [saved, setSaved] = useState(() => JSON.stringify([initialIndispo, initialSpeciaux]))
+function CalendarEditor({ initialSemaine, initialJours, onSave }) {
+  const [semaine, setSemaine] = useState(initialSemaine)
+  const [jours, setJours] = useState(initialJours)
+  const [saved, setSaved] = useState(() => JSON.stringify([initialSemaine, initialJours]))
   const [jourEdite, setJourEdite] = useState(null)
   const [periode, setPeriode] = useState({ du: '', au: '', quoi: 'tout' })
   const [mois, setMois] = useState(() => {
@@ -198,23 +172,18 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
   })
   const [saving, setSaving] = useState(false)
   const aujourdhui = cleDate(new Date())
-  const dirty = JSON.stringify([indispo, speciaux]) !== saved
+  const dirty = JSON.stringify([semaine, jours]) !== saved
+  const habituel = (type, cle) => semaine[type][String(dateDepuisCle(cle).getDay())] || []
 
-  const habituel = (type, cle) => creneauxDuJour(type, dateDepuisCle(cle).getDay(), indispo)
+  const definirSemaine = (type, jour, plages) =>
+    setSemaine((prev) => ({ ...prev, [type]: { ...prev[type], [String(jour)]: plages } }))
 
-  // Semaine type : liste des créneaux ouverts d'office ce jour de la semaine.
-  const definirSemaine = (type, jour, liste) =>
-    setIndispo((prev) => ({
-      ...prev,
-      [type]: { ...(prev[type] || {}), [String(jour)]: TOUS_CRENEAUX[type].filter((c) => !liste.includes(c)) },
-    }))
-
-  // Une date : liste des créneaux ouverts ce jour-là ; null = comme d'habitude.
-  const definirJour = (cle, type, liste) =>
-    setSpeciaux((prev) => {
+  // Une date : ses plages ; null = comme d'habitude.
+  const definirJour = (cle, type, plages) =>
+    setJours((prev) => {
       const jour = { ...(prev[cle] || {}) }
-      if (liste === null || memes(liste, habituel(type, cle))) delete jour[type]
-      else jour[type] = liste
+      if (plages === null) delete jour[type]
+      else jour[type] = plages
       const next = { ...prev }
       if (Object.keys(jour).length === 0) delete next[cle]
       else next[cle] = jour
@@ -222,7 +191,7 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
     })
 
   const fermer = (cles, quoi) =>
-    setSpeciaux((prev) => {
+    setJours((prev) => {
       const next = { ...prev }
       cles.forEach((cle) => {
         next[cle] = {
@@ -254,16 +223,36 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
     setPeriode({ du: '', au: '', quoi: 'tout' })
   }
 
-  const prochains = useMemo(() => Object.keys(speciaux).filter((cle) => cle >= aujourdhui).sort(), [speciaux, aujourdhui])
+  const prochains = useMemo(() => Object.keys(jours).filter((cle) => cle >= aujourdhui).sort(), [jours, aujourdhui])
 
   const enregistrer = async () => {
     setSaving(true)
     try {
-      const s = Object.fromEntries(Object.entries(speciaux).filter(([cle]) => cle >= aujourdhui))
-      // Les fermetures sont désormais toutes dans horaires_speciaux : l'ancienne colonne est vidée.
-      await onSave({ jours_fermes: {}, creneaux_indisponibles: indispo, horaires_speciaux: s })
-      setSpeciaux(s)
-      setSaved(JSON.stringify([indispo, s]))
+      // Plages incohérentes (fin avant début) ou réglage identique à la semaine type : on ne garde pas.
+      const propre = (p) => trier(p.filter(([d, f]) => f > d))
+      const s = Object.fromEntries(
+        TYPES.map((t) => [t.cle, Object.fromEntries(Object.entries(semaine[t.cle]).map(([j, p]) => [j, propre(p)]))])
+      )
+      const j = {}
+      Object.entries(jours)
+        .filter(([cle]) => cle >= aujourdhui)
+        .forEach(([cle, parType]) => {
+          Object.entries(parType).forEach(([type, p]) => {
+            const habitude = s[type][String(dateDepuisCle(cle).getDay())] || []
+            if (!memes(propre(p), habitude)) j[cle] = { ...(j[cle] || {}), [type]: propre(p) }
+          })
+        })
+      await onSave({
+        horaires_semaine: s,
+        horaires_jours: j,
+        // Anciens réglages remplacés par les deux colonnes ci-dessus.
+        jours_fermes: {},
+        horaires_speciaux: {},
+        creneaux_indisponibles: { retrait: {}, livraison: {} },
+      })
+      setSemaine(s)
+      setJours(j)
+      setSaved(JSON.stringify([s, j]))
     } catch (err) {
       alert(`Erreur : ${err.message}`)
     } finally {
@@ -272,6 +261,7 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
   }
 
   const champDate = 'border border-ink/30 bg-paper p-1.5 font-body text-sm focus:border-forest focus:outline-none'
+  const enCours = jourEdite ? jours[jourEdite] : null
 
   return (
     <div>
@@ -290,13 +280,13 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
         </button>
       </div>
 
-      {/* 1. Semaine type */}
       <h2 className="font-display text-2xl text-ink mb-1">1. La semaine type</h2>
       <p className="font-body text-sm text-muted mb-3 max-w-3xl">
-        Ce qui est proposé d'office aux clients, chaque semaine. Un jour « Fermé » n'est plus proposé du tout.
+        Les horaires proposés d'office, chaque semaine. Mettez les heures que vous voulez, en une ou plusieurs plages
+        (par exemple 8h30 à 12h et 14h à 17h30). Un jour sans plage est fermé.
       </p>
       <div className="bg-paper border border-ink/15 mb-8 overflow-x-auto">
-        <table className="w-full text-sm min-w-[560px]">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="font-tag text-[11px] uppercase text-muted border-b border-ink/15">
               <th className="px-3 py-2 text-left w-28">Jour</th>
@@ -313,11 +303,7 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
                 <td className="px-3 py-3 font-display text-lg text-ink">{NOM_JOUR(j)}</td>
                 {TYPES.map((t) => (
                   <td key={t.cle} className="px-3 py-3">
-                    <ChoixHoraires
-                      type={t.cle}
-                      liste={creneauxDuJour(t.cle, j, indispo)}
-                      onChange={(liste) => definirSemaine(t.cle, j, liste)}
-                    />
+                    <Plages type={t.cle} plages={semaine[t.cle][String(j)] || []} onChange={(p) => definirSemaine(t.cle, j, p)} />
                   </td>
                 ))}
               </tr>
@@ -326,11 +312,10 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
         </table>
       </div>
 
-      {/* 2. Jours particuliers */}
       <h2 className="font-display text-2xl text-ink mb-1">2. Les jours particuliers</h2>
       <p className="font-body text-sm text-muted mb-3 max-w-3xl">
-        Cliquez sur un jour pour changer ses horaires ou le fermer. Les cases colorées sont celles qui ne suivent pas
-        la semaine type.
+        Cliquez sur un jour pour lui mettre d'autres horaires ou le fermer. Les cases colorées ne suivent pas la semaine
+        type.
       </p>
 
       <div className="flex flex-wrap items-end gap-3 mb-3">
@@ -367,7 +352,7 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_300px] mb-4">
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px] mb-4">
         <div className="bg-paper border border-ink/15 p-3">
           <div className="flex items-center justify-between mb-2">
             <button
@@ -388,7 +373,7 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
               Suivant ›
             </button>
           </div>
-          <Calendrier mois={mois} speciaux={speciaux} jourEdite={jourEdite} aujourdhui={aujourdhui} onClic={setJourEdite} />
+          <Calendrier mois={mois} jours={jours} jourEdite={jourEdite} aujourdhui={aujourdhui} onClic={setJourEdite} />
           <p className="mt-2 font-tag text-[11px] text-muted">
             <span className="inline-block w-3 h-3 bg-rust align-middle mr-1" /> fermé ·{' '}
             <span className="inline-block w-3 h-3 bg-[#f3e6d0] border border-ink/15 align-middle mr-1" /> horaires modifiés ·{' '}
@@ -405,26 +390,49 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
                   Fermer ✕
                 </button>
               </div>
-              {TYPES.map((t) => (
-                <div key={`${jourEdite}-${t.cle}`} className="mb-3">
-                  <p className="font-tag text-[11px] uppercase text-muted mb-1">{t.titre}</p>
-                  <ChoixHoraires
-                    type={t.cle}
-                    liste={speciaux[jourEdite]?.[t.cle] ?? null}
-                    habituel={habituel(t.cle, jourEdite)}
-                    onChange={(liste) => definirJour(jourEdite, t.cle, liste)}
-                  />
-                </div>
-              ))}
-              {speciaux[jourEdite] && (
-                <button
-                  type="button"
-                  onClick={() => TYPES.forEach((t) => definirJour(jourEdite, t.cle, null))}
-                  className="font-tag text-xs uppercase underline text-muted hover:text-ink"
-                >
-                  Remettre ce jour comme d'habitude
-                </button>
-              )}
+              {TYPES.map((t) => {
+                const special = enCours?.[t.cle]
+                const habitude = habituel(t.cle, jourEdite)
+                return (
+                  <div key={t.cle} className="mb-4 pb-3 border-b border-ink/10 last:border-b-0">
+                    <p className="font-tag text-[11px] uppercase text-muted mb-1">{t.titre}</p>
+                    {Array.isArray(special) ? (
+                      <>
+                        <Plages type={t.cle} plages={special} onChange={(p) => definirJour(jourEdite, t.cle, p)} />
+                        <button
+                          type="button"
+                          onClick={() => definirJour(jourEdite, t.cle, null)}
+                          className="mt-2 font-tag text-[11px] uppercase underline text-muted hover:text-ink"
+                        >
+                          Remettre comme d'habitude ({resume(habitude, true)})
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-body text-sm mb-2">
+                          Comme d'habitude : <strong>{resume(habitude)}</strong>
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => definirJour(jourEdite, t.cle, habitude.map((p) => [...p]))}
+                            className="font-tag text-[11px] uppercase font-semibold border border-forest text-forest px-2 py-1 hover:bg-forest hover:text-paper"
+                          >
+                            Changer les horaires ce jour
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => definirJour(jourEdite, t.cle, [])}
+                            className="font-tag text-[11px] uppercase font-semibold border border-rust/50 text-rust px-2 py-1 hover:bg-rust hover:text-paper"
+                          >
+                            Fermé ce jour
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <div className="bg-paper border border-ink/15 p-3 font-body text-sm text-muted">
@@ -442,9 +450,9 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
                   <li key={cle} className="flex items-start justify-between gap-2 font-body text-sm">
                     <button type="button" onClick={() => setJourEdite(cle)} className="text-left hover:underline">
                       {libelleDate(dateDepuisCle(cle))}
-                      {TYPES.filter((t) => Array.isArray(speciaux[cle][t.cle])).map((t) => (
-                        <span key={t.cle} className={`block font-tag text-[11px] ${speciaux[cle][t.cle].length ? 'text-ink' : 'text-rust'}`}>
-                          {t.titre} : {resume(t.cle, speciaux[cle][t.cle])}
+                      {TYPES.filter((t) => Array.isArray(jours[cle][t.cle])).map((t) => (
+                        <span key={t.cle} className={`block font-tag text-[11px] ${jours[cle][t.cle].length ? 'text-ink' : 'text-rust'}`}>
+                          {t.titre} : {resume(jours[cle][t.cle])}
                         </span>
                       ))}
                     </button>
@@ -466,27 +474,36 @@ function CalendarEditor({ initialIndispo, initialSpeciaux, onSave }) {
   )
 }
 
-// Anciens « jours fermés » (colonne jours_fermes) → fermetures dans horaires_speciaux (liste vide = fermé).
-function avecFermetures(speciaux, joursFermes) {
-  const s = JSON.parse(JSON.stringify(speciaux || {}))
-  Object.entries(joursFermes || {}).forEach(([cle, quoi]) => {
-    s[cle] = {
-      ...(s[cle] || {}),
-      ...(quoi !== 'retrait' ? { livraison: [] } : {}),
-      ...(quoi !== 'livraison' ? { retrait: [] } : {}),
-    }
-  })
-  return s
+// Lecture des réglages : nouvelles colonnes si elles existent, sinon conversion des anciens réglages.
+function lireReglages(settings) {
+  const cal = {
+    semaine: settings.horaires_semaine || null,
+    jours: settings.horaires_jours || null,
+    joursFermes: settings.jours_fermes,
+    indispo: settings.creneaux_indisponibles,
+    speciaux: settings.horaires_speciaux,
+  }
+  const semaine = Object.fromEntries(
+    TYPES.map((t) => [t.cle, Object.fromEntries(JOURS_OUVRES.map((j) => [String(j), plagesSemaine(t.cle, j, cal)]))])
+  )
+  if (cal.jours) return { semaine, jours: cal.jours }
+  const aujourdhui = cleDate(new Date())
+  const jours = {}
+  const cles = new Set([...Object.keys(cal.joursFermes || {}), ...Object.keys(cal.speciaux || {})])
+  ;[...cles]
+    .filter((cle) => cle >= aujourdhui)
+    .forEach((cle) => {
+      TYPES.forEach((t) => {
+        const p = plagesPourDate(t.cle, cle, cal)
+        if (!memes(p, semaine[t.cle][String(dateDepuisCle(cle).getDay())])) jours[cle] = { ...(jours[cle] || {}), [t.cle]: p }
+      })
+    })
+  return { semaine, jours }
 }
 
 export default function CalendarPanel() {
   const { settings, loading, updateSettings } = useSiteSettings()
-  if (loading || !settings) return <p className="font-body text-sm text-muted">Chargement…</p>
-  return (
-    <CalendarEditor
-      initialIndispo={settings.creneaux_indisponibles || { retrait: {}, livraison: {} }}
-      initialSpeciaux={avecFermetures(settings.horaires_speciaux, settings.jours_fermes)}
-      onSave={(changes) => updateSettings(changes)}
-    />
-  )
+  const initial = useMemo(() => (settings ? lireReglages(settings) : null), [settings])
+  if (loading || !initial) return <p className="font-body text-sm text-muted">Chargement…</p>
+  return <CalendarEditor initialSemaine={initial.semaine} initialJours={initial.jours} onSave={(changes) => updateSettings(changes)} />
 }
