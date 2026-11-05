@@ -118,7 +118,6 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
           required: false,
           autoComplete: 'off',
           maxLength: 30,
-          placeholder: 'Ex. : SYLVIE47',
         })}
 
       <label className="flex items-start gap-2 font-body text-sm cursor-pointer">
