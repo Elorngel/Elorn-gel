@@ -10,6 +10,9 @@ DirectoryIndex index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # Indispensable chez IONOS : sans cette ligne, « index.html » est cherché au mauvais endroit
+  # (chemin interne du serveur) et les pages autres que l'accueil tombent en erreur 500.
+  RewriteBase /
 
   # Une seule adresse officielle : https://bontin.fr (comme l'ancien site).
   # Ne concerne que bontin.fr et www.bontin.fr : l'adresse de test (nouveau.bontin.fr) n'est pas redirigée.
