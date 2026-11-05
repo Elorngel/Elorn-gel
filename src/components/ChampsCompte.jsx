@@ -128,7 +128,7 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
           className="mt-0.5 w-4 h-4 accent-forest shrink-0"
         />
         <span>
-          J'accepte de recevoir les offres Bontin par email, dont mon bon d'achat d'anniversaire.
+          J'accepte de recevoir les offres promotionnelles de Bontin par email.
           Désinscription possible à tout moment depuis « Mon compte ».
         </span>
       </label>
