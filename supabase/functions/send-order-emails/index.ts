@@ -19,7 +19,11 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 // (sans toucher au code) :
 //   supabase secrets set FROM_EMAIL=commandes@bontin.fr
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'logistique@elorngel.fr'
+// Une ou plusieurs adresses séparées par des virgules (ex. « logistique@elorngel.fr,sylvie@elorngel.fr »).
+const ADMIN_EMAIL = (Deno.env.get('ADMIN_EMAIL') ?? 'logistique@elorngel.fr')
+  .split(',')
+  .map((a) => a.trim())
+  .filter(Boolean)
 // Adresse qui reçoit les réponses des clients à leur confirmation (l'expéditeur commandes@ n'a pas de boîte).
 const REPLY_TO = Deno.env.get('REPLY_TO') ?? 'contact@bontin.fr'
 // Adresse du site dans les boutons des emails (à passer sur https://bontin.fr le jour de la bascule).
