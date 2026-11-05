@@ -7,7 +7,9 @@ const SUR_IONOS = typeof window !== 'undefined' && /(^|\.)bontin\.fr$/i.test(win
 export function urlPhoto(url) {
   if (!SUR_IONOS || !url || !url.startsWith(PREFIXE)) return url
   const nom = url.slice(PREFIXE.length)
-  return /^[A-Za-z0-9._-]+$/.test(nom) ? `/photos/${nom}` : url
+  // Seules les vraies photos passent par IONOS (mêmes formats que photo-cache.php) ; les logos SVG,
+  // minuscules, restent chez Supabase.
+  return /^[A-Za-z0-9._-]+\.(jpe?g|png|webp|gif)$/i.test(nom) ? `/photos/${nom}` : url
 }
 
 // Roue de secours : si la copie IONOS ne répond pas, on reprend la photo chez Supabase.
