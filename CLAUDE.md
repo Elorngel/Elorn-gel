@@ -198,8 +198,9 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
 - **Bascule vers bontin.fr** : la fonction `send-order-emails` lit `FROM_EMAIL`
   et `ADMIN_EMAIL` dans les secrets Supabase (défaut : expéditeur de test Resend
   + `logistique@elorngel.fr`). Une fois `bontin.fr` vérifié dans Resend :
-  `supabase secrets set FROM_EMAIL=commandes@bontin.fr` (ADMIN_EMAIL reste logistique@elorngel.fr, la boîte
-  lue par Romuald). ATTENTION : le domaine bontin.fr est dans le contrat « Hébergement Web Plus » IONOS du
+  `supabase secrets set FROM_EMAIL=commandes@bontin.fr`. ADMIN_EMAIL (avis « Nouvelle commande », plusieurs adresses
+  séparées par des virgules) = logistique@elorngel.fr,sylvie@elorngel.fr,contact@bontin.fr depuis le 06/11/2026 ;
+  Romuald lit contact@bontin.fr dans Mail (Mac + iPhone, IMAP imap.ionos.fr / SMTP smtp.ionos.fr), Sylvie non. ATTENTION : le domaine bontin.fr est dans le contrat « Hébergement Web Plus » IONOS du
   PrestaShop — ne pas résilier l'hébergement sans en sortir d'abord le domaine et les mails.
 - **Resend** : bontin.fr vérifié le 27/10/2026, les confirmations clients partent (testé, livrées par Resend).
   « Mot de passe oublié » et bon d'anniversaire sont désormais possibles techniquement (pas encore codés).
