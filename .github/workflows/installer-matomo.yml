@@ -1,0 +1,46 @@
+# Installation de Matomo (statistiques de visites, sans cookies) sur l'hébergement IONOS.
+# À lancer UNE fois à la main : onglet Actions → « Installer Matomo » → Run workflow.
+# Télécharge la dernière version officielle de Matomo (builds.matomo.org, empreinte vérifiée) et l'envoie
+# dans le dossier /matomo de l'espace web (relié à l'adresse https://stats.bontin.fr). Ne touche à aucun
+# autre dossier : ni au site (/bontin-site), ni aux sauvegardes, ni à l'ancien PrestaShop.
+# Relancer plus tard sert de mise à jour : les réglages (config/config.ini.php) ne sont pas écrasés.
+name: Installer Matomo
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: envoi-ionos
+  cancel-in-progress: false
+
+jobs:
+  matomo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Téléchargement de Matomo
+        run: |
+          curl -fsSL -o matomo.zip https://builds.matomo.org/matomo-latest.zip
+          curl -fsSL -o matomo.zip.sha256 https://builds.matomo.org/matomo-latest.zip.sha256 || true
+          if [ -s matomo.zip.sha256 ]; then
+            echo "$(cut -d' ' -f1 matomo.zip.sha256)  matomo.zip" | sha256sum -c -
+          fi
+          unzip -q matomo.zip
+          test -f matomo/index.php && test -f matomo/matomo.js
+          # Fichiers inutiles sur le serveur
+          rm -f "matomo/How to install Matomo.html"
+
+      - name: Envoi SFTP dans /matomo
+        env:
+          HOTE: ${{ secrets.IONOS_SFTP_HOTE }}
+          UTILISATEUR: ${{ secrets.IONOS_SFTP_UTILISATEUR }}
+          LFTP_PASSWORD: ${{ secrets.IONOS_SFTP_MOT_DE_PASSE }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          # Pas de --delete : on n'efface rien sur le serveur. Les réglages et le cache de Matomo sont gardés.
+          lftp --env-password -u "$UTILISATEUR" "sftp://$HOTE" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mkdir -p -f /matomo;
+            mirror --reverse --parallel=8 --exclude ^config/config\.ini\.php$ --exclude ^tmp/ matomo/ /matomo;
+            mkdir -p -f /matomo/tmp;
+            bye"
