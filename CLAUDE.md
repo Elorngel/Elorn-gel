@@ -102,9 +102,11 @@ Codes promo : table `codes_promo` (admin → onglet « Offres », `OffresPanel.j
 SQL `verifier_code_promo`, 1 fois par compte, sur les produits hors livraison, cumulables avec tout ; code
 BIENVENUE10 (-10 %, 50 utilisations). Parrainage : `clients.code_parrain` (créé automatiquement) /
 `parrain_id`, code saisi à la création du compte (`creer-compte`, garde-fou même téléphone/adresse) ou lien
-`#parrainage/CODE` ; bons dans `bons_achat` (25 €, dès 50 € de produits, 1 mois, réglables dans Offres) ; le
+`#parrainage/CODE` ; bons dans `bons_achat` (25 €, dès 30 € de produits, 1 mois, réglables dans Offres) ; le
 bon du parrain est créé par le déclencheur SQL `recompenser_parrain` quand la 1re commande ≥ minimum du
-filleul passe en « Livrée ». Pastilles en pied de page (`PastillesParrainage.jsx`), page `#parrainage`.
+filleul passe en « Livrée » ; juste après, `useOrders.updateStatus` appelle la fonction `avis-bon-parrain`, qui
+envoie l'email « merci pour votre parrainage » au parrain (une fois par bon, `bons_achat.email_envoye_le`,
+`supabase-email-bon-parrain.sql`, gabarit `emailBonParrain`). Minimum du parrainage passé à 30 € le 06/11/2026. Pastilles en pied de page (`PastillesParrainage.jsx`), page `#parrainage`.
 SQL : `supabase-offres.sql` (appliqué) ; `supabase-verrou-commandes.sql` à appliquer APRÈS la mise en ligne.
 **Comptes clients** (21/10/2026) : compte obligatoire pour commander, créé dans le formulaire du
 panier (onglets « Je crée mon compte » / « J'ai déjà un compte ») ou dans « Mon compte »

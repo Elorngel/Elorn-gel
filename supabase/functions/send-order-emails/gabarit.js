@@ -162,3 +162,34 @@ export function emailAdmin(c, infos) {
     pied: `Répondre à cet email écrit directement au client${c.email ? ` (${esc(c.email)})` : ''}.`,
   })
 }
+
+// Email au parrain : son filleul a reçu sa 1re commande, un bon d'achat l'attend (fonction avis-bon-parrain).
+export function emailBonParrain(bon, parrain, prenomFilleul, infos) {
+  const fin = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'Europe/Paris' }).format(
+    new Date(bon.valable_jusqu_au)
+  )
+  const minimum = Number(bon.minimum_commande) > 0 ? ` dès ${euros(bon.minimum_commande)} de produits` : ''
+  const contenu = `
+    <p style="margin:0 0 12px;">Bonjour ${esc(parrain.prenom)},</p>
+    <p style="margin:0 0 20px;">Bonne nouvelle : ${prenomFilleul ? `<strong>${esc(prenomFilleul)}</strong>, que vous avez parrainé(e),` : 'votre filleul'}
+      vient de recevoir sa première commande Bontin. Pour vous remercier, un bon d'achat vous attend.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid ${C.forest};margin:0 0 20px;">
+      <tr><td style="padding:16px;">
+        <div style="font:bold 11px ${TEXTE};letter-spacing:1.5px;text-transform:uppercase;color:${C.forest};">Votre bon d'achat</div>
+        <div style="font:400 44px/1.05 ${TITRE};color:${C.ink};padding-top:4px;">${euros(bon.montant)} offerts</div>
+        <div style="font:14px/1.45 ${TEXTE};color:${C.muted};padding-top:4px;">Sur votre prochaine commande${minimum}, jusqu'au ${esc(fin)}.</div>
+      </td></tr>
+    </table>
+    <p style="margin:0;">Il est déjà dans votre compte : il sera déduit automatiquement de votre panier quand vous commanderez, connecté à votre compte Bontin.
+      Vous pouvez parrainer autant de proches que vous le souhaitez.</p>
+    ${bouton(`${infos.site}/catalogue`, 'Utiliser mon bon')}`
+  return cadre({
+    infos,
+    apercu: `${Number(bon.montant)} € offerts sur votre prochaine commande grâce à votre parrainage`,
+    titre: 'Merci pour votre parrainage',
+    sousTitre: `Un bon d'achat de ${euros(bon.montant)} vous attend`,
+    contenu,
+    pied: `Une question ? Répondez simplement à cet email ou appelez-nous au
+      <a href="tel:${esc(infos.telephone.replace(/\s/g, ''))}" style="color:${C.paper};font-weight:bold;white-space:nowrap;">${esc(infos.telephone).replace(/ /g, '&nbsp;')}</a>.`,
+  })
+}

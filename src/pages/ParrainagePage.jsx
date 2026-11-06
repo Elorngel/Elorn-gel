@@ -24,7 +24,7 @@ export default function ParrainagePage({ codeRecu }) {
     if (codeRecu) retenirCodeParrain(codeRecu)
   }, [codeRecu])
   const montant = settings?.parrainage_montant ?? 25
-  const minimum = settings?.parrainage_minimum ?? 50
+  const minimum = settings?.parrainage_minimum ?? 30
   const mois = settings?.parrainage_validite_mois ?? 1
   const validite = `${mois} mois`
   const actif = settings?.parrainage_actif !== false

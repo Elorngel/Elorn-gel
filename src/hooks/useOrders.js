@@ -48,6 +48,11 @@ export function useOrders() {
     const { error } = await supabase.from('commandes').update({ statut }).eq('id', id)
     if (error) throw error
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, statut } : o)))
+    // 1re commande d'un filleul livrée : la base vient peut-être de créer le bon du parrain →
+    // email au parrain (la fonction ne fait rien s'il n'y a pas de bon, et n'envoie qu'une fois).
+    if (statut === 'livree') {
+      supabase.functions.invoke('avis-bon-parrain', { body: { commandeId: id } }).catch(() => {})
+    }
   }, [])
 
   return { orders, loading, error, refetch: fetchOrders, updateStatus }
