@@ -21,6 +21,7 @@ import { mentionsLegales, cgv, cgu, confidentialite } from './data/legalContent'
 import MonComptePage from './pages/MonComptePage'
 import MaintenancePage from './pages/MaintenancePage'
 import ParrainagePage from './pages/ParrainagePage'
+import ChoixStatistiques from './components/ChoixStatistiques'
 import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
 import { supabase } from './lib/supabaseClient'
@@ -326,7 +327,9 @@ function App() {
           {page.type === 'mentions-legales' ? (
             <LegalPage title="Mentions légales" content={mentionsLegales} />
           ) : page.type === 'confidentialite' ? (
-            <LegalPage title="Politique de confidentialité" content={confidentialite} />
+            <LegalPage title="Politique de confidentialité" content={confidentialite}>
+              <ChoixStatistiques />
+            </LegalPage>
           ) : page.type === 'parrainage' ? (
             <ParrainagePage codeRecu={page.code} />
           ) : page.type === 'mon-compte' ? (

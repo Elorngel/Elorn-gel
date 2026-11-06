@@ -3,7 +3,7 @@ import { useSeo } from '../lib/seo'
 import { avecHebergeur } from '../data/legalContent'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 
-export default function LegalPage({ title, content }) {
+export default function LegalPage({ title, content, children }) {
   useSeo({ titre: title })
   const { settings } = useSiteSettings()
   return (
@@ -18,6 +18,7 @@ export default function LegalPage({ title, content }) {
           className="bg-paper border border-ink/15 p-6 font-body text-sm text-ink leading-relaxed legal-content"
           dangerouslySetInnerHTML={{ __html: avecHebergeur(content, settings?.minimum_livraison ?? 30) }}
         />
+        {children}
       </div>
     </div>
   )

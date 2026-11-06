@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { pageVue } from './statistiques'
 
 // Titre de l'onglet, résumé et adresse officielle de chaque page : ce que Google affiche dans ses
 // résultats. Les pages privées (panier, compte, recherche, admin) sont marquées « ne pas indexer ».
@@ -61,5 +62,6 @@ export function useSeo({ titre, description, chemin, indexer = true }) {
     // (préversions Vercel, ordinateur) sont marquées « ne pas indexer ».
     const officiel = /^(www\.)?bontin\.fr$/i.test(window.location.hostname)
     meta('robots').setAttribute('content', indexer && officiel ? 'index, follow' : 'noindex, follow')
+    pageVue()
   }, [titre, description, chemin, indexer])
 }
