@@ -77,7 +77,13 @@ async function tests() {
   r = await post('/functions/v1/passer-commande', { ...demande, totalAttendu: prevu.total }, JF)
   ok(r.d?.ok && Number(r.d.commande.total) === prevu.total, `commande enregistrée au prix du serveur (${prevu.total} €, bon -${r.d?.commande?.remise_bon}, code -${r.d?.commande?.remise_code})`)
   const C1 = r.d?.commande
+  // Un seul avantage par commande : bon de 25 € et code -10 % ne se cumulent pas.
+  ok(!(Number(C1?.remise_bon) > 0 && Number(C1?.remise_code) > 0), `code promo et bon non cumulés (avantage écarté : ${prevu.avantageEcarte})`)
   if (demande.codePromo) {
+    // Le code écarté n'a pas été consommé : il marche sur la commande suivante (bon déjà utilisé), puis plus.
+    const prevu2 = calculerCommande({ lignes, mode: 'retrait', remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code: { code: code.d.code, pourcentage: code.d.pourcentage }, bon: null })
+    r = await post('/functions/v1/passer-commande', { ...demande, totalAttendu: prevu2.total }, JF)
+    ok(prevu.avantageEcarte !== 'code' || (r.d?.ok && Number(r.d.commande.remise_code) > 0), 'code écarté au profit du bon : toujours utilisable ensuite')
     r = await post('/functions/v1/passer-commande', demande, JF)
     ok(r.status === 409, 'deuxième utilisation du code par le même compte refusée')
   }

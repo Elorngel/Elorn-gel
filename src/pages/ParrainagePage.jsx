@@ -122,8 +122,8 @@ export default function ParrainagePage({ codeRecu }) {
             une commande d'au moins {euros(minimum)} de produits (hors frais de livraison), en une seule fois ; il
             n'est ni remboursable ni échangeable contre de l'argent, et un seul bon est utilisé par commande. Le bon
             du parrain est créé quand la première commande d'au moins {euros(minimum)} de son filleul est livrée ou
-            retirée. Le nombre de filleuls n'est pas limité. Les bons sont cumulables avec les promotions, la remise
-            retrait et les codes promo. Bontin se réserve le droit d'annuler un parrainage abusif ou frauduleux.
+            retirée. Le nombre de filleuls n'est pas limité. Les bons sont cumulables avec les promotions et la remise
+            retrait, mais pas avec un code promo : un seul avantage par commande (le plus avantageux est appliqué). Bontin se réserve le droit d'annuler un parrainage abusif ou frauduleux.
           </p>
         </section>
       </main>

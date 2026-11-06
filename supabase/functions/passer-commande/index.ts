@@ -178,7 +178,8 @@ Deno.serve(async (req) => {
         creneau_retrait: mode === 'retrait' ? creneau : null,
         creneau_livraison: mode === 'livraison' ? creneau : null,
         sous_total: calcul.sousTotal,
-        code_promo: code ? code.code : null,
+        // Code écarté au profit d'un bon plus avantageux : il n'est pas consommé.
+        code_promo: calcul.remiseCode > 0 ? code.code : null,
         remise_code: calcul.remiseCode,
         bon_id: calcul.remiseBon > 0 ? bon.id : null,
         remise_bon: calcul.remiseBon,
@@ -223,7 +224,7 @@ Deno.serve(async (req) => {
     }
 
     // Plafond du code promo : on recompte après coup (deux commandes simultanées).
-    if (code?.max_utilisations) {
+    if (calcul.remiseCode > 0 && code?.max_utilisations) {
       const { count } = await admin.from('commandes').select('id', { count: 'exact', head: true }).eq('code_promo', code.code)
       if ((count ?? 0) > code.max_utilisations) {
         return await annuler('Ce code promo vient d\'atteindre son nombre maximum d\'utilisations.')

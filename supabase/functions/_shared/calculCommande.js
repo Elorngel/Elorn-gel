@@ -84,20 +84,34 @@ export function articleIndisponible(produit, variante, mode) {
 
 // Total de la commande.
 // lignes : [{ produit, variante, quantite }]
-// code : { code, pourcentage } ou null — s'applique sur les produits (cumulable avec tout)
+// code : { code, pourcentage } ou null — s'applique sur les produits
 // bon : { id, montant, minimum_commande } ou null — utilisable si les produits atteignent le minimum
+// UN SEUL AVANTAGE PAR COMMANDE (06/11/2026) : code promo et bon d'achat ne se cumulent pas ; si les
+// deux sont possibles, on garde automatiquement le plus avantageux pour le client. avantageEcarte dit
+// lequel n'a pas été appliqué ('code' ou 'bon'), pour l'expliquer dans le panier. Les promotions et la
+// remise retrait, elles, restent cumulables.
 export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, code = null, bon = null, today = aujourdhuiParis() }) {
   const detail = lignes.map((l) => {
     const pu = prixUnitaire(l.produit, l.variante, mode, remiseRetrait, today)
     return { ...l, prixUnitaire: pu, totalLigne: arrondi(pu * l.quantite) }
   })
   const sousTotal = arrondi(detail.reduce((s, l) => s + l.totalLigne, 0))
-  const remiseCode = code ? arrondi((sousTotal * Number(code.pourcentage)) / 100) : 0
+  let remiseCode = code ? arrondi((sousTotal * Number(code.pourcentage)) / 100) : 0
   const bonUtilisable = !!bon && sousTotal >= Number(bon.minimum_commande || 0)
-  const remiseBon = bonUtilisable ? Math.min(Number(bon.montant), arrondi(sousTotal - remiseCode)) : 0
+  let remiseBon = bonUtilisable ? Math.min(Number(bon.montant), sousTotal) : 0
+  let avantageEcarte = null
+  if (remiseCode > 0 && remiseBon > 0) {
+    if (remiseBon >= remiseCode) {
+      remiseCode = 0
+      avantageEcarte = 'code'
+    } else {
+      remiseBon = 0
+      avantageEcarte = 'bon'
+    }
+  }
   const frais = mode === 'retrait' ? 0 : arrondi(fraisLivraison || 0)
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
-  return { lignes: detail, sousTotal, remiseCode, remiseBon, bonUtilisable, frais, total }
+  return { lignes: detail, sousTotal, remiseCode, remiseBon, bonUtilisable, avantageEcarte, frais, total }
 }
 
 // Montant de produits (promos et remise retrait comprises, avant code promo et bon d'achat) qu'il manque

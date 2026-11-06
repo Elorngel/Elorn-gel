@@ -223,7 +223,8 @@ export default function CartPage() {
         creneau: isPickup
           ? `${pickupDateLabel(pickupDateOk)} · ${pickupSlotOk}`
           : `${deliveryDateLabel(deliveryDateOk)} · ${deliveryWindowOk}`,
-        codePromo: codeApplique?.code ?? null,
+        // Un seul avantage par commande : le code n'est envoyé que s'il est vraiment appliqué.
+        codePromo: calcul.remiseCode > 0 ? codeApplique?.code ?? null : null,
         // Compte tout juste créé : un bon de parrainage a pu s'ajouter, le serveur fait foi.
         totalAttendu: source === 'creation' ? undefined : calcul.total,
       })
@@ -440,6 +441,14 @@ export default function CartPage() {
                     Vous avez un {MOTIFS_BON[bonEnAttente.motif]?.toLowerCase() || 'bon'} de {eurosTexte(bonEnAttente.montant)} :
                     il s'applique dès {eurosTexte(bonEnAttente.minimum_commande)} d'achats (encore{' '}
                     {euros(Math.max(0, bonEnAttente.minimum_commande - calcul.sousTotal))}).
+                  </p>
+                )}
+                {calcul.avantageEcarte && (
+                  <p className="font-body text-xs text-forest mt-2">
+                    Un seul avantage par commande :{' '}
+                    {calcul.avantageEcarte === 'code'
+                      ? `votre ${MOTIFS_BON[bon?.motif]?.toLowerCase() || "bon d'achat"} de ${eurosTexte(bon?.montant)} est plus avantageux que le code ${codeApplique?.code}, c'est lui qui est appliqué (le code reste utilisable sur une autre commande).`
+                      : `le code ${codeApplique?.code} est plus avantageux que votre ${MOTIFS_BON[bon?.motif]?.toLowerCase() || "bon d'achat"}, qui reste disponible pour une prochaine commande.`}
                   </p>
                 )}
                 {prix.erreur && (
