@@ -26,6 +26,9 @@ DirectoryIndex index.html
   # Liste fabriquée à chaque construction du site par scripts/generer-seo.mjs.
   # {{REDIRECTIONS_ANCIENNES_ADRESSES}}
 
+  # Anciens plans du site PrestaShop (ex. 1_index_sitemap.xml, encore déclarés dans Google) → nouveau plan.
+  RewriteRule ^[0-9]+_[A-Za-z0-9_]*sitemap\.xml$ https://%{HTTP_HOST}/sitemap.xml [R=301,L]
+
   # Photos des produits : une photo déjà copiée dans photos/ est servie directement ; sinon
   # photo-cache.php va la chercher une fois chez Supabase et la garde (voir ce fichier).
   RewriteCond %{REQUEST_FILENAME} !-f
