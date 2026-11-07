@@ -22,6 +22,8 @@ import { DEFAULT_EMAIL, DEFAULT_TELEPHONE, DEFAULT_ADRESSE, DEFAULT_BANDEAU } fr
 import { aller } from '../lib/navigation'
 import { correspond } from '../lib/texte'
 import AutresRayons from '../components/AutresRayons'
+import FiltresProduits from '../components/FiltresProduits'
+import { FILTRES_VIDES, filtrerProduits } from '../lib/filtresProduits'
 
 const NO_SPINNER =
   '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
@@ -673,7 +675,22 @@ export default function AdminPage() {
   const [variantsProduct, setVariantsProduct] = useState(null)
   const [tab, setTab] = useState('produits') // 'produits' | 'commandes' | 'categories' | 'occasions' | 'fournisseurs' | 'zone' | 'calendrier'
   const [searchText, setSearchText] = useState('')
-  const [promoOnly, setPromoOnly] = useState(false)
+  // Filtres de la liste (rupture, masqués, promo, à compléter…), retenus sur l'appareil.
+  const [filtres, setFiltresEtat] = useState(() => {
+    try {
+      return { ...FILTRES_VIDES, ...JSON.parse(localStorage.getItem('bontin-admin-filtres') || '{}') }
+    } catch {
+      return FILTRES_VIDES
+    }
+  })
+  const setFiltres = (f) => {
+    setFiltresEtat(f)
+    try {
+      localStorage.setItem('bontin-admin-filtres', JSON.stringify(f))
+    } catch {
+      // stockage indisponible : le filtre marche quand même, sans être retenu
+    }
+  }
   const [showNewProductModal, setShowNewProductModal] = useState(false)
 
   const handleDeleteProduct = async (product) => {
@@ -706,12 +723,10 @@ export default function AdminPage() {
     }
   }
 
-  const promoCount = products.filter((p) => p.en_promo).length
   const q = searchText.trim()
-  const filteredProducts = products.filter(
-    (p) =>
-      (!promoOnly || p.en_promo) &&
-      (!q || correspond(p.nom, q) || correspond(p.code_article, q))
+  const filtresActifs = filtres.actifs.length > 0 || !!filtres.categorie || !!filtres.fournisseur
+  const filteredProducts = filtrerProduits(products, filtres).filter(
+    (p) => !q || correspond(p.nom, q) || correspond(p.code_article, q)
   )
 
   if (loading) {
@@ -852,16 +867,6 @@ export default function AdminPage() {
                 placeholder="Rechercher un produit (nom ou référence)…"
                 className="border border-ink/30 px-3 py-2 font-body text-sm w-full max-w-xs focus:border-forest focus:outline-none"
               />
-              <button
-                onClick={() => setPromoOnly((v) => !v)}
-                className={`font-tag text-xs font-semibold uppercase px-3 py-2 border ${
-                  promoOnly
-                    ? 'border-rust bg-rust text-paper'
-                    : 'border-rust text-rust hover:bg-rust/10'
-                }`}
-              >
-                {promoOnly ? 'Promos uniquement' : 'Voir les promos'} ({promoCount})
-              </button>
               {searchText && (
                 <button
                   onClick={() => setSearchText('')}
@@ -878,10 +883,12 @@ export default function AdminPage() {
               </button>
             </div>
 
+            <FiltresProduits produits={products} categories={categories} valeur={filtres} onChange={setFiltres} />
+
             <p className="font-body text-sm text-muted mb-4">
               {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''}
-              {searchText || promoOnly ? ` trouvé${filteredProducts.length !== 1 ? 's' : ''}` : ''}
-              {promoOnly ? ' en promotion (active, programmée ou terminée)' : ''}.
+              {searchText || filtresActifs ? ` trouvé${filteredProducts.length !== 1 ? 's' : ''}` : ''}
+              {filtresActifs ? ` sur ${products.length}` : ''}.
               Clique sur la photo pour la choisir et la régler (molette pour zoomer,
               glisser pour recentrer). Les autres champs se sauvegardent
               automatiquement quand tu cliques ailleurs.
