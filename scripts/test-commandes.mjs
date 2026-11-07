@@ -99,6 +99,20 @@ async function tests() {
   r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0622222222', creneau: 'essai', lignes: [{ produitId: petit.id, varianteId: null, quantite: 1 }] }, JF)
   ok(r.d?.ok, 'même petit panier accepté en retrait (pas de minimum)')
 
+  // Carte Privilège : seul un admin la coche ; livraison offerte pendant 1 an
+  let rp = await fetch(`${URL_}/rest/v1/clients?id=eq.${F.id}`, { method: 'PATCH', headers: { ...h(JF), Prefer: 'return=representation' }, body: JSON.stringify({ privilege_debut: '2026-01-01' }) })
+  ok(rp.status >= 400, 'un client ne peut pas se donner la carte Privilège')
+  r = await post('/rest/v1/rpc/definir_privilege', { p_client: F.id, p_debut: '2026-01-01' }, JF)
+  ok(r.status >= 400, 'la fonction Privilège est refusée à un client')
+  await fetch(`${URL_}/rest/v1/clients?id=eq.${F.id}`, { method: 'PATCH', headers: hs, body: JSON.stringify({ privilege_debut: new Date().toISOString().slice(0, 10) }) })
+  const lignesPriv = [{ produitId: choix[0].id, varianteId: null, quantite: 1 }]
+  const prevuPriv = calculerCommande({ lignes: [{ produit: choix[0], variante: null, quantite: 1 }], mode: 'livraison', remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, livraisonOfferte: true, bon: null })
+  r = await post('/functions/v1/passer-commande', { ...livraison, lignes: lignesPriv, totalAttendu: prevuPriv.total }, JF)
+  ok(r.d?.ok && Number(r.d.commande.frais_livraison) === 0 && r.d.commande.privilege === true, `client Privilège : livraison offerte (${r.d?.commande?.total ?? r.d?.erreur} €)`)
+  await fetch(`${URL_}/rest/v1/clients?id=eq.${F.id}`, { method: 'PATCH', headers: hs, body: JSON.stringify({ privilege_debut: '2020-01-01' }) })
+  r = await post('/functions/v1/passer-commande', { ...livraison, lignes: lignesPriv }, JF)
+  ok(r.d?.ok && Number(r.d.commande.frais_livraison) > 0 && !r.d.commande.privilege, 'carte Privilège expirée : frais de livraison normaux')
+
   // Alcool réservé aux majeurs
   const alcool = (await get('/rest/v1/produits?select=id&actif=eq.true&en_rupture=eq.false&alcool=eq.true&limit=30')).find((p) => !avecVariantes.has(p.id))
   const lignesAlcool = [{ produitId: alcool.id, varianteId: null, quantite: 1 }]

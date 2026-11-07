@@ -84,6 +84,11 @@ export function printBonDeCommande(commande, lignes) {
               ? `<tr><td colspan="3" style="padding:6px 4px;">Frais de livraison</td><td style="padding:6px 4px;text-align:right;">${Number(commande.frais_livraison).toFixed(2)} €</td></tr>`
               : ''
           }
+          ${
+            commande.privilege
+              ? `<tr><td colspan="3" style="padding:6px 4px;">Livraison offerte (client Privilège)</td><td style="padding:6px 4px;text-align:right;">0.00 €</td></tr>`
+              : ''
+          }
           <tr class="total-row">
             <td colspan="3">Total</td>
             <td style="text-align:right;">${Number(commande.total).toFixed(2)} €</td>

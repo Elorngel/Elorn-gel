@@ -56,6 +56,14 @@ livraison: {…} } (semaine type, lundi=1…vendredi=5) ; `horaires_jours` = { "
 plage = un créneau (défaut matin 9-12 / midi 12-14 / après-midi 14-18, `PLAGES_DEFAUT`). Logique dans `pickupSlots.js`
 (`plagesPourDate`, `creneauxPourDate`, `getDatesDisponibles`) ; anciens réglages (`jours_fermes`,
 `creneaux_indisponibles`, `horaires_speciaux`) lus tant que les nouvelles colonnes sont vides, vidés à l'enregistrement.
+**Carte Privilège** (07/11/2026, `supabase-privilege.sql`) : carte annuelle à 39 € vendue hors site (AUCUNE publicité sur le
+site) = livraison offerte 1 an. L'admin coche « Privilège » + date d'achat dans l'onglet Clients (`ClientsPanel.jsx`,
+fonction SQL `definir_privilege` réservée aux admins ; colonne `clients.privilege_debut`, non modifiable par le client).
+Valable jusqu'à la veille du même jour l'année suivante (`finPrivilege`/`privilegeActif` dans `calculCommande.js`,
+paramètre `livraisonOfferte` de `calculerCommande`) ; appliqué par le panier ET `passer-commande`, minimum de livraison
+inchangé ; `commandes.privilege` affiché dans l'admin, le bon imprimé, Mon compte et les emails. Pas appliqué aux
+commandes saisies par un admin. **Un seul avantage par commande** (06/11/2026) : code promo et bon d'achat ne se cumulent
+pas, le plus avantageux est appliqué (`avantageEcarte`), l'autre n'est pas consommé.
 **Alcool et minimum de livraison** (01/11/2026, `supabase-alcool-minimum.sql`) : case « Boisson alcoolisée » sur la
 fiche admin (`produits.alcool`) → mentions légales (`MentionAlcool.jsx` : carte, fiche, panier, pied de page, CGV
 art. 2) et achat réservé aux 18 ans et plus (date de naissance du compte, `estMajeur`). Minimum de commande en

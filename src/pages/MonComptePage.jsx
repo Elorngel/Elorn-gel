@@ -10,6 +10,7 @@ import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import { MOTIFS_BON, euros, eurosTexte, lienParrainage } from '../lib/offres'
 import { aller } from '../lib/navigation'
 import { useSeo } from '../lib/seo'
+import { finPrivilege, privilegeActif } from '../../supabase/functions/_shared/calculCommande.js'
 
 const STATUTS = { nouvelle: 'Reçue', preparee: 'Préparée', livree: 'Livrée / retirée' }
 const champ = 'w-full border border-ink/20 p-2 font-body text-sm bg-paper focus:border-forest focus:outline-none'
@@ -184,6 +185,13 @@ function MesCommandes({ userId }) {
                         <td className="py-1 font-body text-muted">Frais de livraison</td>
                         <td />
                         <td className="py-1 text-right font-tag">{Number(c.frais_livraison).toFixed(2)} €</td>
+                      </tr>
+                    )}
+                    {c.privilege && (
+                      <tr>
+                        <td className="py-1 font-body text-forest">Livraison offerte (client Privilège)</td>
+                        <td />
+                        <td className="py-1 text-right font-tag text-forest">0,00 €</td>
                       </tr>
                     )}
                   </tbody>
@@ -414,7 +422,16 @@ export default function MonComptePage() {
     contenu = (
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <p className="font-body text-sm text-ink">Bonjour {client.prenom} !</p>
+          <p className="font-body text-sm text-ink">
+            Bonjour {client.prenom} !
+            {/* Carte Privilège : visible seulement par le client concerné (pas de publicité sur le site). */}
+            {privilegeActif(client.privilege_debut) && (
+              <span className="block font-tag text-xs uppercase text-forest mt-1">
+                Client Privilège · livraison offerte jusqu'au{' '}
+                {new Date(`${finPrivilege(client.privilege_debut)}T12:00:00`).toLocaleDateString('fr-FR')}
+              </span>
+            )}
+          </p>
           <button type="button" onClick={deconnexion} className="font-tag text-xs uppercase underline text-muted hover:text-ink">
             Se déconnecter
           </button>

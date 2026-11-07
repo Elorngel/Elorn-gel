@@ -4,7 +4,7 @@ import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getDatesDisponibles, getCreneauxDisponibles } from '../lib/pickupSlots'
-import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur } from '../../supabase/functions/_shared/calculCommande.js'
+import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur, privilegeActif } from '../../supabase/functions/_shared/calculCommande.js'
 import { usePrixPanier, varianteDuPanier } from '../hooks/usePrixPanier'
 import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
@@ -117,6 +117,8 @@ export default function CartPage() {
     remiseRetrait: settings?.remise_retrait ?? 0,
     fraisLivraison: settings?.frais_livraison ?? 7,
     code: codeApplique,
+    // Client Privilège (carte cochée par un admin) : livraison offerte. Rien n'en parle ailleurs sur le site.
+    livraisonOfferte: !estAdmin && privilegeActif(client?.privilege_debut),
   }
   const sousTotalSansBon = calculerCommande(parametresCalcul).sousTotal
   const bon = bonsDispo.find((b) => sousTotalSansBon >= Number(b.minimum_commande || 0)) || null
@@ -410,6 +412,7 @@ export default function CartPage() {
                     remise_bon: calcul.remiseBon,
                     motif_bon: bon?.motif,
                     frais_livraison: calcul.frais,
+                    privilege: calcul.privilege,
                   }}
                 />
                 <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-ink/15">
@@ -860,6 +863,12 @@ function LignesRemises({ commande }) {
         <div className="flex justify-between font-body text-sm text-ink mt-1">
           <span>Frais de livraison</span>
           <span>{euros(frais)}</span>
+        </div>
+      )}
+      {commande.privilege && (
+        <div className="flex justify-between font-body text-sm text-forest mt-1">
+          <span>Livraison offerte (client Privilège)</span>
+          <span>0,00 €</span>
         </div>
       )}
     </>

@@ -90,7 +90,9 @@ export function articleIndisponible(produit, variante, mode) {
 // deux sont possibles, on garde automatiquement le plus avantageux pour le client. avantageEcarte dit
 // lequel n'a pas été appliqué ('code' ou 'bon'), pour l'expliquer dans le panier. Les promotions et la
 // remise retrait, elles, restent cumulables.
-export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, code = null, bon = null, today = aujourdhuiParis() }) {
+// livraisonOfferte : client Privilège (carte annuelle vendue hors site, voir privilegeActif) → pas de frais de
+// livraison. Le reste du calcul (minimum de livraison, codes, bons) ne change pas.
+export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, code = null, bon = null, livraisonOfferte = false, today = aujourdhuiParis() }) {
   const detail = lignes.map((l) => {
     const pu = prixUnitaire(l.produit, l.variante, mode, remiseRetrait, today)
     return { ...l, prixUnitaire: pu, totalLigne: arrondi(pu * l.quantite) }
@@ -109,9 +111,10 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
       avantageEcarte = 'bon'
     }
   }
-  const frais = mode === 'retrait' ? 0 : arrondi(fraisLivraison || 0)
+  const privilege = mode !== 'retrait' && !!livraisonOfferte
+  const frais = mode === 'retrait' || privilege ? 0 : arrondi(fraisLivraison || 0)
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
-  return { lignes: detail, sousTotal, remiseCode, remiseBon, bonUtilisable, avantageEcarte, frais, total }
+  return { lignes: detail, sousTotal, remiseCode, remiseBon, bonUtilisable, avantageEcarte, privilege, frais, total }
 }
 
 // Montant de produits (promos et remise retrait comprises, avant code promo et bon d'achat) qu'il manque
@@ -126,4 +129,19 @@ export function estMajeur(dateNaissance, today = aujourdhuiParis()) {
   const m = String(dateNaissance || '').match(/^(\d{4})-(\d{2}-\d{2})/)
   if (!m) return false
   return today >= `${Number(m[1]) + 18}-${m[2]}`
+}
+
+// Carte Privilège : achetée le jour « debut » (AAAA-MM-JJ), valable 1 an, jusqu'à la veille du même jour l'année
+// suivante (achetée le 07/11/2026 → valable jusqu'au 06/11/2027 inclus). Renvoie cette dernière date, ou null.
+export function finPrivilege(debut) {
+  const m = String(debut || '').match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return null
+  const d = new Date(Date.UTC(Number(m[1]) + 1, Number(m[2]) - 1, Number(m[3])))
+  d.setUTCDate(d.getUTCDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+export function privilegeActif(debut, today = aujourdhuiParis()) {
+  const fin = finPrivilege(debut)
+  return !!fin && today >= String(debut).slice(0, 10) && today <= fin
 }

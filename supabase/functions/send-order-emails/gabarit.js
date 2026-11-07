@@ -96,6 +96,7 @@ function tableauProduits(c) {
     ${Number(c.remise_code) > 0 ? ligne(`Code promo ${esc(c.code_promo)}`, `−${euros(c.remise_code)}`, `color:${C.forest};`) : ''}
     ${Number(c.remise_bon) > 0 ? ligne("Bon d'achat", `−${euros(c.remise_bon)}`, `color:${C.forest};`) : ''}
     ${Number(c.frais_livraison) > 0 ? ligne('Frais de livraison', euros(c.frais_livraison)) : ''}
+    ${c.privilege ? ligne('Livraison offerte (client Privilège)', euros(0), `color:${C.forest};`) : ''}
     <tr><td colspan="2" style="padding:12px 0 0;border-top:2px solid ${C.ink};font:bold 12px ${TEXTE};letter-spacing:1px;text-transform:uppercase;">Total</td>
       <td align="right" style="padding:10px 0 0;border-top:2px solid ${C.ink};font:400 30px/1 ${TITRE};white-space:nowrap;">${euros(c.total)}</td></tr>
   </table>`
@@ -148,6 +149,7 @@ export function emailAdmin(c, infos) {
       ${ligneInfo('Téléphone', `<a href="tel:${tel.replace(/\s/g, '')}" style="color:${C.ink};">${tel}</a>`)}
       ${ligneInfo('Email', c.email ? `<a href="mailto:${esc(c.email)}" style="color:${C.ink};">${esc(c.email)}</a>` : '')}
       ${ligneInfo('Saisie', c.saisie_par_admin ? "par l'administration (téléphone)" : '')}
+      ${ligneInfo('Carte', c.privilege ? '<strong>Client Privilège</strong> : livraison offerte' : '')}
     </table>
     ${blocCreneau(c, infos)}
     ${c.note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6e3dc;border-left:4px solid ${C.rust};margin:0 0 20px;"><tr><td style="padding:10px 14px;font:14px/1.45 ${TEXTE};"><strong>Note du client :</strong> ${esc(c.note)}</td></tr></table>` : ''}

@@ -4,7 +4,7 @@
 // fichier partagé ../_shared/calculCommande.js). Un client ne peut donc ni changer un prix, ni
 // réutiliser un code, ni utiliser un bon qui n'est pas le sien.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4'
-import { calculerCommande, articleIndisponible, nomLigne, aujourdhuiParis, manqueLivraison, estMajeur } from '../_shared/calculCommande.js'
+import { calculerCommande, articleIndisponible, nomLigne, aujourdhuiParis, manqueLivraison, estMajeur, privilegeActif } from '../_shared/calculCommande.js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       varianteIds.length
         ? admin.from('variantes_produit').select('id, produit_id, poids, prix_livraison, dispo_livraison, dispo_retrait').in('id', varianteIds)
         : Promise.resolve({ data: [] as any[] }),
-      admin.from('clients').select('email, date_naissance').eq('id', user.id).maybeSingle(),
+      admin.from('clients').select('email, date_naissance, privilege_debut').eq('id', user.id).maybeSingle(),
       admin.from('admins').select('user_id').eq('user_id', user.id).maybeSingle(),
     ])
     const reglages = reglagesR.data
@@ -82,6 +82,9 @@ Deno.serve(async (req) => {
     if (reglages.en_maintenance && !estAdmin) {
       return json({ erreur: 'Le site est en maintenance : les commandes reprennent très vite.' }, 503)
     }
+
+    // Carte Privilège (cochée par un admin) : livraison offerte pendant 1 an.
+    const livraisonOfferte = !estAdmin && privilegeActif(ficheR.data?.privilege_debut, aujourdhuiParis())
 
     const produits = new Map((produitsR.data || []).map((p: any) => [p.id, p]))
     const variantes = new Map((variantesR.data || []).map((v: any) => [v.id, v]))
@@ -131,7 +134,7 @@ Deno.serve(async (req) => {
         .is('commande_id', null)
         .gt('valable_jusqu_au', new Date().toISOString())
         .order('valable_jusqu_au', { ascending: true })
-      const avant = calculerCommande({ lignes, mode, remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code, today })
+      const avant = calculerCommande({ lignes, mode, remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code, livraisonOfferte, today })
       bon = (bons || []).find((b: any) => avant.sousTotal >= Number(b.minimum_commande || 0)) || null
     }
 
@@ -142,6 +145,7 @@ Deno.serve(async (req) => {
       fraisLivraison: reglages.frais_livraison,
       code,
       bon,
+      livraisonOfferte,
       today,
     })
 
@@ -184,6 +188,7 @@ Deno.serve(async (req) => {
         bon_id: calcul.remiseBon > 0 ? bon.id : null,
         remise_bon: calcul.remiseBon,
         frais_livraison: calcul.frais,
+        privilege: calcul.privilege,
         total: calcul.total,
       })
       .select()

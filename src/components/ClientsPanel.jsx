@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { correspond } from '../lib/texte'
+import { finPrivilege, privilegeActif, aujourdhuiParis } from '../../supabase/functions/_shared/calculCommande.js'
 
 const age = (date) => {
   const n = new Date(`${date}T12:00:00`)
@@ -10,6 +11,59 @@ const age = (date) => {
   return ans
 }
 const dateFr = (d) => new Date(d).toLocaleDateString('fr-FR')
+
+// Carte Privilège (39 € par an, vendue hors site) : l'admin coche la case et note la date d'achat ; le client a la
+// livraison offerte pendant 1 an (jusqu'à la veille du même jour l'année suivante). Rien n'en parle sur le site.
+function CellulePrivilege({ client, onChange }) {
+  const [enCours, setEnCours] = useState(false)
+  const debut = client.privilege_debut
+  const actif = privilegeActif(debut)
+  const fin = finPrivilege(debut)
+
+  const enregistrer = async (date) => {
+    setEnCours(true)
+    const { error } = await supabase.rpc('definir_privilege', { p_client: client.id, p_debut: date })
+    setEnCours(false)
+    if (error) return alert(`Erreur : ${error.message}`)
+    onChange(date)
+  }
+
+  return (
+    <div className="min-w-[150px]">
+      <label className="flex items-center gap-1.5 font-tag text-xs uppercase cursor-pointer">
+        <input
+          type="checkbox"
+          checked={!!debut}
+          disabled={enCours}
+          onChange={(e) => {
+            if (e.target.checked) enregistrer(aujourdhuiParis())
+            else if (confirm(`Retirer la carte Privilège de ${client.prenom} ${client.nom} ?`)) enregistrer(null)
+          }}
+          className="w-4 h-4 accent-forest"
+        />
+        Privilège
+      </label>
+      {debut && (
+        <>
+          <label className="block font-tag text-[10px] uppercase text-muted mt-1">
+            Achetée le
+            <input
+              type="date"
+              value={debut}
+              max={aujourdhuiParis()}
+              disabled={enCours}
+              onChange={(e) => e.target.value && enregistrer(e.target.value)}
+              className="block border border-ink/30 bg-paper px-1 py-0.5 font-body text-xs normal-case focus:border-forest focus:outline-none"
+            />
+          </label>
+          <span className={`block font-tag text-[11px] mt-0.5 ${actif ? 'text-forest' : 'text-rust'}`}>
+            {actif ? `Livraison offerte jusqu'au ${dateFr(`${fin}T12:00:00`)}` : `Expirée le ${dateFr(`${fin}T12:00:00`)}`}
+          </span>
+        </>
+      )}
+    </div>
+  )
+}
 
 // Liste des comptes clients (visible uniquement par un administrateur connecté : la base
 // refuse de la donner à quelqu'un d'autre).
@@ -46,6 +100,9 @@ export default function ClientsPanel() {
   const moisCourant = new Date().getMonth()
   const anniversairesDuMois = clients.filter((c) => new Date(`${c.date_naissance}T12:00:00`).getMonth() === moisCourant)
   const optin = clients.filter((c) => c.accepte_offres).length
+  const privileges = clients.filter((c) => privilegeActif(c.privilege_debut)).length
+  const majPrivilege = (id, date) =>
+    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, privilege_debut: date } : c)))
 
   return (
     <div>
@@ -59,7 +116,8 @@ export default function ClientsPanel() {
         />
         <p className="font-tag text-xs uppercase text-muted">
           {clients.length} compte{clients.length > 1 ? 's' : ''} · {optin} accepte{optin > 1 ? 'nt' : ''} les offres ·{' '}
-          {anniversairesDuMois.length} anniversaire{anniversairesDuMois.length > 1 ? 's' : ''} ce mois-ci
+          {anniversairesDuMois.length} anniversaire{anniversairesDuMois.length > 1 ? 's' : ''} ce mois-ci ·{' '}
+          {privileges} client{privileges > 1 ? 's' : ''} Privilège
         </p>
       </div>
 
@@ -76,6 +134,7 @@ export default function ClientsPanel() {
                 <th className="p-2">Contact</th>
                 <th className="p-2">Naissance</th>
                 <th className="p-2">Adresse</th>
+                <th className="p-2">Privilège</th>
                 <th className="p-2">Offres</th>
                 <th className="p-2">Connu par</th>
                 <th className="p-2">Inscrit le</th>
@@ -102,6 +161,9 @@ export default function ClientsPanel() {
                     <span className="block">
                       {c.code_postal} {c.ville}
                     </span>
+                  </td>
+                  <td className="p-2">
+                    <CellulePrivilege client={c} onChange={(date) => majPrivilege(c.id, date)} />
                   </td>
                   <td className="p-2 font-tag text-xs">{c.accepte_offres ? 'Oui' : 'Non'}</td>
                   <td className="p-2 font-tag text-xs">{c.source || '—'}</td>
