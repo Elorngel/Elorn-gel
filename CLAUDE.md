@@ -107,8 +107,9 @@ email client = adresse du compte (ou celle de la commande si saisie par un admin
 `supabase/functions/_shared/calculCommande.js` (aussi importé par `src/lib/pricing.js` et `CartPage` : une
 seule règle de prix pour le site et le serveur ; le panier lit les prix à jour via `usePrixPanier`).
 Codes promo : table `codes_promo` (admin → onglet « Offres », `OffresPanel.jsx`), vérifiés par la fonction
-SQL `verifier_code_promo`, 1 fois par compte, sur les produits hors livraison, cumulables avec tout ; code
-BIENVENUE10 (-10 %, 50 utilisations). Parrainage : `clients.code_parrain` (créé automatiquement) /
+SQL `verifier_code_promo`, 1 fois par compte, sur les produits hors livraison ; en % OU en montant fixe € (`codes_promo.montant`, `supabase-codes-montant.sql`, 10/11/2026),
+avec minimum de commande facultatif (`minimum_commande`, sous le minimum le code n'est ni appliqué ni consommé) ;
+non cumulables avec un bon (voir « Un seul avantage ») ; code BIENVENUE10 (-10 %, 50 utilisations). Parrainage : `clients.code_parrain` (créé automatiquement) /
 `parrain_id`, code saisi à la création du compte (`creer-compte`, garde-fou même téléphone/adresse) ou lien
 `#parrainage/CODE` ; bons dans `bons_achat` (25 €, dès 30 € de produits, 1 mois, réglables dans Offres) ; le
 bon du parrain est créé par le déclencheur SQL `recompenser_parrain` quand la 1re commande ≥ minimum du

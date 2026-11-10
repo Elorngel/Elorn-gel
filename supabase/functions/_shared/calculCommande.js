@@ -84,7 +84,8 @@ export function articleIndisponible(produit, variante, mode) {
 
 // Total de la commande.
 // lignes : [{ produit, variante, quantite }]
-// code : { code, pourcentage } ou null — s'applique sur les produits
+// code : { code, pourcentage } ou { code, montant } (remise fixe en euros), avec minimum_commande facultatif,
+// ou null — s'applique sur les produits (hors frais de livraison)
 // bon : { id, montant, minimum_commande } ou null — utilisable si les produits atteignent le minimum
 // UN SEUL AVANTAGE PAR COMMANDE (06/11/2026) : code promo et bon d'achat ne se cumulent pas ; si les
 // deux sont possibles, on garde automatiquement le plus avantageux pour le client. avantageEcarte dit
@@ -98,7 +99,13 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
     return { ...l, prixUnitaire: pu, totalLigne: arrondi(pu * l.quantite) }
   })
   const sousTotal = arrondi(detail.reduce((s, l) => s + l.totalLigne, 0))
-  let remiseCode = code ? arrondi((sousTotal * Number(code.pourcentage)) / 100) : 0
+  // Code promo : pourcentage des produits, ou montant fixe (jamais plus que les produits), dès son minimum.
+  const codeMinimumAtteint = !!code && sousTotal >= Number(code.minimum_commande || 0)
+  let remiseCode = !codeMinimumAtteint
+    ? 0
+    : Number(code.montant) > 0
+      ? Math.min(arrondi(code.montant), sousTotal)
+      : arrondi((sousTotal * Number(code.pourcentage || 0)) / 100)
   const bonUtilisable = !!bon && sousTotal >= Number(bon.minimum_commande || 0)
   let remiseBon = bonUtilisable ? Math.min(Number(bon.montant), sousTotal) : 0
   let avantageEcarte = null
@@ -114,7 +121,8 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
   const privilege = mode !== 'retrait' && !!livraisonOfferte
   const frais = mode === 'retrait' || privilege ? 0 : arrondi(fraisLivraison || 0)
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
-  return { lignes: detail, sousTotal, remiseCode, remiseBon, bonUtilisable, avantageEcarte, privilege, frais, total }
+  const codeSousMinimum = !!code && !codeMinimumAtteint
+  return { lignes: detail, sousTotal, remiseCode, codeSousMinimum, remiseBon, bonUtilisable, avantageEcarte, privilege, frais, total }
 }
 
 // Montant de produits (promos et remise retrait comprises, avant code promo et bon d'achat) qu'il manque
@@ -144,4 +152,11 @@ export function finPrivilege(debut) {
 export function privilegeActif(debut, today = aujourdhuiParis()) {
   const fin = finPrivilege(debut)
   return !!fin && today >= String(debut).slice(0, 10) && today <= fin
+}
+
+// « -10 % » ou « -5,00 € » : libellé d'un code promo.
+export function libelleRemiseCode(code) {
+  if (!code) return ''
+  if (Number(code.montant) > 0) return `-${Number(code.montant).toFixed(2).replace('.', ',')} €`
+  return `-${Number(code.pourcentage)} %`
 }

@@ -7,7 +7,7 @@ const champ = 'border border-ink/20 p-1.5 font-body text-sm bg-paper focus:borde
 const etiquette = 'block font-tag text-[10px] uppercase text-muted mb-1'
 const bouton =
   'bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-3 py-2 hover:bg-forest disabled:bg-muted'
-const NOUVEAU = { code: '', pourcentage: '', max_utilisations: '', debut: '', fin: '' }
+const NOUVEAU = { code: '', type: 'pourcentage', valeur: '', minimum: '', max_utilisations: '', debut: '', fin: '' }
 const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
 
 function Cadre({ titre, children }) {
@@ -52,9 +52,17 @@ function CodesPromo() {
       setErreur('Le code doit faire 3 à 30 caractères, lettres et chiffres seulement (sans espace ni accent).')
       return
     }
+    const valeur = Number(String(nouveau.valeur).replace(',', '.'))
+    if (!(valeur > 0) || (nouveau.type === 'pourcentage' && valeur > 100)) {
+      setErreur(nouveau.type === 'pourcentage' ? 'La remise doit être entre 1 et 100 %.' : 'Le montant doit être supérieur à 0 €.')
+      return
+    }
     const { error } = await supabase.from('codes_promo').insert({
       code,
-      pourcentage: Number(nouveau.pourcentage),
+      // Soit un pourcentage, soit un montant fixe en euros (la base refuse les deux à la fois).
+      pourcentage: nouveau.type === 'pourcentage' ? valeur : null,
+      montant: nouveau.type === 'montant' ? valeur : null,
+      minimum_commande: nouveau.minimum ? Number(String(nouveau.minimum).replace(',', '.')) : 0,
       max_utilisations: nouveau.max_utilisations ? Number(nouveau.max_utilisations) : null,
       debut: nouveau.debut || null,
       fin: nouveau.fin || null,
@@ -70,8 +78,10 @@ function CodesPromo() {
   return (
     <Cadre titre="Codes promo">
       <p className="font-body text-xs text-muted mb-3">
-        Le client tape le code dans son panier. La remise s'applique sur les produits (après promos, déstockage et
-        remise retrait ; pas sur les frais de livraison). Chaque code ne sert qu'une fois par compte client.
+        Le client tape le code dans son panier. La remise (en % ou en euros) s'applique sur les produits (après promos,
+        déstockage et remise retrait ; pas sur les frais de livraison), dès le minimum de commande s'il y en a un.
+        Chaque code ne sert qu'une fois par compte client, et ne se cumule pas avec un bon d'achat (le plus avantageux
+        pour le client est appliqué).
       </p>
       {codes === null ? (
         <p className="font-body text-sm text-muted">Chargement…</p>
@@ -92,7 +102,12 @@ function CodesPromo() {
               return (
                 <tr key={c.id} className="border-b border-ink/10">
                   <td className="py-2 font-tag font-semibold">{c.code}</td>
-                  <td className="py-2 font-tag">-{Number(c.pourcentage)} %</td>
+                  <td className="py-2 font-tag">
+                    {Number(c.montant) > 0 ? `-${euros(c.montant)}` : `-${Number(c.pourcentage)} %`}
+                    {Number(c.minimum_commande) > 0 && (
+                      <span className="block text-[10px] text-muted normal-case">dès {euros(c.minimum_commande)}</span>
+                    )}
+                  </td>
                   <td className="py-2 font-tag">
                     {n}
                     {c.max_utilisations ? ` / ${c.max_utilisations}` : ''}
@@ -134,16 +149,42 @@ function CodesPromo() {
             />
           </div>
           <div>
-            <label className={etiquette} htmlFor="code-pct">Remise %</label>
+            <label className={etiquette} htmlFor="code-type">Type de remise</label>
+            <select
+              id="code-type"
+              value={nouveau.type}
+              onChange={(e) => setNouveau({ ...nouveau, type: e.target.value })}
+              className={champ}
+            >
+              <option value="pourcentage">Pourcentage (%)</option>
+              <option value="montant">Montant fixe (€)</option>
+            </select>
+          </div>
+          <div>
+            <label className={etiquette} htmlFor="code-valeur">{nouveau.type === 'montant' ? 'Remise €' : 'Remise %'}</label>
             <input
-              id="code-pct"
+              id="code-valeur"
               required
               type="number"
-              min="1"
-              max="100"
-              value={nouveau.pourcentage}
-              onChange={(e) => setNouveau({ ...nouveau, pourcentage: e.target.value })}
-              className={`${champ} w-20`}
+              min={nouveau.type === 'montant' ? '0.01' : '1'}
+              max={nouveau.type === 'montant' ? undefined : '100'}
+              step={nouveau.type === 'montant' ? '0.01' : '1'}
+              value={nouveau.valeur}
+              onChange={(e) => setNouveau({ ...nouveau, valeur: e.target.value })}
+              className={`${champ} w-24`}
+            />
+          </div>
+          <div>
+            <label className={etiquette} htmlFor="code-minimum">Dès (facultatif)</label>
+            <input
+              id="code-minimum"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0 €"
+              value={nouveau.minimum}
+              onChange={(e) => setNouveau({ ...nouveau, minimum: e.target.value })}
+              className={`${champ} w-24`}
             />
           </div>
           <div>

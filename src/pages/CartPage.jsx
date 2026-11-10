@@ -4,7 +4,7 @@ import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { getDatesDisponibles, getCreneauxDisponibles } from '../lib/pickupSlots'
-import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur, privilegeActif } from '../../supabase/functions/_shared/calculCommande.js'
+import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur, privilegeActif, libelleRemiseCode } from '../../supabase/functions/_shared/calculCommande.js'
 import { usePrixPanier, varianteDuPanier } from '../hooks/usePrixPanier'
 import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
@@ -146,7 +146,13 @@ export default function CartPage() {
       setCodeMessage(data?.message || 'Vérification du code impossible pour le moment.')
       return
     }
-    setCodeApplique({ code: data.code, pourcentage: Number(data.pourcentage), restantes: data.restantes })
+    setCodeApplique({
+      code: data.code,
+      pourcentage: data.pourcentage != null ? Number(data.pourcentage) : null,
+      montant: data.montant != null ? Number(data.montant) : null,
+      minimum_commande: Number(data.minimum_commande || 0),
+      restantes: data.restantes,
+    })
     setCodeSaisi('')
   }
 
@@ -408,6 +414,7 @@ export default function CartPage() {
                   commande={{
                     code_promo: codeApplique?.code,
                     pourcentage: codeApplique?.pourcentage,
+                    montant: codeApplique?.montant,
                     remise_code: calcul.remiseCode,
                     remise_bon: calcul.remiseBon,
                     motif_bon: bon?.motif,
@@ -465,7 +472,18 @@ export default function CartPage() {
                 {codeApplique ? (
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="font-body text-sm text-ink">
-                      Code <strong>{codeApplique.code}</strong> : -{codeApplique.pourcentage} %
+                      Code <strong>{codeApplique.code}</strong> : {libelleRemiseCode(codeApplique)}
+                      {codeApplique.minimum_commande > 0 && (
+                        <span className="block font-tag text-[11px] text-muted">
+                          dès {eurosTexte(codeApplique.minimum_commande)} de produits
+                        </span>
+                      )}
+                      {calcul.codeSousMinimum && (
+                        <span className="block font-tag text-[11px] text-rust">
+                          Pas encore appliqué : encore {euros(Math.max(0, codeApplique.minimum_commande - calcul.sousTotal))}{' '}
+                          de produits.
+                        </span>
+                      )}
                       {codeApplique.restantes != null && (
                         <span className="block font-tag text-[11px] text-muted">
                           Plus que {codeApplique.restantes} utilisation{codeApplique.restantes > 1 ? 's' : ''} possible
@@ -848,7 +866,7 @@ function LignesRemises({ commande }) {
         <div className="flex justify-between font-body text-sm text-forest mt-1">
           <span>
             Code {commande.code_promo}
-            {commande.pourcentage ? ` (-${commande.pourcentage} %)` : ''}
+            {commande.pourcentage || commande.montant ? ` (${libelleRemiseCode(commande)})` : ''}
           </span>
           <span>-{euros(remiseCode)}</span>
         </div>

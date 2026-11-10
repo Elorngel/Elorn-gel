@@ -1,9 +1,13 @@
 // Catalogue Bontin septembre–novembre 2026, style « colonne verte » (essai B validé le 07/11/2026)
 // node generer.mjs [fp]   fp = fond perdu en mm (0 = version écran, 3 = version imprimeur)
+// MISE=alterne node generer.mjs [fp]  -> version alternée : pages BANDES en « bandes » (disposition 5 choisie le 07/11/2026)
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const FP = Number(process.argv[2] ?? 0)
 const data = JSON.parse(readFileSync('catalogue.json', 'utf8'))
+const ALTERNE = process.env.MISE === 'alterne'
+// pages en « bandes » : celles où l'ancien catalogue avait déjà deux zones de couleur (la dernière zone va dans le bandeau vert)
+const BANDES = [3, 5, 10]
 
 // ---------------------------------------------------------------- réglages par page
 // cols = nombre de produits dans la colonne verte puis dans la 2e colonne (le reste va dans la 3e)
@@ -72,6 +76,22 @@ body{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:'Publ
 .droite .p img.photo{grid-row:1;grid-column:2;width:var(--ph-d);height:var(--ph-d);object-fit:contain;align-self:center;margin-right:-2mm}
 .droite .ligne{grid-column:1;display:flex;justify-content:space-between;align-items:baseline;margin-top:.6mm;gap:2mm}
 .droite .p:not(.ph) .ligne{grid-column:1/3}
+
+/* mise en page « bandes » */
+.bd .titre{flex:none;padding:5mm 10mm 0}
+.bd .titre h1{font:400 54pt/0.85 'Bebas Neue';color:var(--foret);white-space:nowrap}
+.bd .titre i{display:block;width:34mm;height:3pt;background:var(--brique);margin-top:2mm}
+.bd .haut{flex:var(--fh);min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:0 6mm;padding:3mm 10mm 4mm}
+.bd .bas{flex:var(--fb);min-height:0;background:var(--foret);display:grid;grid-template-columns:repeat(3,1fr);gap:0 6mm;margin:0 calc(-1*var(--fp));padding:4mm calc(10mm + var(--fp))}
+.bd .col{display:flex;flex-direction:column;min-height:0}
+.bd .p{flex:1;border-top:.5pt solid #CFC9B6;padding:1.5mm 0;display:grid;grid-template-columns:1fr auto;column-gap:2mm;align-content:center}
+.bd .bas .p{border-top-color:#3C6B46}
+.bd .p img.photo{grid-row:1;grid-column:2;width:var(--ph);height:var(--ph);object-fit:contain;margin-right:-1mm}
+.bd .ligne{grid-column:1/3;display:flex;justify-content:space-between;align-items:baseline;gap:2mm;margin-top:.8mm}
+.bd .bas .nom{color:#fff}.bd .bas .desc,.bd .bas .poids{color:#C9D3C3}
+.bd .bas .prix{color:#fff;background:var(--brique);padding:1mm 1.4mm .4mm;font-size:17pt}
+.bd .bas .nom .logo{background:var(--papier);padding:.35mm}
+.bd + .pied, .bd .pied{margin-top:0}
 
 /* bacs de glace (page 11) */
 .bacs{flex:none;background:var(--papier);border-top:3pt solid var(--brique);padding:2.6mm 3mm 2.4mm;margin-top:2mm}
@@ -159,6 +179,44 @@ function pageProduits(n) {
 ${pied(n, cfg.rayon)}</div>`
 }
 
+// hauteur estimée d'un produit (mm) dans une colonne de `larg` mm avec photo de `ph` mm
+const hauteur = (p, larg, ph) => {
+  const w = larg - (p.photo ? ph + 2 : 0)
+  const h = Math.ceil(p.nom.length * 2.0 / w) * 4.1 + (p.desc ? Math.ceil(p.desc.length * 1.6 / w) * 3.7 : 0) + 8
+  return p.photo ? Math.max(h, ph + 4) : h
+}
+// découpe en n colonnes consécutives (ordre conservé) de hauteurs les plus proches possible
+const equilibrer = (l, n, larg, ph) => {
+  const hs = l.map((p) => hauteur(p, larg, ph)), pre = [0]; hs.forEach((h) => pre.push(pre.at(-1) + h))
+  const memo = new Map()
+  const best = (i, k) => {
+    if (k === 1) return [pre[l.length] - pre[i], [l.length]]
+    const key = i + ',' + k; if (memo.has(key)) return memo.get(key)
+    let r = [Infinity, []]
+    for (let j = i + 1; j <= l.length - k + 1; j++) {
+      const [m, cuts] = best(j, k - 1); const v = Math.max(pre[j] - pre[i], m)
+      if (v < r[0]) r = [v, [j, ...cuts]]
+    }
+    memo.set(key, r); return r
+  }
+  const cuts = [0, ...best(0, n)[1]]
+  return cuts.slice(0, -1).map((c, i) => l.slice(c, cuts[i + 1]))
+}
+
+function pageBandes(n) {
+  const cfg = PAGES[n], l = data.pages[n]
+  const derniere = Math.max(...l.map((p) => p.bande || 0))
+  const coupe = l.findIndex((p) => (p.bande || 0) === derniere)
+  const ph = Math.max(13, Math.min(20, 130 / Math.ceil(coupe / 3) - 8))
+  const h = equilibrer(l.slice(0, coupe), 3, 59, ph), bl = l.slice(coupe), b = bl.length <= 6 ? [0, 1, 2].map((i) => bl.slice(Math.ceil(bl.length / 3) * i, Math.ceil(bl.length / 3) * (i + 1))) : equilibrer(bl, 3, 59, ph)
+  const haut = (cs) => Math.max(...cs.map((c) => c.reduce((s, p) => s + hauteur(p, 59, ph), 0)))
+  const col = (c) => `<div class="col">${c.map((p) => `<div class="p"><div>${nom(p)}${desc(p)}</div>${photo(p)}${ligne(p)}</div>`).join('')}</div>`
+  return `<div class="page bd" style="--ph:${ph}mm;--fh:${haut(h).toFixed(0)};--fb:${(haut(b) + 8).toFixed(0)}">${bandeau}
+${cfg.titre ? `<div class="titre"><h1>${cfg.titre}</h1><i></i></div>` : ''}
+<div class="haut">${h.map(col).join('')}</div><div class="bas">${b.map(col).join('')}</div>
+${pied(n, cfg.rayon)}</div>`
+}
+
 function bacs() {
   const prix = [...new Set(data.bacs.map((b) => b.prix))]
   return `<div class="bacs"><div class="entete"><img src="img/${data.bac_photo}.png" alt=""></div>
@@ -183,7 +241,7 @@ const derniere = `<div class="page fin">${bandeau}
 ${pied(12, '')}</div>`
 
 const seule = process.argv[3] // numéro de page seul (pour les essais)
-const pages = [couverture, ...[2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(pageProduits), derniere]
+const pages = [couverture, ...[2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (ALTERNE && BANDES.includes(n) ? pageBandes(n) : pageProduits(n))), derniere]
 const choix = seule ? [pages[Number(seule) - 1]] : pages
-writeFileSync(seule ? `page${seule}.html` : `catalogue${FP ? '-fp' : ''}.html`,
+writeFileSync(seule ? `page${seule}.html` : `catalogue${ALTERNE ? '-alterne' : ''}${FP ? '-fp' : ''}.html`,
   `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Catalogue Bontin</title><style>${css}</style></head><body>${choix.join('\n')}</body></html>`)
