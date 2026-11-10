@@ -24,6 +24,8 @@ function CodesPromo() {
   const [utilisations, setUtilisations] = useState({})
   const [nouveau, setNouveau] = useState(NOUVEAU)
   const [erreur, setErreur] = useState('')
+  // Code en cours de modification (null = le formulaire crée un nouveau code).
+  const [edition, setEdition] = useState(null)
 
   const charger = useCallback(async () => {
     const [{ data }, { data: u }] = await Promise.all([
@@ -44,10 +46,49 @@ function CodesPromo() {
     charger()
   }
 
+  const commencerModif = (c) => {
+    setErreur('')
+    setEdition(c)
+    setNouveau({
+      code: c.code,
+      type: Number(c.montant) > 0 ? 'montant' : 'pourcentage',
+      valeur: String(Number(c.montant) > 0 ? c.montant : c.pourcentage ?? ''),
+      minimum: Number(c.minimum_commande) > 0 ? String(c.minimum_commande) : '',
+      mode: c.mode || '',
+      max_utilisations: c.max_utilisations ? String(c.max_utilisations) : '',
+      debut: c.debut || '',
+      fin: c.fin || '',
+    })
+    setTimeout(() => document.getElementById('form-code-promo')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
+  }
+
+  const annulerModif = () => {
+    setEdition(null)
+    setNouveau(NOUVEAU)
+    setErreur('')
+  }
+
+  const supprimer = async (c) => {
+    const n = utilisations[c.code] || 0
+    const message = n
+      ? `Supprimer le code ${c.code} ? Il a déjà servi ${n} fois (les commandes passées gardent leur remise).\n\nPour simplement l'arrêter, vous pouvez plutôt décocher « Actif ».`
+      : `Supprimer définitivement le code ${c.code} ?`
+    if (!confirm(message)) return
+    const { error } = await supabase.from('codes_promo').delete().eq('id', c.id)
+    if (error) return alert(`Erreur : ${error.message}`)
+    if (edition?.id === c.id) annulerModif()
+    charger()
+  }
+
   const creer = async (e) => {
     e.preventDefault()
     setErreur('')
     const code = nouveau.code.trim().toUpperCase()
+    // Le nom d'un code qui a déjà servi ne change pas : ses utilisations sont comptées par ce nom.
+    if (edition && code !== edition.code && (utilisations[edition.code] || 0) > 0) {
+      setErreur(`Le code ${edition.code} a déjà servi : son nom ne peut plus changer. Créez plutôt un nouveau code.`)
+      return
+    }
     if (!/^[A-Z0-9]{3,30}$/.test(code)) {
       setErreur('Le code doit faire 3 à 30 caractères, lettres et chiffres seulement (sans espace ni accent).')
       return
@@ -57,7 +98,7 @@ function CodesPromo() {
       setErreur(nouveau.type === 'pourcentage' ? 'La remise doit être entre 1 et 100 %.' : 'Le montant doit être supérieur à 0 €.')
       return
     }
-    const { error } = await supabase.from('codes_promo').insert({
+    const donnees = {
       code,
       // Soit un pourcentage, soit un montant fixe en euros (la base refuse les deux à la fois).
       pourcentage: nouveau.type === 'pourcentage' ? valeur : null,
@@ -67,11 +108,15 @@ function CodesPromo() {
       max_utilisations: nouveau.max_utilisations ? Number(nouveau.max_utilisations) : null,
       debut: nouveau.debut || null,
       fin: nouveau.fin || null,
-    })
+    }
+    const { error } = edition
+      ? await supabase.from('codes_promo').update(donnees).eq('id', edition.id)
+      : await supabase.from('codes_promo').insert(donnees)
     if (error) {
       setErreur(error.code === '23505' ? 'Ce code existe déjà.' : `Erreur : ${error.message}`)
       return
     }
+    setEdition(null)
     setNouveau(NOUVEAU)
     charger()
   }
@@ -95,6 +140,7 @@ function CodesPromo() {
               <th className="py-1.5">Utilisé</th>
               <th className="py-1.5">Période</th>
               <th className="py-1.5 text-right">Actif</th>
+              <th className="py-1.5" />
             </tr>
           </thead>
           <tbody>
@@ -133,6 +179,22 @@ function CodesPromo() {
                       aria-label={`Code ${c.code} actif`}
                     />
                   </td>
+                  <td className="py-2 pl-3 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => commencerModif(c)}
+                      className="font-tag text-[11px] uppercase underline text-ink hover:text-forest"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => supprimer(c)}
+                      className="ml-3 font-tag text-[11px] uppercase underline text-muted hover:text-rust"
+                    >
+                      Supprimer
+                    </button>
+                  </td>
                 </tr>
               )
             })}
@@ -140,8 +202,14 @@ function CodesPromo() {
         </table>
       )}
 
-      <form onSubmit={creer} className="border-t border-ink/15 pt-3">
-        <p className="font-tag text-xs uppercase text-muted mb-2">Nouveau code</p>
+      <form
+        id="form-code-promo"
+        onSubmit={creer}
+        className={`border-t border-ink/15 pt-3 ${edition ? 'bg-stone/60 -mx-4 px-4 pb-3' : ''}`}
+      >
+        <p className="font-tag text-xs uppercase text-muted mb-2">
+          {edition ? `Modifier le code ${edition.code}` : 'Nouveau code'}
+        </p>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
             <label className={etiquette} htmlFor="code-nouveau">Code</label>
@@ -239,8 +307,13 @@ function CodesPromo() {
             />
           </div>
           <button type="submit" className={bouton}>
-            Créer le code
+            {edition ? 'Enregistrer' : 'Créer le code'}
           </button>
+          {edition && (
+            <button type="button" onClick={annulerModif} className="font-tag text-xs uppercase underline text-muted hover:text-ink py-2">
+              Annuler
+            </button>
+          )}
         </div>
         {erreur && <p className="font-body text-sm text-rust mt-2">{erreur}</p>}
       </form>
