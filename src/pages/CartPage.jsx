@@ -151,6 +151,7 @@ export default function CartPage() {
       pourcentage: data.pourcentage != null ? Number(data.pourcentage) : null,
       montant: data.montant != null ? Number(data.montant) : null,
       minimum_commande: Number(data.minimum_commande || 0),
+      mode: data.mode || null,
       restantes: data.restantes,
     })
     setCodeSaisi('')
@@ -476,6 +477,24 @@ export default function CartPage() {
                       {codeApplique.minimum_commande > 0 && (
                         <span className="block font-tag text-[11px] text-muted">
                           dès {eurosTexte(codeApplique.minimum_commande)} de produits
+                        </span>
+                      )}
+                      {codeApplique.mode && (
+                        <span className="block font-tag text-[11px] text-muted">
+                          valable {codeApplique.mode === 'retrait' ? 'en retrait au dépôt' : 'en livraison'} uniquement
+                        </span>
+                      )}
+                      {calcul.codeMauvaisMode && (
+                        <span className="block font-tag text-[11px] text-rust">
+                          Pas appliqué : ce code est valable{' '}
+                          {codeApplique.mode === 'retrait' ? 'en retrait au dépôt' : 'en livraison'} uniquement.{' '}
+                          <button
+                            type="button"
+                            onClick={() => setMode(codeApplique.mode)}
+                            className="underline uppercase hover:text-ink"
+                          >
+                            Passer en {codeApplique.mode === 'retrait' ? 'retrait' : 'livraison'}
+                          </button>
                         </span>
                       )}
                       {calcul.codeSousMinimum && (

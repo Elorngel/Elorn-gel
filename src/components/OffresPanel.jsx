@@ -7,7 +7,7 @@ const champ = 'border border-ink/20 p-1.5 font-body text-sm bg-paper focus:borde
 const etiquette = 'block font-tag text-[10px] uppercase text-muted mb-1'
 const bouton =
   'bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-3 py-2 hover:bg-forest disabled:bg-muted'
-const NOUVEAU = { code: '', type: 'pourcentage', valeur: '', minimum: '', max_utilisations: '', debut: '', fin: '' }
+const NOUVEAU = { code: '', type: 'pourcentage', valeur: '', minimum: '', mode: '', max_utilisations: '', debut: '', fin: '' }
 const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
 
 function Cadre({ titre, children }) {
@@ -63,6 +63,7 @@ function CodesPromo() {
       pourcentage: nouveau.type === 'pourcentage' ? valeur : null,
       montant: nouveau.type === 'montant' ? valeur : null,
       minimum_commande: nouveau.minimum ? Number(String(nouveau.minimum).replace(',', '.')) : 0,
+      mode: nouveau.mode || null,
       max_utilisations: nouveau.max_utilisations ? Number(nouveau.max_utilisations) : null,
       debut: nouveau.debut || null,
       fin: nouveau.fin || null,
@@ -106,6 +107,11 @@ function CodesPromo() {
                     {Number(c.montant) > 0 ? `-${euros(c.montant)}` : `-${Number(c.pourcentage)} %`}
                     {Number(c.minimum_commande) > 0 && (
                       <span className="block text-[10px] text-muted normal-case">dès {euros(c.minimum_commande)}</span>
+                    )}
+                    {c.mode && (
+                      <span className="block text-[10px] text-forest uppercase">
+                        {c.mode === 'retrait' ? 'retrait seulement' : 'livraison seulement'}
+                      </span>
                     )}
                   </td>
                   <td className="py-2 font-tag">
@@ -173,6 +179,19 @@ function CodesPromo() {
               onChange={(e) => setNouveau({ ...nouveau, valeur: e.target.value })}
               className={`${champ} w-24`}
             />
+          </div>
+          <div>
+            <label className={etiquette} htmlFor="code-mode">Valable en</label>
+            <select
+              id="code-mode"
+              value={nouveau.mode}
+              onChange={(e) => setNouveau({ ...nouveau, mode: e.target.value })}
+              className={champ}
+            >
+              <option value="">Retrait et livraison</option>
+              <option value="retrait">Retrait seulement</option>
+              <option value="livraison">Livraison seulement</option>
+            </select>
           </div>
           <div>
             <label className={etiquette} htmlFor="code-minimum">Dès (facultatif)</label>

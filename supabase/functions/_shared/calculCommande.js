@@ -84,7 +84,8 @@ export function articleIndisponible(produit, variante, mode) {
 
 // Total de la commande.
 // lignes : [{ produit, variante, quantite }]
-// code : { code, pourcentage } ou { code, montant } (remise fixe en euros), avec minimum_commande facultatif,
+// code : { code, pourcentage } ou { code, montant } (remise fixe en euros), avec minimum_commande et mode
+// ('retrait' | 'livraison' | null = les deux) facultatifs,
 // ou null — s'applique sur les produits (hors frais de livraison)
 // bon : { id, montant, minimum_commande } ou null — utilisable si les produits atteignent le minimum
 // UN SEUL AVANTAGE PAR COMMANDE (06/11/2026) : code promo et bon d'achat ne se cumulent pas ; si les
@@ -100,8 +101,10 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
   })
   const sousTotal = arrondi(detail.reduce((s, l) => s + l.totalLigne, 0))
   // Code promo : pourcentage des produits, ou montant fixe (jamais plus que les produits), dès son minimum.
+  // Code réservé au retrait (ou à la livraison) : sans effet dans l'autre mode.
+  const codeMauvaisMode = !!code && !!code.mode && code.mode !== mode
   const codeMinimumAtteint = !!code && sousTotal >= Number(code.minimum_commande || 0)
-  let remiseCode = !codeMinimumAtteint
+  let remiseCode = codeMauvaisMode || !codeMinimumAtteint
     ? 0
     : Number(code.montant) > 0
       ? Math.min(arrondi(code.montant), sousTotal)
@@ -121,8 +124,8 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
   const privilege = mode !== 'retrait' && !!livraisonOfferte
   const frais = mode === 'retrait' || privilege ? 0 : arrondi(fraisLivraison || 0)
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
-  const codeSousMinimum = !!code && !codeMinimumAtteint
-  return { lignes: detail, sousTotal, remiseCode, codeSousMinimum, remiseBon, bonUtilisable, avantageEcarte, privilege, frais, total }
+  const codeSousMinimum = !!code && !codeMauvaisMode && !codeMinimumAtteint
+  return { lignes: detail, sousTotal, remiseCode, codeSousMinimum, codeMauvaisMode, remiseBon, bonUtilisable, avantageEcarte, privilege, frais, total }
 }
 
 // Montant de produits (promos et remise retrait comprises, avant code promo et bon d'achat) qu'il manque

@@ -33,7 +33,7 @@ const jeton = async (email) => (await post('/auth/v1/token?grant_type=password',
 
 async function nettoyer() {
   await fetch(`${URL_}/rest/v1/commandes?nom_client=like.TEST%20CLAUDE*`, { method: 'DELETE', headers: hs })
-  await fetch(`${URL_}/rest/v1/codes_promo?code=eq.TESTCLAUDE5`, { method: 'DELETE', headers: hs })
+  await fetch(`${URL_}/rest/v1/codes_promo?code=in.(TESTCLAUDE5,TESTCLAUDER)`, { method: 'DELETE', headers: hs })
   const { users } = await get('/auth/v1/admin/users?per_page=200')
   for (const u of users.filter((x) => x.email?.startsWith(PREFIXE))) {
     await fetch(`${URL_}/rest/v1/bons_achat?client_id=eq.${u.id}`, { method: 'DELETE', headers: hs })
@@ -134,6 +134,16 @@ async function tests() {
   const prevuFixe = calculerCommande({ lignes, mode: 'retrait', remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code: codeFixe, bon: null })
   r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0633333333', creneau: 'essai', codePromo: 'TESTCLAUDE5', lignes: choix.map((p) => ({ produitId: p.id, varianteId: null, quantite: 1 })), totalAttendu: prevuFixe.total }, JM)
   ok(r.d?.ok && Number(r.d.commande.remise_code) === 5 && Number(r.d.commande.total) === prevuFixe.total, `code en euros appliqué : -5 € (${prevuFixe.total} €)`)
+
+  // Code réservé au retrait : sans effet en livraison (pas consommé), appliqué en retrait
+  await fetch(`${URL_}/rest/v1/codes_promo`, { method: 'POST', headers: hs, body: JSON.stringify({ code: 'TESTCLAUDER', pourcentage: 10, mode: 'retrait' }) })
+  const lignesR = choix.map((p) => ({ produitId: p.id, varianteId: null, quantite: 1 }))
+  r = await post('/functions/v1/passer-commande', { ...livraison, telephone: '0633333333', codePromo: 'TESTCLAUDER', lignes: lignesR }, JM)
+  ok(r.d?.ok && Number(r.d.commande.remise_code) === 0 && !r.d.commande.code_promo, 'code « retrait seulement » : sans effet en livraison, pas consommé')
+  const codeR = { code: 'TESTCLAUDER', pourcentage: 10, mode: 'retrait' }
+  const prevuR = calculerCommande({ lignes, mode: 'retrait', remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code: codeR, bon: null })
+  r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0633333333', creneau: 'essai', codePromo: 'TESTCLAUDER', lignes: lignesR, totalAttendu: prevuR.total }, JM)
+  ok(r.d?.ok && Number(r.d.commande.remise_code) > 0 && r.d.commande.code_promo === 'TESTCLAUDER', `code « retrait seulement » appliqué en retrait (-${prevuR.remiseCode} €)`)
 
   // Livraison → bon du parrain
   if (C1) await fetch(`${URL_}/rest/v1/commandes?id=eq.${C1.id}`, { method: 'PATCH', headers: hs, body: JSON.stringify({ statut: 'livree' }) })
