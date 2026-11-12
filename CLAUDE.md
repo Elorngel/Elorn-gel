@@ -120,6 +120,15 @@ filleul passe en « Livrée » ; juste après, `useOrders.updateStatus` appelle 
 envoie l'email « merci pour votre parrainage » au parrain (une fois par bon, `bons_achat.email_envoye_le`,
 `supabase-email-bon-parrain.sql`, gabarit `emailBonParrain`). Minimum du parrainage passé à 30 € le 06/11/2026. Pastilles en pied de page (`PastillesParrainage.jsx`), page `#parrainage`.
 SQL : `supabase-offres.sql` (appliqué) ; `supabase-verrou-commandes.sql` à appliquer APRÈS la mise en ligne.
+**Tournées des commerciaux** (12/11/2026, ADMIN SEULEMENT, rien côté client pour l'instant) : onglet « Tournées »
+(`TourneesPanel.jsx`, table `tournees` commercial/jour/lieu/communes[], `supabase-tournees.sql`) ; commerciaux Julien,
+Fabrice, Gilles, Dominique (`COMMERCIAUX` dans `src/lib/tournees.js`). Saisie mensuelle : copier-coller JOUR→LIEU depuis
+leurs Excel, ou Romuald envoie les captures et Claude insère (novembre 2026 saisi ainsi). `lireLieu` reconnaît les
+communes (numéros de tournée ignorés, « + » / « / », alias PORTSALL/BRIGNOGAN/MILIAC). Coordonnées des communes et du
+dépôt (71 rue Vasco de Gama) dans `src/data/coordonneesCommunes.js` ; `conseilsLivraison` : ≤ 10 km du dépôt = zone de
+Romuald, sinon jours de tournée dans la commune ou à ≤ 3 km (réglages `parametres_site.tournees_rayon_depot` /
+`tournees_rayon_proximite`), simple conseil, aucun conseil si pas de tournée. Texte client validé (« Un camion Bontin
+passe près de chez vous… simple suggestion… ») affiché seulement dans la simulation admin.
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au

@@ -13,6 +13,7 @@ import OccasionsPanel from '../components/OccasionsPanel'
 import SuppliersPanel from '../components/SuppliersPanel'
 import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import CalendarPanel from '../components/CalendarPanel'
+import TourneesPanel from '../components/TourneesPanel'
 import OffresPanel from '../components/OffresPanel'
 import ClientsPanel from '../components/ClientsPanel'
 import NewProductModal from '../components/NewProductModal'
@@ -834,6 +835,14 @@ export default function AdminPage() {
             Calendrier
           </button>
           <button
+            onClick={() => setTab('tournees')}
+            className={`px-4 py-2 border-l border-ink/40 ${
+              tab === 'tournees' ? 'bg-ink text-paper' : 'text-ink'
+            }`}
+          >
+            Tournées
+          </button>
+          <button
             onClick={() => setTab('offres')}
             className={`px-4 py-2 border-l border-ink/40 ${tab === 'offres' ? 'bg-ink text-paper' : 'text-ink'}`}
           >
@@ -857,6 +866,8 @@ export default function AdminPage() {
           <OffresPanel />
         ) : tab === 'calendrier' ? (
           <CalendarPanel />
+        ) : tab === 'tournees' ? (
+          <TourneesPanel />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-4 flex-wrap">
