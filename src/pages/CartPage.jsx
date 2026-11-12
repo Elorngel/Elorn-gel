@@ -20,6 +20,7 @@ import MotDePasseOublie from '../components/MotDePasseOublie'
 import { urlProduit } from '../lib/adresses'
 import { useSeo } from '../lib/seo'
 import MentionAlcool from '../components/MentionAlcool'
+import ChampMotDePasse from '../components/ChampMotDePasse'
 
 
 export default function CartPage() {
@@ -596,9 +597,8 @@ export default function CartPage() {
                           onChange={(e) => setConnexionEmail(e.target.value)}
                           className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                         />
-                        <input
+                        <ChampMotDePasse
                           required
-                          type="password"
                           autoComplete="current-password"
                           placeholder="Mot de passe"
                           value={connexionMdp}

@@ -11,6 +11,7 @@ import { aller } from '../lib/navigation'
 import { useSeo } from '../lib/seo'
 import MotDePasseOublie from '../components/MotDePasseOublie'
 import { finPrivilege, privilegeActif } from '../../supabase/functions/_shared/calculCommande.js'
+import ChampMotDePasse from '../components/ChampMotDePasse'
 
 const STATUTS = { nouvelle: 'Reçue', preparee: 'Préparée', livree: 'Livrée / retirée' }
 const champ = 'w-full border border-ink/20 p-2 font-body text-sm bg-paper focus:border-forest focus:outline-none'
@@ -74,9 +75,8 @@ function NonConnecte() {
             onChange={(e) => setEmail(e.target.value)}
             className={champ}
           />
-          <input
+          <ChampMotDePasse
             required
-            type="password"
             autoComplete="current-password"
             placeholder="Mot de passe"
             value={mdp}

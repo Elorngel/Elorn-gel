@@ -4,6 +4,7 @@ import Footer from '../components/Footer'
 import MotDePasseOublie from '../components/MotDePasseOublie'
 import { supabase } from '../lib/supabaseClient'
 import { useSeo } from '../lib/seo'
+import ChampMotDePasse from '../components/ChampMotDePasse'
 
 // Page ouverte depuis l'email « mot de passe oublié » : /nouveau-mot-de-passe?jeton=…
 // Le jeton (valable 1 heure, une seule fois) n'est utilisé qu'au moment de valider le nouveau mot de passe :
@@ -78,8 +79,7 @@ export default function NouveauMotDePassePage() {
           ) : (
             <form onSubmit={valider} className="flex flex-col gap-3">
               <p className="font-body text-sm text-ink">Choisissez votre nouveau mot de passe (8 caractères minimum).</p>
-              <input
-                type="password"
+              <ChampMotDePasse
                 autoComplete="new-password"
                 placeholder="Nouveau mot de passe"
                 value={mdp}
@@ -87,8 +87,7 @@ export default function NouveauMotDePassePage() {
                 className={champ}
                 required
               />
-              <input
-                type="password"
+              <ChampMotDePasse
                 autoComplete="new-password"
                 placeholder="Le même, une 2e fois"
                 value={mdp2}

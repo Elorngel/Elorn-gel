@@ -1,6 +1,7 @@
 // Champs d'un compte client, utilisés à la création du compte (dans le panier ou dans
 // « Mon compte ») et pour modifier ses informations.
 import { codeParrainRetenu } from '../lib/offres'
+import ChampMotDePasse from './ChampMotDePasse'
 
 export const SOURCES = [
   'Facebook',
@@ -38,15 +39,17 @@ const etiquette = 'block font-tag text-[11px] uppercase text-muted mb-1'
 
 export default function ChampsCompte({ valeurs, onChange, creation = true, idPrefixe = 'compte' }) {
   const id = (n) => `${idPrefixe}-${n}`
-  const texte = (nom, label, props = {}) => (
+  const texte = (nom, label, props = {}) => {
+    const Champ = props.type === 'password' ? ChampMotDePasse : 'input'
+    return (
     <div className={props.className}>
       <label htmlFor={id(nom)} className={etiquette}>
         {label}
       </label>
-      <input
+      <Champ
         id={id(nom)}
         required={props.required !== false}
-        type={props.type || 'text'}
+        {...(props.type === 'password' ? {} : { type: props.type || 'text' })}
         value={valeurs[nom] ?? ''}
         onChange={(e) => onChange(nom, e.target.value)}
         autoComplete={props.autoComplete}
@@ -58,7 +61,8 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
         className={champ}
       />
     </div>
-  )
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3">

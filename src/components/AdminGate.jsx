@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth, emailAdmin } from '../context/AuthContext'
 import { useSeo } from '../lib/seo'
+import ChampMotDePasse from './ChampMotDePasse'
 
 // Accès à l'admin : vrai compte Supabase (mot de passe vérifié par le serveur), reconnu comme
 // administrateur par la table `admins`. Les droits d'écriture sont contrôlés par la base
@@ -74,13 +75,13 @@ export default function AdminGate({ children }) {
         <label htmlFor="admin-password" className="block font-tag text-xs uppercase text-muted mb-1">
           Mot de passe
         </label>
-        <input
+        <ChampMotDePasse
           id="admin-password"
-          type="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-ink/20 p-2 font-body text-sm mb-3 focus:border-forest focus:outline-none"
+          className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
+          classeConteneur="mb-3"
         />
 
         {errorMsg && <p className="font-body text-sm text-rust mb-3">{errorMsg}</p>}
