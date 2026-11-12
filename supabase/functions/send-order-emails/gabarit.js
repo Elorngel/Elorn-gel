@@ -97,6 +97,7 @@ function tableauProduits(c) {
     ${Number(c.remise_bon) > 0 ? ligne("Bon d'achat", `−${euros(c.remise_bon)}`, `color:${C.forest};`) : ''}
     ${Number(c.frais_livraison) > 0 ? ligne('Frais de livraison', euros(c.frais_livraison)) : ''}
     ${c.privilege ? ligne('Livraison offerte (client Privilège)', euros(0), `color:${C.forest};`) : ''}
+    ${c.livraison_offerte_code ? ligne(`Livraison offerte (code ${esc(c.code_promo)})`, euros(0), `color:${C.forest};`) : ''}
     <tr><td colspan="2" style="padding:12px 0 0;border-top:2px solid ${C.ink};font:bold 12px ${TEXTE};letter-spacing:1px;text-transform:uppercase;">Total</td>
       <td align="right" style="padding:10px 0 0;border-top:2px solid ${C.ink};font:400 30px/1 ${TITRE};white-space:nowrap;">${euros(c.total)}</td></tr>
   </table>`

@@ -127,6 +127,8 @@ export default function CartPage() {
   const bonEnAttente = !bon ? bonsDispo[0] : null
   const calcul = calculerCommande({ ...parametresCalcul, bon })
   const prixLigne = new Map(calcul.lignes.map((l) => [l.item.cartKey, l.prixUnitaire]))
+  // Mode auquel le code est réservé (un code « livraison offerte » ne sert qu'en livraison).
+  const modeCode = codeApplique?.mode || (codeApplique?.livraison_offerte ? 'livraison' : null)
 
   // Minimum de commande en livraison (réglé dans l'admin) et vente d'alcool réservée aux majeurs.
   // Le serveur refait ces contrôles ; une commande saisie par un admin n'est pas bloquée.
@@ -152,6 +154,7 @@ export default function CartPage() {
       code: data.code,
       pourcentage: data.pourcentage != null ? Number(data.pourcentage) : null,
       montant: data.montant != null ? Number(data.montant) : null,
+      livraison_offerte: !!data.livraison_offerte,
       minimum_commande: Number(data.minimum_commande || 0),
       mode: data.mode || null,
       restantes: data.restantes,
@@ -235,7 +238,7 @@ export default function CartPage() {
           ? `${pickupDateLabel(pickupDateOk)} · ${pickupSlotOk}`
           : `${deliveryDateLabel(deliveryDateOk)} · ${deliveryWindowOk}`,
         // Un seul avantage par commande : le code n'est envoyé que s'il est vraiment appliqué.
-        codePromo: calcul.remiseCode > 0 ? codeApplique?.code ?? null : null,
+        codePromo: calcul.codeApplique ? codeApplique?.code ?? null : null,
         // Compte tout juste créé : un bon de parrainage a pu s'ajouter, le serveur fait foi.
         totalAttendu: source === 'creation' ? undefined : calcul.total,
       })
@@ -423,6 +426,7 @@ export default function CartPage() {
                     motif_bon: bon?.motif,
                     frais_livraison: calcul.frais,
                     privilege: calcul.privilege,
+                    livraison_offerte_code: calcul.livraisonParCode,
                   }}
                 />
                 <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-ink/15">
@@ -481,21 +485,21 @@ export default function CartPage() {
                           dès {eurosTexte(codeApplique.minimum_commande)} de produits
                         </span>
                       )}
-                      {codeApplique.mode && (
+                      {modeCode && (
                         <span className="block font-tag text-[11px] text-muted">
-                          valable {codeApplique.mode === 'retrait' ? 'en retrait au dépôt' : 'en livraison'} uniquement
+                          valable {modeCode === 'retrait' ? 'en retrait au dépôt' : 'en livraison'} uniquement
                         </span>
                       )}
                       {calcul.codeMauvaisMode && (
                         <span className="block font-tag text-[11px] text-rust">
                           Pas appliqué : ce code est valable{' '}
-                          {codeApplique.mode === 'retrait' ? 'en retrait au dépôt' : 'en livraison'} uniquement.{' '}
+                          {modeCode === 'retrait' ? 'en retrait au dépôt' : 'en livraison'} uniquement.{' '}
                           <button
                             type="button"
-                            onClick={() => setMode(codeApplique.mode)}
+                            onClick={() => setMode(modeCode)}
                             className="underline uppercase hover:text-ink"
                           >
-                            Passer en {codeApplique.mode === 'retrait' ? 'retrait' : 'livraison'}
+                            Passer en {modeCode === 'retrait' ? 'retrait' : 'livraison'}
                           </button>
                         </span>
                       )}
@@ -898,6 +902,12 @@ function LignesRemises({ commande }) {
         <div className="flex justify-between font-body text-sm text-ink mt-1">
           <span>Frais de livraison</span>
           <span>{euros(frais)}</span>
+        </div>
+      )}
+      {commande.livraison_offerte_code && (
+        <div className="flex justify-between font-body text-sm text-forest mt-1">
+          <span>Livraison offerte (code {commande.code_promo})</span>
+          <span>0,00 €</span>
         </div>
       )}
       {commande.privilege && (

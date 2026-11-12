@@ -51,8 +51,8 @@ function CodesPromo() {
     setEdition(c)
     setNouveau({
       code: c.code,
-      type: Number(c.montant) > 0 ? 'montant' : 'pourcentage',
-      valeur: String(Number(c.montant) > 0 ? c.montant : c.pourcentage ?? ''),
+      type: c.livraison_offerte ? 'livraison' : Number(c.montant) > 0 ? 'montant' : 'pourcentage',
+      valeur: c.livraison_offerte ? '' : String(Number(c.montant) > 0 ? c.montant : c.pourcentage ?? ''),
       minimum: Number(c.minimum_commande) > 0 ? String(c.minimum_commande) : '',
       mode: c.mode || '',
       max_utilisations: c.max_utilisations ? String(c.max_utilisations) : '',
@@ -93,8 +93,9 @@ function CodesPromo() {
       setErreur('Le code doit faire 3 à 30 caractères, lettres et chiffres seulement (sans espace ni accent).')
       return
     }
-    const valeur = Number(String(nouveau.valeur).replace(',', '.'))
-    if (!(valeur > 0) || (nouveau.type === 'pourcentage' && valeur > 100)) {
+    const livraison = nouveau.type === 'livraison'
+    const valeur = livraison ? 0 : Number(String(nouveau.valeur).replace(',', '.'))
+    if (!livraison && (!(valeur > 0) || (nouveau.type === 'pourcentage' && valeur > 100))) {
       setErreur(nouveau.type === 'pourcentage' ? 'La remise doit être entre 1 et 100 %.' : 'Le montant doit être supérieur à 0 €.')
       return
     }
@@ -103,8 +104,10 @@ function CodesPromo() {
       // Soit un pourcentage, soit un montant fixe en euros (la base refuse les deux à la fois).
       pourcentage: nouveau.type === 'pourcentage' ? valeur : null,
       montant: nouveau.type === 'montant' ? valeur : null,
+      livraison_offerte: livraison,
       minimum_commande: nouveau.minimum ? Number(String(nouveau.minimum).replace(',', '.')) : 0,
-      mode: nouveau.mode || null,
+      // Un code « livraison offerte » ne sert qu'en livraison.
+      mode: livraison ? 'livraison' : nouveau.mode || null,
       max_utilisations: nouveau.max_utilisations ? Number(nouveau.max_utilisations) : null,
       debut: nouveau.debut || null,
       fin: nouveau.fin || null,
@@ -124,7 +127,7 @@ function CodesPromo() {
   return (
     <Cadre titre="Codes promo">
       <p className="font-body text-xs text-muted mb-3">
-        Le client tape le code dans son panier. La remise (en % ou en euros) s'applique sur les produits (après promos,
+        Le client tape le code dans son panier. La remise (en %, en euros, ou la livraison offerte) s'applique sur les produits (après promos,
         déstockage et remise retrait ; pas sur les frais de livraison), dès le minimum de commande s'il y en a un.
         Chaque code ne sert qu'une fois par compte client, et ne se cumule pas avec un bon d'achat (le plus avantageux
         pour le client est appliqué).
@@ -150,11 +153,15 @@ function CodesPromo() {
                 <tr key={c.id} className="border-b border-ink/10">
                   <td className="py-2 font-tag font-semibold">{c.code}</td>
                   <td className="py-2 font-tag">
-                    {Number(c.montant) > 0 ? `-${euros(c.montant)}` : `-${Number(c.pourcentage)} %`}
+                    {c.livraison_offerte
+                      ? 'Livraison offerte'
+                      : Number(c.montant) > 0
+                        ? `-${euros(c.montant)}`
+                        : `-${Number(c.pourcentage)} %`}
                     {Number(c.minimum_commande) > 0 && (
                       <span className="block text-[10px] text-muted normal-case">dès {euros(c.minimum_commande)}</span>
                     )}
-                    {c.mode && (
+                    {c.mode && !c.livraison_offerte && (
                       <span className="block text-[10px] text-forest uppercase">
                         {c.mode === 'retrait' ? 'retrait seulement' : 'livraison seulement'}
                       </span>
@@ -232,8 +239,10 @@ function CodesPromo() {
             >
               <option value="pourcentage">Pourcentage (%)</option>
               <option value="montant">Montant fixe (€)</option>
+              <option value="livraison">Livraison offerte</option>
             </select>
           </div>
+          {nouveau.type !== 'livraison' && (
           <div>
             <label className={etiquette} htmlFor="code-valeur">{nouveau.type === 'montant' ? 'Remise €' : 'Remise %'}</label>
             <input
@@ -248,6 +257,8 @@ function CodesPromo() {
               className={`${champ} w-24`}
             />
           </div>
+          )}
+          {nouveau.type !== 'livraison' && (
           <div>
             <label className={etiquette} htmlFor="code-mode">Valable en</label>
             <select
@@ -261,6 +272,7 @@ function CodesPromo() {
               <option value="livraison">Livraison seulement</option>
             </select>
           </div>
+          )}
           <div>
             <label className={etiquette} htmlFor="code-minimum">Dès (facultatif)</label>
             <input

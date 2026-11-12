@@ -33,7 +33,7 @@ const jeton = async (email) => (await post('/auth/v1/token?grant_type=password',
 
 async function nettoyer() {
   await fetch(`${URL_}/rest/v1/commandes?nom_client=like.TEST%20CLAUDE*`, { method: 'DELETE', headers: hs })
-  await fetch(`${URL_}/rest/v1/codes_promo?code=in.(TESTCLAUDE5,TESTCLAUDER)`, { method: 'DELETE', headers: hs })
+  await fetch(`${URL_}/rest/v1/codes_promo?code=in.(TESTCLAUDE5,TESTCLAUDER,TESTCLAUDEL)`, { method: 'DELETE', headers: hs })
   const { users } = await get('/auth/v1/admin/users?per_page=200')
   for (const u of users.filter((x) => x.email?.startsWith(PREFIXE))) {
     await fetch(`${URL_}/rest/v1/bons_achat?client_id=eq.${u.id}`, { method: 'DELETE', headers: hs })
@@ -144,6 +144,15 @@ async function tests() {
   const prevuR = calculerCommande({ lignes, mode: 'retrait', remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code: codeR, bon: null })
   r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0633333333', creneau: 'essai', codePromo: 'TESTCLAUDER', lignes: lignesR, totalAttendu: prevuR.total }, JM)
   ok(r.d?.ok && Number(r.d.commande.remise_code) > 0 && r.d.commande.code_promo === 'TESTCLAUDER', `code « retrait seulement » appliqué en retrait (-${prevuR.remiseCode} €)`)
+
+  // Code « livraison offerte » : sans effet en retrait (pas consommé), frais à 0 en livraison
+  await fetch(`${URL_}/rest/v1/codes_promo`, { method: 'POST', headers: hs, body: JSON.stringify({ code: 'TESTCLAUDEL', livraison_offerte: true, mode: 'livraison' }) })
+  r = await post('/functions/v1/passer-commande', { mode: 'retrait', nom: 'TEST CLAUDE (essai)', telephone: '0633333333', creneau: 'essai', codePromo: 'TESTCLAUDEL', lignes: lignesR }, JM)
+  ok(r.d?.ok && !r.d.commande.code_promo, 'code « livraison offerte » : sans effet en retrait, pas consommé')
+  const codeL = { code: 'TESTCLAUDEL', livraison_offerte: true, mode: 'livraison' }
+  const prevuL = calculerCommande({ lignes, mode: 'livraison', remiseRetrait: reglages.remise_retrait, fraisLivraison: reglages.frais_livraison, code: codeL, bon: null })
+  r = await post('/functions/v1/passer-commande', { ...livraison, telephone: '0633333333', codePromo: 'TESTCLAUDEL', lignes: lignesR, totalAttendu: prevuL.total }, JM)
+  ok(r.d?.ok && Number(r.d.commande.frais_livraison) === 0 && r.d.commande.livraison_offerte_code === true && r.d.commande.code_promo === 'TESTCLAUDEL', `code « livraison offerte » : frais à 0 (${prevuL.total} €)`)
 
   // Livraison → bon du parrain
   if (C1) await fetch(`${URL_}/rest/v1/commandes?id=eq.${C1.id}`, { method: 'PATCH', headers: hs, body: JSON.stringify({ statut: 'livree' }) })

@@ -186,6 +186,13 @@ function MesCommandes({ userId }) {
                         <td className="py-1 text-right font-tag">{Number(c.frais_livraison).toFixed(2)} €</td>
                       </tr>
                     )}
+                    {c.livraison_offerte_code && (
+                      <tr>
+                        <td className="py-1 font-body text-forest">Livraison offerte (code {c.code_promo})</td>
+                        <td />
+                        <td className="py-1 text-right font-tag text-forest">0,00 €</td>
+                      </tr>
+                    )}
                     {c.privilege && (
                       <tr>
                         <td className="py-1 font-body text-forest">Livraison offerte (client Privilège)</td>

@@ -107,7 +107,9 @@ email client = adresse du compte (ou celle de la commande si saisie par un admin
 `supabase/functions/_shared/calculCommande.js` (aussi importé par `src/lib/pricing.js` et `CartPage` : une
 seule règle de prix pour le site et le serveur ; le panier lit les prix à jour via `usePrixPanier`).
 Codes promo : table `codes_promo` (admin → onglet « Offres », `OffresPanel.jsx`), vérifiés par la fonction
-SQL `verifier_code_promo`, 1 fois par compte, sur les produits hors livraison ; en % OU en montant fixe € (`codes_promo.montant`, `supabase-codes-montant.sql`, 10/11/2026),
+SQL `verifier_code_promo`, 1 fois par compte, sur les produits hors livraison ; en % OU en montant fixe € OU livraison offerte
+(`codes_promo.livraison_offerte`, `supabase-codes-livraison.sql`, 12/11/2026 : frais à 0 en livraison, `commandes.livraison_offerte_code`,
+`livraisonParCode`/`codeApplique`) (`codes_promo.montant`, `supabase-codes-montant.sql`, 10/11/2026),
 avec minimum de commande facultatif (`minimum_commande`, sous le minimum le code n'est ni appliqué ni consommé) et
 mode facultatif (`codes_promo.mode` = retrait | livraison | vide = les deux, `supabase-codes-mode.sql`, `codeMauvaisMode`) ;
 non cumulables avec un bon (voir « Un seul avantage ») ; code BIENVENUE10 (-10 %, 50 utilisations). Parrainage : `clients.code_parrain` (créé automatiquement) /
@@ -118,6 +120,10 @@ filleul passe en « Livrée » ; juste après, `useOrders.updateStatus` appelle 
 envoie l'email « merci pour votre parrainage » au parrain (une fois par bon, `bons_achat.email_envoye_le`,
 `supabase-email-bon-parrain.sql`, gabarit `emailBonParrain`). Minimum du parrainage passé à 30 € le 06/11/2026. Pastilles en pied de page (`PastillesParrainage.jsx`), page `#parrainage`.
 SQL : `supabase-offres.sql` (appliqué) ; `supabase-verrou-commandes.sql` à appliquer APRÈS la mise en ligne.
+**Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
+(email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
+via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au
+moment de valider). Œil afficher/masquer sur tous les mots de passe (`ChampMotDePasse.jsx`).
 **Comptes clients** (21/10/2026) : compte obligatoire pour commander, créé dans le formulaire du
 panier (onglets « Je crée mon compte » / « J'ai déjà un compte ») ou dans « Mon compte »
 (`#mon-compte` : historique des commandes, modification des informations, désinscription des
@@ -127,7 +133,7 @@ offres, suppression du compte). Création côté serveur par la fonction Supabas
 rattachées par `commandes.client_id`. Connexion partagée site/admin : `src/context/AuthContext.jsx`.
 Champs du formulaire : `ChampsCompte.jsx`. Admin → onglet « Clients » (`ClientsPanel.jsx`).
 Politique de confidentialité : `#confidentialite` (`legalContent.js`), à faire valider.
-En attente de l'accès IONOS : « mot de passe oublié » (aujourd'hui : « appelez-nous ») et le
+En attente : le
 bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui demandent des emails.
 
 **Reste à faire avant la bascule sur www.bontin.fr et la publicité** (audit du 19/10/2026) :

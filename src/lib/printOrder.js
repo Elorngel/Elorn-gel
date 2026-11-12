@@ -85,6 +85,11 @@ export function printBonDeCommande(commande, lignes) {
               : ''
           }
           ${
+            commande.livraison_offerte_code
+              ? `<tr><td colspan="3" style="padding:6px 4px;">Livraison offerte (code ${commande.code_promo})</td><td style="padding:6px 4px;text-align:right;">0.00 €</td></tr>`
+              : ''
+          }
+          ${
             commande.privilege
               ? `<tr><td colspan="3" style="padding:6px 4px;">Livraison offerte (client Privilège)</td><td style="padding:6px 4px;text-align:right;">0.00 €</td></tr>`
               : ''

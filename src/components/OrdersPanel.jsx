@@ -68,6 +68,9 @@ export default function OrdersPanel() {
                   dont {order.frais_livraison.toFixed(2)} € livr.
                 </span>
               )}
+              {order.livraison_offerte_code && (
+                <span className="block font-tag text-[10px] text-forest normal-case">livraison offerte · code {order.code_promo}</span>
+              )}
               {order.privilege && (
                 <span className="block font-tag text-[10px] text-forest normal-case">livraison offerte · Privilège</span>
               )}

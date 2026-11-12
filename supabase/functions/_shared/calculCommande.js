@@ -84,7 +84,7 @@ export function articleIndisponible(produit, variante, mode) {
 
 // Total de la commande.
 // lignes : [{ produit, variante, quantite }]
-// code : { code, pourcentage } ou { code, montant } (remise fixe en euros), avec minimum_commande et mode
+// code : { code, pourcentage } ou { code, montant } (remise fixe en euros) ou { code, livraison_offerte: true }, avec minimum_commande et mode
 // ('retrait' | 'livraison' | null = les deux) facultatifs,
 // ou null — s'applique sur les produits (hors frais de livraison)
 // bon : { id, montant, minimum_commande } ou null — utilisable si les produits atteignent le minimum
@@ -100,32 +100,56 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
     return { ...l, prixUnitaire: pu, totalLigne: arrondi(pu * l.quantite) }
   })
   const sousTotal = arrondi(detail.reduce((s, l) => s + l.totalLigne, 0))
-  // Code promo : pourcentage des produits, ou montant fixe (jamais plus que les produits), dès son minimum.
-  // Code réservé au retrait (ou à la livraison) : sans effet dans l'autre mode.
-  const codeMauvaisMode = !!code && !!code.mode && code.mode !== mode
+  // Code promo : pourcentage des produits, ou montant fixe (jamais plus que les produits), ou livraison offerte
+  // (code.livraison_offerte, 12/11/2026), dès son minimum. Code réservé au retrait (ou à la livraison) : sans
+  // effet dans l'autre mode ; un code « livraison offerte » n'a d'effet qu'en livraison.
+  const fraisNormaux = mode === 'retrait' ? 0 : arrondi(fraisLivraison || 0)
+  const privilege = mode !== 'retrait' && !!livraisonOfferte
+  const codeLivraison = !!code?.livraison_offerte
+  const codeMauvaisMode = !!code && ((!!code.mode && code.mode !== mode) || (codeLivraison && mode === 'retrait'))
   const codeMinimumAtteint = !!code && sousTotal >= Number(code.minimum_commande || 0)
-  let remiseCode = codeMauvaisMode || !codeMinimumAtteint
+  const codeValable = !!code && !codeMauvaisMode && codeMinimumAtteint
+  let remiseCode = !codeValable || codeLivraison
     ? 0
     : Number(code.montant) > 0
       ? Math.min(arrondi(code.montant), sousTotal)
       : arrondi((sousTotal * Number(code.pourcentage || 0)) / 100)
+  // Livraison offerte par le code (sans intérêt si la livraison est déjà offerte : carte Privilège).
+  let livraisonParCode = codeValable && codeLivraison && !privilege && fraisNormaux > 0
   const bonUtilisable = !!bon && sousTotal >= Number(bon.minimum_commande || 0)
   let remiseBon = bonUtilisable ? Math.min(Number(bon.montant), sousTotal) : 0
   let avantageEcarte = null
-  if (remiseCode > 0 && remiseBon > 0) {
-    if (remiseBon >= remiseCode) {
+  const valeurCode = remiseCode + (livraisonParCode ? fraisNormaux : 0)
+  if (valeurCode > 0 && remiseBon > 0) {
+    if (remiseBon >= valeurCode) {
       remiseCode = 0
+      livraisonParCode = false
       avantageEcarte = 'code'
     } else {
       remiseBon = 0
       avantageEcarte = 'bon'
     }
   }
-  const privilege = mode !== 'retrait' && !!livraisonOfferte
-  const frais = mode === 'retrait' || privilege ? 0 : arrondi(fraisLivraison || 0)
+  const frais = privilege || livraisonParCode ? 0 : fraisNormaux
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
   const codeSousMinimum = !!code && !codeMauvaisMode && !codeMinimumAtteint
-  return { lignes: detail, sousTotal, remiseCode, codeSousMinimum, codeMauvaisMode, remiseBon, bonUtilisable, avantageEcarte, privilege, frais, total }
+  // Code réellement utilisé sur cette commande (il sera alors compté comme utilisé).
+  const codeApplique = remiseCode > 0 || livraisonParCode
+  return {
+    lignes: detail,
+    sousTotal,
+    remiseCode,
+    codeSousMinimum,
+    codeMauvaisMode,
+    codeApplique,
+    livraisonParCode,
+    remiseBon,
+    bonUtilisable,
+    avantageEcarte,
+    privilege,
+    frais,
+    total,
+  }
 }
 
 // Montant de produits (promos et remise retrait comprises, avant code promo et bon d'achat) qu'il manque
@@ -160,6 +184,7 @@ export function privilegeActif(debut, today = aujourdhuiParis()) {
 // « -10 % » ou « -5,00 € » : libellé d'un code promo.
 export function libelleRemiseCode(code) {
   if (!code) return ''
+  if (code.livraison_offerte) return 'livraison offerte'
   if (Number(code.montant) > 0) return `-${Number(code.montant).toFixed(2).replace('.', ',')} €`
   return `-${Number(code.pourcentage)} %`
 }
