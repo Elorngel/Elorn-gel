@@ -128,7 +128,11 @@ communes (numéros de tournée ignorés, « + » / « / », alias PORTSALL/BRIGN
 dépôt (71 rue Vasco de Gama) dans `src/data/coordonneesCommunes.js` ; `conseilsLivraison` : ≤ 10 km du dépôt = zone de
 Romuald, sinon jours de tournée dans la commune ou à ≤ 3 km (réglages `parametres_site.tournees_rayon_depot` /
 `tournees_rayon_proximite`), simple conseil, aucun conseil si pas de tournée. Texte client validé (« Un camion Bontin
-passe près de chez vous… simple suggestion… ») affiché seulement dans la simulation admin.
+passe près de chez vous… simple suggestion… », sans nom de commune) : bloc `ConseilTournee.jsx` version B « Livraison
+groupée » (vert forêt, dates en pages de calendrier, choisie en brique), affiché dans le panier (CartPage, mode livraison, zone OK) SEULEMENT si l'admin coche « Afficher le conseil »
+(onglet Tournées, `parametres_site.tournees_conseil_actif`, `supabase-tournees-client.sql`) ; données via la fonction SQL
+`tournees_a_venir()` (dates + communes, sans le commercial, vide si désactivé) ; dates conseillées ajoutées à la liste
+des jours même au-delà des 7 jours, si le calendrier a des créneaux ce jour-là (« 🌿 jour conseillé »).
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au

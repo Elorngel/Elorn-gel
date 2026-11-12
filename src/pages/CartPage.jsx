@@ -3,8 +3,10 @@ import { useCart } from '../context/CartContext'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
 import { useSiteSettings } from '../hooks/useSiteSettings'
-import { getDatesDisponibles, getCreneauxDisponibles } from '../lib/pickupSlots'
-import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur, privilegeActif, libelleRemiseCode } from '../../supabase/functions/_shared/calculCommande.js'
+import { getDatesDisponibles, getCreneauxDisponibles, creneauxPourDate, dateDepuisCle, libelleDate } from '../lib/pickupSlots'
+import ConseilTournee from '../components/ConseilTournee'
+import { communeClient, conseilsLivraison, RAYON_DEPOT_DEFAUT, RAYON_TOURNEE_DEFAUT } from '../lib/tournees'
+import { calculerCommande, articleIndisponible, manqueLivraison, estMajeur, privilegeActif, libelleRemiseCode, aujourdhuiParis } from '../../supabase/functions/_shared/calculCommande.js'
 import { usePrixPanier, varianteDuPanier } from '../hooks/usePrixPanier'
 import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
@@ -172,7 +174,41 @@ export default function CartPage() {
     speciaux: settings?.horaires_speciaux,
   }
   const pickupDates = getDatesDisponibles('retrait', calendrier)
-  const deliveryDates = getDatesDisponibles('livraison', calendrier)
+  const deliveryDatesBase = getDatesDisponibles('livraison', calendrier)
+
+  // « Livraison groupée » (tournées des commerciaux), seulement si l'admin l'a activé (onglet Tournées) : jours où
+  // un camion passe près de l'adresse du client, simple conseil. La base ne renvoie rien si c'est désactivé.
+  const conseilActif = !isPickup && !!settings?.tournees_conseil_actif
+  const [tourneesAVenir, setTourneesAVenir] = useState([])
+  useEffect(() => {
+    if (!conseilActif) return
+    let annule = false
+    supabase.rpc('tournees_a_venir').then(({ data }) => {
+      if (!annule) setTourneesAVenir((data || []).map((t) => ({ jour: t.jour, communes: t.communes || [] })))
+    })
+    return () => {
+      annule = true
+    }
+  }, [conseilActif])
+  const communeLivree =
+    conseilActif && coord.codePostal.trim().length === 5 ? communeClient(coord.codePostal, coord.ville) : null
+  const conseilsTournee = communeLivree
+    ? conseilsLivraison(communeLivree, tourneesAVenir, {
+        aujourdhui: aujourdhuiParis(),
+        rayonDepot: Number(settings?.tournees_rayon_depot ?? RAYON_DEPOT_DEFAUT),
+        rayonTournee: Number(settings?.tournees_rayon_proximite ?? RAYON_TOURNEE_DEFAUT),
+      }).conseils.filter((c) => creneauxPourDate('livraison', c.date, calendrier).length > 0)
+    : []
+  const joursConseilles = new Set(conseilsTournee.slice(0, 3).map((c) => c.date))
+  // Liste des jours : les prochains jours ouverts + les jours conseillés plus lointains.
+  const deliveryDates = [
+    ...deliveryDatesBase,
+    ...[...joursConseilles]
+      .filter((d) => !deliveryDatesBase.some((x) => x.value === d))
+      .map((d) => ({ value: d, label: libelleDate(dateDepuisCle(d)) })),
+  ]
+    .sort((a, b) => a.value.localeCompare(b.value))
+    .map((d) => (joursConseilles.has(d.value) ? { ...d, conseille: true } : d))
   // Une date ou un créneau qui n'est plus proposé (réglages chargés entre-temps) est ignoré.
   const pickupDateOk = pickupDates.some((d) => d.value === pickupDate) ? pickupDate : ''
   const deliveryDateOk = deliveryDates.some((d) => d.value === deliveryDate) ? deliveryDate : ''
@@ -776,6 +812,13 @@ export default function CartPage() {
                       Livraison disponible sous 24h
                     </p>
 
+                    {zone.ok && (
+                      <ConseilTournee
+                        conseils={conseilsTournee}
+                        dateChoisie={deliveryDateOk}
+                        onChoisir={setDeliveryDate}
+                      />
+                    )}
                     <label className="block font-tag text-[11px] uppercase text-muted mb-1">
                       Jour de livraison
                     </label>
@@ -791,6 +834,7 @@ export default function CartPage() {
                       {deliveryDates.map((d) => (
                         <option key={d.value} value={d.value}>
                           {d.label}
+                          {d.conseille ? ' 🌿 jour conseillé' : ''}
                         </option>
                       ))}
                     </select>

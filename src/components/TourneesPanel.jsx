@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import ConseilTournee from './ConseilTournee'
 import { supabase } from '../lib/supabaseClient'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { aujourdhuiParis } from '../../supabase/functions/_shared/calculCommande.js'
@@ -13,7 +14,7 @@ import {
 } from '../lib/tournees'
 
 // Onglet « Tournées » de l'admin (12/11/2026) : plannings mensuels des commerciaux (copiés depuis leur tableau
-// Excel), et simulation des jours de livraison conseillés aux clients. RIEN n'est encore visible côté client.
+// Excel), simulation des jours conseillés, et interrupteur pour montrer le conseil aux clients dans le panier.
 const champ = 'border border-ink/20 p-1.5 font-body text-sm bg-paper focus:border-forest focus:outline-none'
 const etiquette = 'block font-tag text-[10px] uppercase text-muted mb-1'
 const bouton =
@@ -288,15 +289,15 @@ function Plannings({ tournees, mois, setMois, onSupprimer }) {
 // 3. Simulation : ce que verrait un client de telle commune (rien n'est encore affiché côté client).
 function Simulation({ tournees, rayonDepot, rayonTournee }) {
   const [commune, setCommune] = useState('')
+  const [dateEssai, setDateEssai] = useState('')
   const resultat = commune
     ? conseilsLivraison(commune, tournees, { aujourdhui: aujourdhuiParis(), rayonDepot, rayonTournee })
     : null
-  const prochains = resultat?.conseils?.slice(0, 3) || []
   return (
     <Cadre titre="3. Tester une commune">
       <p className="font-body text-xs text-muted mb-3">
         Choisissez la commune d'un client : vous voyez si elle est dans la zone du dépôt, et sinon les prochains passages
-        de tournée dans la commune ou à moins de {rayonTournee} km. <strong>Rien n'est encore visible par les clients.</strong>
+        de tournée dans la commune ou à moins de {rayonTournee} km.
       </p>
       <div className="flex flex-wrap gap-3 items-end mb-3">
         <div>
@@ -338,21 +339,63 @@ function Simulation({ tournees, rayonDepot, rayonTournee }) {
                 ))}
               </tbody>
             </table>
-            <p className="font-tag text-[10px] uppercase text-muted mb-1">Message que verrait le client (plus tard)</p>
-            <div className="border border-forest/40 bg-stone/50 p-3 font-body text-sm text-ink max-w-xl">
-              <p>
-                🚚 <strong>Un camion Bontin passe près de chez vous le {prochains.map((c) => dateLongue(c.date)).join(' ou le ')}</strong>{' '}
-                (tournée de {prochains[0].commune}).
-              </p>
-              <p className="mt-1">
-                Si cette date vous convient, choisissez-la : en regroupant les livraisons d'un même secteur, nous faisons moins
-                de kilomètres et limitons notre impact sur l'environnement.
-              </p>
-              <p className="mt-1 italic text-muted">Ce n'est qu'une suggestion : vous restez libre de choisir le jour qui vous arrange.</p>
+            <p className="font-tag text-[10px] uppercase text-muted mb-1">Ce que voit le client dans son panier (si la case du haut est cochée)</p>
+            <div className="max-w-sm">
+              <ConseilTournee
+                commune={commune}
+                tournees={tournees}
+                aujourdhui={aujourdhuiParis()}
+                rayonDepot={rayonDepot}
+                rayonTournee={rayonTournee}
+                dateChoisie={dateEssai}
+                onChoisir={setDateEssai}
+              />
             </div>
           </div>
         ))}
     </Cadre>
+  )
+}
+
+// Interrupteur : montrer (ou non) le conseil « Livraison groupée » aux clients dans le panier.
+function Interrupteur({ settings, updateSettings }) {
+  const [enCours, setEnCours] = useState(false)
+  const actif = !!settings?.tournees_conseil_actif
+  const basculer = async () => {
+    if (
+      !confirm(
+        actif
+          ? 'Masquer le conseil « Livraison groupée » aux clients ?'
+          : 'Afficher le conseil « Livraison groupée » aux clients dans le panier (en livraison, au-delà de la zone du dépôt) ?'
+      )
+    )
+      return
+    setEnCours(true)
+    try {
+      await updateSettings({ tournees_conseil_actif: !actif })
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    } finally {
+      setEnCours(false)
+    }
+  }
+  return (
+    <div className={`border p-4 mb-5 ${actif ? 'bg-forest/10 border-forest' : 'bg-paper border-ink/15'}`}>
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" checked={actif} disabled={enCours} onChange={basculer} className="w-5 h-5 accent-forest" />
+        <span className="font-tag text-sm uppercase font-semibold text-ink">
+          Afficher le conseil « Livraison groupée » aux clients
+        </span>
+        <span className={`ml-auto font-tag text-xs uppercase font-semibold px-2 py-1 ${actif ? 'bg-forest text-paper' : 'bg-stone text-muted'}`}>
+          {actif ? 'Visible dans le panier' : 'Caché aux clients'}
+        </span>
+      </label>
+      <p className="font-body text-xs text-muted mt-2">
+        {actif
+          ? "Les clients en livraison au-delà de la zone du dépôt voient les jours où un camion passe près de chez eux (simple conseil). Sans tournée saisie à proximité, rien ne s'affiche."
+          : "Tant que c'est décoché, les clients ne voient rien et le site ne leur transmet pas les tournées. Vous pouvez saisir les plannings et tester ci-dessous en attendant."}
+      </p>
+    </div>
   )
 }
 
@@ -431,9 +474,10 @@ export default function TourneesPanel() {
     <div>
       <p className="font-body text-sm text-muted mb-4 max-w-3xl">
         Plannings des commerciaux ({COMMERCIAUX.join(', ')}). Au-delà de {rayonDepot} km du dépôt, on pourra conseiller aux
-        clients en livraison les jours où une tournée passe dans leur commune ou à moins de {rayonTournee} km. Pour
-        l'instant, <strong>tout reste ici, dans l'admin</strong> : les clients ne voient rien.
+        clients en livraison les jours où une tournée passe dans leur commune ou à moins de {rayonTournee} km. C'est vous
+        qui l'activez pour les clients avec la case ci-dessous.
       </p>
+      {settings && <Interrupteur settings={settings} updateSettings={updateSettings} />}
       <SaisieMois
         onEnregistre={(m) => {
           setMois(m)

@@ -2,7 +2,7 @@
 // Au-delà de X km du dépôt (réglage, 10 km), une livraison est faite par un commercial quand il passe dans le
 // secteur : on peut conseiller au client les jours où une tournée passe dans sa commune ou à moins de Y km
 // (réglage, 3 km). Simple conseil, jamais une obligation. Pas de tournée connue = pas de conseil.
-import { COMMUNES_ZONE } from '../data/communesZone.js'
+import { COMMUNES_ZONE, COMMUNES_PAR_CODE_POSTAL } from '../data/communesZone.js'
 import { COORDONNEES_COMMUNES, DEPOT } from '../data/coordonneesCommunes.js'
 
 export const COMMERCIAUX = ['Julien', 'Fabrice', 'Gilles', 'Dominique']
@@ -147,4 +147,12 @@ export function conseilsLivraison(nomCommune, tournees, { aujourdhui, rayonDepot
     }
   }
   return { distanceDepot: depot, conseils: [...parDate.values()].sort((a, b) => a.date.localeCompare(b.date)) }
+}
+
+// Commune d'un client à partir de son code postal et de sa ville (null si on ne peut pas savoir).
+export function communeClient(codePostal, ville) {
+  const candidates = COMMUNES_PAR_CODE_POSTAL[String(codePostal || '').trim()] || []
+  if (candidates.length === 1) return candidates[0]
+  const saisie = normaliserNom(ville)
+  return candidates.find((n) => normaliserNom(n) === saisie) || null
 }
