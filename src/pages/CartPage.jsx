@@ -16,6 +16,7 @@ import CroppableImage from '../components/CroppableImage'
 import ChampsCompte, { nouveauCompte } from '../components/ChampsCompte'
 import { useAuth } from '../context/AuthContext'
 import { MOTIFS_BON, euros, eurosTexte } from '../lib/offres'
+import MotDePasseOublie from '../components/MotDePasseOublie'
 import { urlProduit } from '../lib/adresses'
 import { useSeo } from '../lib/seo'
 import MentionAlcool from '../components/MentionAlcool'
@@ -604,10 +605,7 @@ export default function CartPage() {
                           onChange={(e) => setConnexionMdp(e.target.value)}
                           className="border border-ink/20 p-2 font-body text-sm focus:border-forest focus:outline-none"
                         />
-                        <p className="font-body text-xs text-muted">
-                          Mot de passe oublié ? Appelez-nous au{' '}
-                          {settings?.contact_telephone || DEFAULT_TELEPHONE}.
-                        </p>
+                        <MotDePasseOublie emailInitial={connexionEmail} />
                       </div>
                     )}
                   </>

@@ -6,10 +6,10 @@ import { useAuth } from '../context/AuthContext'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { supabase } from '../lib/supabaseClient'
 import { printBonDeCommande } from '../lib/printOrder'
-import { DEFAULT_TELEPHONE } from '../lib/siteDefaults'
 import { MOTIFS_BON, euros, eurosTexte, lienParrainage } from '../lib/offres'
 import { aller } from '../lib/navigation'
 import { useSeo } from '../lib/seo'
+import MotDePasseOublie from '../components/MotDePasseOublie'
 import { finPrivilege, privilegeActif } from '../../supabase/functions/_shared/calculCommande.js'
 
 const STATUTS = { nouvelle: 'Reçue', preparee: 'Préparée', livree: 'Livrée / retirée' }
@@ -28,7 +28,6 @@ function Cadre({ titre, children }) {
 
 function NonConnecte() {
   const { connexion, creerCompte } = useAuth()
-  const { settings } = useSiteSettings()
   const [email, setEmail] = useState('')
   const [mdp, setMdp] = useState('')
   const [erreur, setErreur] = useState('')
@@ -88,10 +87,10 @@ function NonConnecte() {
           <button type="submit" disabled={envoi} className={bouton}>
             Se connecter
           </button>
-          <p className="font-body text-xs text-muted">
-            Mot de passe oublié ? Appelez-nous au {settings?.contact_telephone || DEFAULT_TELEPHONE}.
-          </p>
         </form>
+        <div className="mt-3">
+          <MotDePasseOublie emailInitial={email} />
+        </div>
       </Cadre>
 
       <Cadre titre="Créer mon compte">

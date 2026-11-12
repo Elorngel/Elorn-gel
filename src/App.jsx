@@ -22,6 +22,7 @@ import MonComptePage from './pages/MonComptePage'
 import MaintenancePage from './pages/MaintenancePage'
 import ParrainagePage from './pages/ParrainagePage'
 import ChoixStatistiques from './components/ChoixStatistiques'
+import NouveauMotDePassePage from './pages/NouveauMotDePassePage'
 import { useSiteSettings } from './hooks/useSiteSettings'
 import { useAuth } from './context/AuthContext'
 import { supabase } from './lib/supabaseClient'
@@ -330,6 +331,8 @@ function App() {
             <LegalPage title="Politique de confidentialité" content={confidentialite}>
               <ChoixStatistiques />
             </LegalPage>
+          ) : page.type === 'nouveau-mot-de-passe' ? (
+            <NouveauMotDePassePage />
           ) : page.type === 'parrainage' ? (
             <ParrainagePage codeRecu={page.code} />
           ) : page.type === 'mon-compte' ? (

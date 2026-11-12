@@ -38,6 +38,7 @@ const FIXES = {
   '/cgu': 'cgu',
   '/mentions-legales': 'mentions-legales',
   '/confidentialite': 'confidentialite',
+  '/nouveau-mot-de-passe': 'nouveau-mot-de-passe',
   '/admin': 'admin',
   '/admin/roue': 'roue',
 }

@@ -195,3 +195,30 @@ export function emailBonParrain(bon, parrain, prenomFilleul, infos) {
       <a href="tel:${esc(infos.telephone.replace(/\s/g, ''))}" style="color:${C.paper};font-weight:bold;white-space:nowrap;">${esc(infos.telephone).replace(/ /g, '&nbsp;')}</a>.`,
   })
 }
+
+// Email « mot de passe oublié » (fonction mot-de-passe-oublie) : lien pour choisir un nouveau mot de passe.
+export function emailMotDePasse(prenom, lien, infos) {
+  const contenu = `
+    <p style="margin:0 0 12px;">Bonjour${prenom ? ` ${esc(prenom)}` : ''},</p>
+    <p style="margin:0 0 4px;">Vous avez demandé à changer le mot de passe de votre compte Bontin.
+      Cliquez sur le bouton ci-dessous pour en choisir un nouveau.</p>
+    ${bouton(lien, 'Choisir un nouveau mot de passe')}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.stone};margin-top:22px;">
+      <tr><td style="padding:12px 16px;font:14px/1.5 ${TEXTE};">
+        <strong>Ce lien est valable 1 heure</strong> et ne sert qu'une seule fois.<br>
+        Vous n'êtes pas à l'origine de cette demande ? Ignorez simplement cet email :
+        votre mot de passe actuel reste valable et personne ne peut le changer sans ce lien.
+      </td></tr>
+    </table>
+    <p style="margin:18px 0 0;font:12px/1.5 ${TEXTE};color:${C.muted};">Le bouton ne fonctionne pas ? Copiez cette adresse dans votre navigateur :<br>
+      <a href="${esc(lien)}" style="color:${C.muted};word-break:break-all;">${esc(lien)}</a></p>`
+  return cadre({
+    infos,
+    apercu: 'Choisissez un nouveau mot de passe pour votre compte Bontin (lien valable 1 heure).',
+    titre: 'Nouveau mot de passe',
+    sousTitre: 'Demande de réinitialisation de votre compte',
+    contenu,
+    pied: `Une question ? Répondez simplement à cet email ou appelez-nous au
+      <a href="tel:${esc(infos.telephone.replace(/\s/g, ''))}" style="color:${C.paper};font-weight:bold;white-space:nowrap;">${esc(infos.telephone).replace(/ /g, '&nbsp;')}</a>.`,
+  })
+}
