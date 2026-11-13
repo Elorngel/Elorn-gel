@@ -142,6 +142,13 @@ bannière) : liste libre de produits dans l'ordre choisi (`fetes.produits` = [{i
 « En couverture » (4 max, `produitsCouverture`) = photos de la bannière. Page et lien cachés aux clients tant que la case
 est décochée (un admin voit `/fetes` avec un bandeau « aperçu »), pas dans le sitemap. Contenu dans
 `parametres_site.fetes` (jsonb, SQL appliqué le 13/11/2026), valeurs de départ et calculs dans `src/lib/fetes.js`. Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).
+**Mode Black Friday** (13/11/2026, `supabase-black-friday.sql`, maquette 2 « ticket de caisse » choisie) : admin → onglet
+« Black Friday » (`BlackPanel.jsx`) : case `parametres_site.black_actif` (prioritaire sur le mode fêtes) → `HeroBlack.jsx`
+remplace la bannière de l'accueil (titre plein + contour, ticket Bontin avec lignes prix barré / prix remisé, « Vous
+économisez jusqu'à X % », code-barres, vignettes des 4 premiers produits) + lien noir en tête du menu (`black.menu`, vers
+`black.lien`, défaut /promotions). Prix = VRAIES promos des fiches produits (`ligneTicket` dans `src/lib/blackFriday.js`,
+même conditionnement et remise retrait que la carte produit) ; produit sans promo en cours / en rupture / masqué = absent
+du ticket client (signalé en rouge dans l'aperçu admin). Contenu `parametres_site.black` (jsonb : textes + liste d'ids).
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au

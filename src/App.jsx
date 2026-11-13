@@ -11,6 +11,7 @@ import { isPromoActive, isDestockage } from './lib/pricing'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import HeroFetes from './components/HeroFetes'
+import HeroBlack from './components/HeroBlack'
 import { contenuFetes } from './lib/fetes'
 import ProductCard from './components/ProductCard'
 import AdminGate from './components/AdminGate'
@@ -145,6 +146,8 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
       {isHomepage &&
         (!reglages ? (
           <div className="bg-forest h-[420px] lg:h-[528px]" />
+        ) : reglages.black_actif ? (
+          <HeroBlack contenu={reglages.black} />
         ) : reglages.fetes_actif ? (
           <HeroFetes contenu={reglages.fetes} />
         ) : (

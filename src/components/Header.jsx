@@ -273,6 +273,14 @@ export default function Header({ activeCategory }) {
 
       {/* Navigation catégories avec sous-menus déroulants : à partir de md */}
       <nav ref={navRef} className="hidden md:flex gap-5 text-sm px-4 md:px-5 pb-3 flex-wrap">
+        {settings?.black_actif && (
+          <a
+            href={settings.black?.lien || '/promotions'}
+            className="font-tag text-xs uppercase font-bold bg-[#111] text-paper px-2 py-0.5 self-center hover:bg-rust transition-colors"
+          >
+            {settings.black?.menu || 'Black Week'}
+          </a>
+        )}
         {settings?.fetes_actif && (
           <a
             href="/fetes"
@@ -391,6 +399,17 @@ export default function Header({ activeCategory }) {
           </div>
 
           <nav className="flex flex-col divide-y divide-ink/10 border-t border-ink/10">
+            {settings?.black_actif && (
+              <div className="py-3">
+                <a
+                  href={settings.black?.lien || '/promotions'}
+                  onClick={() => setMenuOpen(false)}
+                  className="font-tag text-xs uppercase font-bold bg-[#111] text-paper px-2 py-1"
+                >
+                  {settings.black?.menu || 'Black Week'}
+                </a>
+              </div>
+            )}
             {settings?.fetes_actif && (
               <div className="py-3">
                 <a href="/fetes" onClick={() => setMenuOpen(false)} className="font-body text-sm text-rust font-semibold">

@@ -15,6 +15,7 @@ import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import CalendarPanel from '../components/CalendarPanel'
 import TourneesPanel from '../components/TourneesPanel'
 import FetesPanel from '../components/FetesPanel'
+import BlackPanel from '../components/BlackPanel'
 import OffresPanel from '../components/OffresPanel'
 import ClientsPanel from '../components/ClientsPanel'
 import NewProductModal from '../components/NewProductModal'
@@ -855,6 +856,12 @@ export default function AdminPage() {
           >
             Fêtes
           </button>
+          <button
+            onClick={() => setTab('black')}
+            className={`px-4 py-2 border-l border-ink/40 ${tab === 'black' ? 'bg-ink text-paper' : 'text-ink'}`}
+          >
+            Black Friday
+          </button>
         </div>
 
         {tab === 'commandes' ? (
@@ -877,6 +884,8 @@ export default function AdminPage() {
           <TourneesPanel />
         ) : tab === 'fetes' ? (
           <FetesPanel />
+        ) : tab === 'black' ? (
+          <BlackPanel />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-4 flex-wrap">

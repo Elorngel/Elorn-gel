@@ -1,0 +1,60 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Prix modifiés</title><style>
+@font-face{font-family:'Bebas Neue';src:url(bebas-neue-latin-400-normal.woff2)}
+@font-face{font-family:'Public Sans';font-weight:400;src:url(public-sans-latin-400-normal.woff2)}
+@font-face{font-family:'Public Sans';font-weight:600;src:url(public-sans-latin-600-normal.woff2)}
+@font-face{font-family:'Roboto Condensed';font-weight:700;src:url(roboto-condensed-latin-700-normal.woff2)}
+@page{size:210mm 297mm;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:'Public Sans';color:#1B231A;background:#E7E2D3;width:210mm;height:297mm}
+.bandeau{height:8mm;background:#1B231A;color:#fff;font:700 7.5pt 'Roboto Condensed';letter-spacing:.18em;display:flex;align-items:center;justify-content:center}
+.bandeau b{color:#E2B49F;margin:0 .6em}
+.page{padding:8mm 12mm}
+h1{font:400 40pt/0.9 'Bebas Neue';color:#23422B}
+.trait{width:34mm;height:3pt;background:#A34428;margin:2.5mm 0 3mm}
+.intro{font-size:9pt;color:#6B7264;line-height:1.4;margin-bottom:5mm}
+table{width:100%;border-collapse:collapse;background:#FBFAF6}
+th{background:#23422B;color:#fff;font:700 8pt 'Roboto Condensed';letter-spacing:.1em;text-transform:uppercase;text-align:left;padding:2.2mm 2.5mm}
+th.n,td.n{text-align:right}
+td{padding:2.1mm 2.5mm;border-bottom:.5pt solid #DDD8C8;font-size:8.5pt;vertical-align:middle}
+td.p{font:700 8pt 'Roboto Condensed';color:#6B7264;width:12mm}
+td.nom{font:700 9pt 'Roboto Condensed';letter-spacing:.02em;text-transform:uppercase}
+td.anc{color:#6B7264;white-space:nowrap}
+td.anc s{text-decoration-color:#A34428}
+td.nv{white-space:nowrap}
+td.nv b{font:400 15pt/1 'Bebas Neue';color:#A34428;letter-spacing:.02em}
+td.nv span,td.anc span{display:block;font-size:7.5pt;color:#6B7264}
+td.d{font:700 8.5pt 'Roboto Condensed';color:#A34428;white-space:nowrap}
+.pied{margin-top:5mm;font-size:7.5pt;color:#6B7264;line-height:1.4}
+</style></head><body>
+<div class="bandeau">SURGELÉS EN LIVRAISON OU EN RETRAIT<b>·</b>02 56 31 11 97<b>·</b>BONTIN.FR</div>
+<div class="page">
+<h1>PRIX MODIFIÉS</h1><div class="trait"></div>
+<p class="intro">Comparaison entre le catalogue Canva « Bontin SEPTEMBRE » (relevé du 13/11/2026) et le catalogue généré aux couleurs du site (prix de septembre 2026).<br>16 produits ont changé de prix, tous à la hausse. Tous les autres prix sont identiques.</p>
+<table>
+<thead><tr><th>Page</th><th>Produit</th><th class="n">Ancien prix</th><th class="n">Nouveau prix</th><th class="n">Écart</th></tr></thead>
+<tbody id="lignes"></tbody>
+</table>
+<p class="pied">Les prix au kilo indiqués ont été mis à jour dans Canva en même temps que les prix. À reporter dans le catalogue généré (PDF) et dans le document Canva « nouvelle charte », qui affichent encore les anciens prix.</p>
+</div>
+<script>
+const L=[
+[2,"4 Feuilletés chèvre-épinards","8,39","19,06€/kg","8,89","20,20€/kg"],
+[2,"4 Feuilletés Saint-Jacques et légumes","8,89","20,20€/kg","9,39","21,34€/kg"],
+[2,"4 Ficelles picardes","8,69","17,38€/kg","9,19","18,38€/kg"],
+[2,"4 Paniers poulet poireaux lardons","7,69","17,48€/kg","8,09","18,39€/kg"],
+[2,"6 Galettes aux fruits de mer","11,49","15,96€/kg","12,09","16,79€/kg"],
+[2,"6 Galettes jambon-fromage-champignons","10,69","14,85€/kg","11,29","15,68€/kg"],
+[2,"6 Galettes saumon poireaux","13,49","18,73€/kg","14,19","19,71€/kg"],
+[4,"Paëlla royale","12,69","14,10€/kg","13,29","14,76€/kg"],
+[5,"Filet de limande meunière","13,09","16,36€/kg","13,99","17,49€/kg"],
+[5,"Filet de cabillaud pané façon fish & chips","20,49","20,49€/kg","21,89","21,89€/kg"],
+[8,"8 Cordons bleus","9,35","9,35€/kg","9,89","9,89€/kg"],
+[8,"Nuggets de poulet","9,09","9,09€/kg","9,59","9,59€/kg"],
+[8,"Cuisses de poulet fermier","15,55","10,37€/kg","16,49","10,99€/kg"],
+[8,"Aiguillettes de poulet marinées barbecue","15,79","15,79€/kg","16,69","16,69€/kg"],
+[8,"Aiguillettes de poulet panées","12,49","12,49€/kg","13,19","13,19€/kg"],
+[10,"Pâtes feuilletées rondes bio","7,45","14,90€/kg","7,79","15,58€/kg"]];
+const n=s=>parseFloat(s.replace(",","."));
+document.getElementById("lignes").innerHTML=L.map(([p,nom,a,ak,b,bk])=>`<tr><td class="p">p. ${p}</td><td class="nom">${nom}</td><td class="anc n"><s>${a} €</s><span>${ak}</span></td><td class="nv n"><b>${b}€</b><span>${bk}</span></td><td class="d n">+${(n(b)-n(a)).toFixed(2).replace(".",",")} €</td></tr>`).join("");
+</script>
+</body></html>
