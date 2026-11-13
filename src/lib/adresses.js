@@ -32,6 +32,7 @@ const FIXES = {
   '/promotions': 'promotions',
   '/destockage': 'destockage',
   '/petits-formats': 'petits-formats',
+  '/fetes': 'fetes',
   '/panier': 'panier',
   '/mon-compte': 'mon-compte',
   '/cgv': 'cgv',

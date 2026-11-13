@@ -273,6 +273,16 @@ export default function Header({ activeCategory }) {
 
       {/* Navigation catégories avec sous-menus déroulants : à partir de md */}
       <nav ref={navRef} className="hidden md:flex gap-5 text-sm px-4 md:px-5 pb-3 flex-wrap">
+        {settings?.fetes_actif && (
+          <a
+            href="/fetes"
+            className={`font-body pb-0.5 border-b-2 text-rust font-semibold transition-colors ${
+              activeCategory === 'Les fêtes' ? 'border-rust' : 'border-transparent hover:border-rust/40'
+            }`}
+          >
+            Les fêtes
+          </a>
+        )}
         {categories.map((cat) => {
           const subcats = subcategoriesByCategory[cat] || []
           const isOpen = openCategory === cat
@@ -381,6 +391,13 @@ export default function Header({ activeCategory }) {
           </div>
 
           <nav className="flex flex-col divide-y divide-ink/10 border-t border-ink/10">
+            {settings?.fetes_actif && (
+              <div className="py-3">
+                <a href="/fetes" onClick={() => setMenuOpen(false)} className="font-body text-sm text-rust font-semibold">
+                  Les fêtes
+                </a>
+              </div>
+            )}
             {categories.map((cat) => {
               const subcats = subcategoriesByCategory[cat] || []
               const isOpen = openMobileCategory === cat

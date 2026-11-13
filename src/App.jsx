@@ -10,6 +10,8 @@ import { getSupplierLogo } from './lib/suppliers'
 import { isPromoActive, isDestockage } from './lib/pricing'
 import Header from './components/Header'
 import Hero from './components/Hero'
+import HeroFetes from './components/HeroFetes'
+import { contenuFetes } from './lib/fetes'
 import ProductCard from './components/ProductCard'
 import AdminGate from './components/AdminGate'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -39,7 +41,13 @@ import { useSeo } from './lib/seo'
 import { correspond } from './lib/texte'
 import { estDansRayon } from './lib/rayons'
 
-function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly }) {
+function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFullCatalog, petitsFormatsOnly, fetesOnly }) {
+  // Mode fêtes (admin → onglet Fêtes) : la bannière « Le menu des fêtes » remplace la bannière habituelle.
+  const { settings: reglages } = useSiteSettings()
+  const { estAdmin } = useAuth()
+  // Rubrique « Les fêtes » (/fetes) : visible des clients seulement quand le mode fêtes est activé ; un admin la voit toujours.
+  const fetes = contenuFetes(reglages?.fetes)
+  const fetesVisibles = !!reglages?.fetes_actif || estAdmin
   const { products, loading: produitsEnCours, error } = useProducts({ leger: true })
   const { categories, subcategoriesByCategory, loading: rayonsEnCours } = useCategories()
   // Adresse /rayon/viandes/boeuf → noms réels « Viandes » / « Boeuf ».
@@ -64,9 +72,15 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
   let visibleProducts = publishedProducts
   let title = 'Tout le catalogue'
   const isHomepage =
-    !promoOnly && !destockageOnly && !searchQuery && !rayon && !showFullCatalog && !petitsFormatsOnly
+    !promoOnly && !destockageOnly && !searchQuery && !rayon && !showFullCatalog && !petitsFormatsOnly && !fetesOnly
 
-  if (promoOnly) {
+  if (fetesOnly) {
+    // Dans l'ordre choisi dans l'admin (onglet Fêtes).
+    visibleProducts = fetesVisibles
+      ? fetes.produits.map((f) => publishedProducts.find((p) => p.id === f.id)).filter(Boolean)
+      : []
+    title = fetes.titre || 'Les fêtes'
+  } else if (promoOnly) {
     visibleProducts = publishedProducts.filter(isPromoActive)
     title = 'Promotions'
   } else if (destockageOnly) {
@@ -100,7 +114,13 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
   useSeo(
     isHomepage
       ? { chemin: '/' }
-      : searchQuery
+      : fetesOnly
+        ? {
+            titre: fetes.titre || 'Les fêtes',
+            description: `Notre sélection pour les fêtes de fin d'année : produits surgelés ${lieu}.`,
+            indexer: !!reglages?.fetes_actif,
+          }
+        : searchQuery
         ? { titre: title, indexer: false }
         : promoOnly
           ? { titre: 'Promotions sur les surgelés', description: `Les promotions du moment sur nos produits surgelés, ${lieu}.` }
@@ -121,15 +141,24 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
 
   return (
     <>
-      <Header activeCategory={destockageOnly ? 'Déstockage' : activeCategory} />
-      {isHomepage && <Hero />}
+      <Header activeCategory={destockageOnly ? 'Déstockage' : fetesOnly ? 'Les fêtes' : activeCategory} />
+      {isHomepage &&
+        (!reglages ? (
+          <div className="bg-forest h-[420px] lg:h-[528px]" />
+        ) : reglages.fetes_actif ? (
+          <HeroFetes contenu={reglages.fetes} />
+        ) : (
+          <Hero />
+        ))}
 
       <main className="px-5 py-8 max-w-6xl mx-auto">
         {!isHomepage && !searchQuery && (
           <Breadcrumb
             items={[
               { label: 'Accueil', href: '/' },
-              ...(promoOnly
+              ...(fetesOnly
+                ? [{ label: 'Les fêtes' }]
+                : promoOnly
                 ? [{ label: 'Promotions' }]
                 : destockageOnly
                   ? [{ label: 'Déstockage' }]
@@ -158,6 +187,13 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
             </a>
           )}
         </div>
+
+        {fetesOnly && !reglages?.fetes_actif && estAdmin && (
+          <p className="bg-rust text-paper font-body text-sm px-3 py-2 mb-4">
+            Aperçu réservé aux admins : cette rubrique est cachée aux clients tant que le mode fêtes n'est pas activé
+            (admin → onglet Fêtes).
+          </p>
+        )}
 
         {activeCategory && subcategoryOptions.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-5">
@@ -211,7 +247,9 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
           <p className="font-body text-sm text-muted">
             {petitsFormatsOnly
               ? "Aucun format exclusif retrait pour l'instant."
-              : 'Aucun produit trouvé.'}
+              : fetesOnly
+                ? 'Le menu des fêtes arrive bientôt.'
+                : 'Aucun produit trouvé.'}
           </p>
         )}
 
@@ -356,6 +394,7 @@ function App() {
               destockageOnly={page.type === 'destockage'}
               showFullCatalog={page.type === 'catalogue'}
               petitsFormatsOnly={page.type === 'petits-formats'}
+              fetesOnly={page.type === 'fetes'}
             />
           )}
           <ConseilAssistant />

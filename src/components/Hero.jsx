@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
-import { usePriceMode } from '../context/PriceModeContext'
+import BandeauRetrait from './BandeauRetrait'
 import CroppableImage from './CroppableImage'
 import { isPromoActive } from '../lib/pricing'
 
@@ -37,7 +37,6 @@ function diaposDepuisReglages(settings) {
 export default function Hero() {
   const { settings } = useSiteSettings()
   const { products } = useProducts({ leger: true })
-  const { mode, setMode } = usePriceMode()
   const promoCount = products.filter((p) => p.actif !== false && isPromoActive(p)).length
 
   const diapos = diaposDepuisReglages(settings)
@@ -133,20 +132,8 @@ export default function Hero() {
       </div>
     </section>
 
-    {mode === 'livraison' && (
-      <div className="bg-stone border-b border-ink/15 px-5 py-3 flex items-center justify-center gap-3 flex-wrap text-center">
-        <p className="font-body text-sm text-ink">
-          📦 Vous commandez régulièrement ? En mode <strong>Retrait</strong>, retrouvez
-          des conditionnements plus petits, adaptés aux commandes fréquentes.
-        </p>
-        <button
-          onClick={() => setMode('retrait')}
-          className="font-tag text-xs uppercase font-semibold text-forest hover:underline shrink-0"
-        >
-          Passer en Retrait →
-        </button>
-      </div>
-    )}
+    <BandeauRetrait />
     </>
   )
 }
+

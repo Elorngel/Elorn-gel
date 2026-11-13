@@ -133,6 +133,15 @@ groupée » (vert forêt, dates en pages de calendrier, choisie en brique), affi
 (onglet Tournées, `parametres_site.tournees_conseil_actif`, `supabase-tournees-client.sql`) ; données via la fonction SQL
 `tournees_a_venir()` (dates + communes, sans le commercial, vide si désactivé) ; dates conseillées ajoutées à la liste
 des jours même au-delà des 7 jours, si le calendrier a des créneaux ce jour-là (« 🌿 jour conseillé »).
+**Mode fêtes** (13/11/2026, `supabase-fetes.sql`) : admin → onglet « Fêtes » (`FetesPanel.jsx`) : case « Afficher le menu
+des fêtes » (`parametres_site.fetes_actif`, décochée par défaut) qui remplace la bannière de l'accueil (`Hero.jsx`) par
+`HeroFetes.jsx` (maquette validée : carte « Le menu des fêtes » à coins coupés + filet or, décompte « J - 42 » jusqu'à
+`date_cible`, 4 photos produits carrées cadrées comme sur le site avec phrase dorée, puis « Les dates à retenir » ; dates
+passées masquées automatiquement). Rubrique « Les fêtes » (page `/fetes`, lien rouille en tête du menu, bouton de la
+bannière) : liste libre de produits dans l'ordre choisi (`fetes.produits` = [{id, couverture, phrase, nom}]), ceux cochés
+« En couverture » (4 max, `produitsCouverture`) = photos de la bannière. Page et lien cachés aux clients tant que la case
+est décochée (un admin voit `/fetes` avec un bandeau « aperçu »), pas dans le sitemap. Contenu dans
+`parametres_site.fetes` (jsonb, SQL appliqué le 13/11/2026), valeurs de départ et calculs dans `src/lib/fetes.js`. Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au
