@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
 import HeroBlack from './HeroBlack'
+import { PriceModeProvider, usePriceMode } from '../context/PriceModeContext'
 import { BLACK_DEFAUT, contenuBlack } from '../lib/blackFriday'
 import { getDiscountPercent, getPromoStatus } from '../lib/pricing'
 import { correspond } from '../lib/texte'
@@ -14,6 +15,28 @@ const etiquette = 'block font-tag text-[10px] uppercase text-muted mb-1'
 const bouton =
   'bg-ink text-paper font-tag text-xs font-semibold uppercase tracking-wide px-3 py-2 hover:bg-forest disabled:bg-muted'
 const dateFr = (d) => (d ? new Date(`${d}T12:00:00`).toLocaleDateString('fr-FR') : '')
+
+// L'admin n'est pas dans le PriceModeProvider du site : l'aperçu a le sien, avec un choix Retrait / Livraison.
+function ChoixModeApercu() {
+  const { mode, setMode } = usePriceMode()
+  return (
+    <div className="flex border border-ink w-fit mb-3">
+      {[
+        ['retrait', 'Prix retrait'],
+        ['livraison', 'Prix livraison'],
+      ].map(([m, libelle]) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => setMode(m)}
+          className={`px-3 py-1.5 font-tag text-xs uppercase font-semibold ${mode === m ? 'bg-ink text-paper' : 'text-ink'}`}
+        >
+          {libelle}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 function Cadre({ titre, children }) {
   return (
@@ -246,10 +269,12 @@ export default function BlackPanel() {
 
       <Cadre titre="Aperçu">
         <p className="font-body text-xs text-muted mb-3">
-          Ce que verront les clients en haut de la page d'accueil, avec les prix du mode choisi en haut du site (Retrait
-          ou Livraison). Les lignes signalées en rouge n'ont pas de promo en cours et ne seront pas montrées aux clients.
+          Ce que verront les clients en haut de la page d'accueil, avec les prix retrait ou livraison (boutons ci-dessous). Les lignes signalées en rouge n'ont pas de promo en cours et ne seront pas montrées aux clients.
         </p>
-        <HeroBlack contenu={brouillon} apercu />
+        <PriceModeProvider>
+          <ChoixModeApercu />
+          <HeroBlack contenu={brouillon} apercu />
+        </PriceModeProvider>
       </Cadre>
     </div>
   )

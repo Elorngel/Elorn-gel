@@ -149,6 +149,8 @@ remplace la bannière de l'accueil (titre plein + contour, ticket Bontin avec li
 `black.lien`, défaut /promotions). Prix = VRAIES promos des fiches produits (`ligneTicket` dans `src/lib/blackFriday.js`,
 même conditionnement et remise retrait que la carte produit) ; produit sans promo en cours / en rupture / masqué = absent
 du ticket client (signalé en rouge dans l'aperçu admin). Contenu `parametres_site.black` (jsonb : textes + liste d'ids).
+ATTENTION : l'admin (`/admin`) n'est PAS dans le `PriceModeProvider` du site → tout aperçu admin qui utilise
+`usePriceMode` doit avoir son propre `<PriceModeProvider>` (bug du 14/11/2026 : onglet Black Friday qui plantait).
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au
