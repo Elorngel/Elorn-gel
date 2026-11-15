@@ -1,0 +1,336 @@
+BONTIN — PROGRAMME COMPLET FIN D'ANNÉE 2026
+Black Week (23 → 29 novembre) puis Fêtes (30 novembre → 2 janvier)
+Guide avec visuels : docs/black-week/kit-facebook.html · Visuels : dossier « Black-Week-Facebook » sur le Bureau
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. LES DEUX OPÉRATIONS, SANS LES MÉLANGER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BLACK WEEK
+• Du lundi 23 au dimanche 29 novembre
+• Admin → onglet « Black Friday »
+• 7 produits à -25 % maximum + le colis à 69,90 € (-30 %)
+• Jeu concours Facebook du vendredi 20 au jeudi 26 novembre, tirage le vendredi 27 à midi (jour du Black Friday)
+
+FÊTES
+• Du lundi 30 novembre au samedi 2 janvier
+• Admin → onglet « Fêtes »
+• Bannière « Le menu des fêtes » + rubrique « Les fêtes » dans le menu du site
+• Kit Facebook des fêtes à préparer début décembre
+
+CE QUI SE FAIT TOUT SEUL (une fois les cases cochées)
+• Les bannières du site s'affichent et s'arrêtent à minuit aux dates prévues
+• Les promos des fiches produits commencent le 23 et s'arrêtent le 29 au soir
+• Le 30 novembre, la bannière des fêtes remplace celle de la Black Week
+• Un produit en rupture disparaît tout seul du ticket
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. LES OFFRES DE LA BLACK WEEK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Règle : 25 % de remise maximum par produit, 30 % pour le colis. Dans la limite des stocks.
+
+À saisir dans Admin → Produits (promo du 23/11 au 29/11) :
+• 6 COQUILLES SAINT JACQUES 55% DE NOIX : 25,19 → 18,99 €  ← le prix choc
+• 8 PANIERS JAMBON FROMAGE : 8,19 → 6,19 €
+• STEAKS HACHES 15% (1 kg) : 19,49 → 14,69 €
+• RÔTI FONDANT DE DINDE AU BEURRE (550 g) : 8,99 → 6,79 €
+• ESCALOPE DE POULET (1 kg) : 13,29 → 9,99 €
+• PAELLA ROYALE : 12,69 → 9,59 €
+• 12 MACARONS ASSORTIS : 10,45 → 7,89 €
+
+LE COLIS BLACK WEEK : 100,54 € de produits pour 69,90 €
+• Haché tradition en grain 1 kg (20,49 €)
+• Pavés de saumon sans peau 1 kg (26,90 €)
+• Filet mignon 1 kg (14,59 €)
+• Hachis parmentier bœuf 2 × 500 g (16,09 €)
+• 28 nems au poulet (10,59 €)
+• Tarte aux pommes 8 parts (7,89 €)
+• 4 bâtonnets double caramel (3,99 €)
+C'est aussi le lot du jeu concours.
+
+Le message à répéter partout :
+« Black Week Bontin : jusqu'à -25 % sur une sélection de surgelés et le colis de 7 produits à 69,90 € au lieu de 100,54 € (-30 %). Du 23 au 29 novembre sur bontin.fr, en livraison ou en retrait à Plouédern. »
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. À PRÉPARER CETTE SEMAINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ Pousser la dernière version du site avec GitHub Desktop (dates automatiques + nouvelle liste du ticket)
+☐ Avant ven. 20 à midi — Meta Business Suite : programmer toutes les publications de la partie 4 (sauf les coulisses du 26 et le gagnant du 27)
+☐ Avant ven. 20 — Admin → Produits : saisir les 7 promos ci-dessus, du 23/11/2026 au 29/11/2026
+☐ Avant ven. 20 — Admin → Produits : créer le colis, MASQUÉ (pas à pas : partie 9)
+☐ Avant ven. 20 — Admin → Black Friday : ajouter le colis et le monter en 1er (▲), Enregistrer, cocher la case → badge « Programmé : s'affichera le 23/11/2026 »
+☐ Avant ven. 20 — Avec Sylvie : stocks des 8 produits (surtout les Saint-Jacques) + de quoi préparer les colis
+☐ Avant ven. 20 — Décider : code BIENVENUE10 (-10 %) actif ou non pendant la Black Week (Admin → Offres). Il s'ajoute aux prix Black Week (colis à 62,91 €).
+☐ Avant dim. 22 — Admin → Fêtes : produits de la rubrique, 4 photos « en couverture », textes, dates à retenir calées sur vos vrais horaires, Enregistrer, cocher la case → badge « Programmé : s'affichera le 30/11/2026 »
+☐ Avant dim. 22 — Admin → Calendrier : fermetures des fêtes (25/12, 01/01) et horaires du 24/12 et du 31/12
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. JOUR PAR JOUR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+(P) = publication programmée à l'avance · ☐ = à faire à la main
+
+JEUDI 19 NOVEMBRE
+• 18 h 30 (P) Teasing n° 1 (annonce aussi le concours du lendemain) — visuel 2-teasing
+
+VENDREDI 20
+• 12 h (P) Jeu concours — visuel 1-concours
+☐ Juste après : coller le règlement en 1er commentaire
+☐ Booster la publication : 3 €/jour jusqu'au 26, objectif « interactions »
+☐ Après-midi : partager le concours dans 4 ou 5 groupes Facebook de communes (Plouédern, Landerneau, Landivisiau, Lesneven, Daoulas…)
+
+SAMEDI 21
+☐ Répondre aux commentaires du concours (ça le fait remonter) ; compléter les groupes si besoin
+
+DIMANCHE 22
+• 18 h (P) Teasing prix choc + rappel concours — visuel 4-produit-appel
+
+LUNDI 23 — DÉBUT DE LA BLACK WEEK (bannière du site affichée toute seule à minuit)
+☐ 8 h : passer le colis en « Publié » (Admin → Produits), puis vérifier bontin.fr
+• 8 h (P) Lancement — visuel 3-lancement
+☐ 8 h : story (visuel 7-story, avec le lien bontin.fr)
+☐ Changer la photo de couverture Facebook (visuel 8-couverture)
+☐ Booster le lancement : 7 €/jour jusqu'au 29, objectif « visites sur le site », lien bontin.fr
+☐ Message Black Week dans les groupes de communes
+
+MARDI 24
+• 12 h (P) Le colis — visuel 5-colis
+
+MERCREDI 25
+• 18 h 30 (P) Le prix choc — visuel 4-produit-appel
+
+JEUDI 26
+☐ 12 h : photo ou courte vidéo des coulisses au dépôt (téléphone à la verticale) + texte de la partie 7 (rappelle la fin du concours)
+• Minuit : fin du jeu concours
+
+VENDREDI 27 — BLACK FRIDAY
+• 8 h (P) Jour du Black Friday — visuel 3-lancement
+☐ Story (visuel 7-story)
+☐ 12 h : tirage au sort du concours + annonce du gagnant (commentaire sous le concours + publication)
+☐ Contacter le gagnant par message privé (retrait ou livraison du colis)
+
+SAMEDI 28
+• 11 h 30 (P) Plus que 2 jours — visuel 5-colis
+
+DIMANCHE 29
+• 10 h (P) Dernier jour — visuel 6-dernier-jour
+☐ Story
+• Minuit : fin automatique de la Black Week
+
+LUNDI 30 — DÉBUT DES FÊTES (bannière des fêtes affichée toute seule à minuit)
+☐ Masquer le colis
+☐ Remettre l'ancienne photo de couverture Facebook
+• 12 h (P) Merci
+☐ Noter les chiffres : commandes, colis vendus, nouveaux comptes « connu par Facebook », coût par clic des publicités
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. FÊTES (30 NOVEMBRE → 2 JANVIER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ Début décembre — Avec Claude : kit Facebook des fêtes (même principe que la Black Week)
+Dates à retenir affichées sur le site (à vérifier dans l'onglet Fêtes) :
+• 15/12 : commandez tôt
+• 23/12 : dernières livraisons
+• 24/12 : dernier retrait (midi)
+• 31/12 : réveillon (retrait midi)
+Samedi 2 janvier : dernier jour de la bannière des fêtes (arrêt automatique à minuit)
+☐ Début janvier : bilan de fin d'année
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. PUBLICITÉ FACEBOOK (≈ 70 € en tout)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Concours : 3 €/jour × 7 jours (20 → 26), objectif « Plus d'interactions »
+• Lancement : 7 €/jour × 7 jours (23 → 29), objectif « Plus de visites sur le site », lien https://bontin.fr
+• Audience : personnes vivant dans un rayon de 25 km autour de Plouédern · 25 à 65 ans et plus · centres d'intérêt vides
+• Après 2-3 jours : coût par clic sur le lien. Moins de 0,50 € = bien ; plus de 1 € = essayer le visuel 4-produit-appel
+
+Concours : ne PAS demander de partager ni d'identifier des amis (interdit par Facebook). Tirage : liste des participants (2 fois le nom de ceux qui ont créé leur compte), tirage sur random.org (« Lists »), capture d'écran.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. LES TEXTES DES PUBLICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+— JEU. 19 · TEASING —
+⬇️ Lundi 23 novembre : les prix tombent.
+
+7 jours de Black Week chez Bontin : des surgelés que vous connaissez bien à prix cassés, et un colis surprise à -30 %… On ne vous dit pas encore lesquels 🤫
+
+👉 Abonnez-vous à la page pour ne rien rater.
+🎁 Et dès demain midi : un jeu concours pour gagner notre colis Black Week de 100,54 € 👀
+
+— VEN. 20 · JEU CONCOURS —
+🎁 JEU CONCOURS : gagnez le colis Black Week Bontin (valeur 100,54 €) !
+
+Haché de bœuf, pavés de saumon, filet mignon, hachis parmentier, nems, tarte aux pommes et bâtonnets glacés : de quoi régaler toute la famille 😋
+
+Pour tenter votre chance :
+1️⃣ Aimez notre page Bontin
+2️⃣ Dites-nous en commentaire votre plat préféré pour les fêtes
+
+🍀 Bonus : créez votre compte sur bontin.fr et écrivez « compte créé ✅ » dans votre commentaire = une 2e chance !
+
+Tirage au sort le vendredi 27 novembre à 12 h, jour du Black Friday ! Colis à retirer au dépôt de Plouédern ou livré chez vous dans notre zone.
+
+Jeu gratuit sans obligation d'achat, réservé aux majeurs résidant dans le Finistère. Règlement en commentaire. Facebook n'est ni organisateur ni parrain de ce jeu.
+
+— VEN. 20 · RÈGLEMENT (1er commentaire) —
+📋 Règlement : jeu gratuit sans obligation d'achat organisé par ELORN GEL (Bontin) du 20/11/2026 au 26/11/2026 à 23 h 59. Ouvert aux personnes majeures résidant dans le Finistère, une participation par personne (+ 1 chance avec un compte créé sur bontin.fr). Participation : un commentaire sous cette publication. Tirage au sort parmi les participants le 27/11/2026 ; le gagnant est annoncé en commentaire et contacté par message privé. Sans réponse sous 7 jours, un nouveau tirage est fait. Lot : un colis de 7 produits surgelés d'une valeur de 100,54 € TTC, à retirer au dépôt de Plouédern ou livré dans notre zone de livraison, ni échangeable ni remboursable. Les données des participants servent uniquement au jeu. Facebook n'est ni organisateur ni parrain de ce jeu.
+
+— DIM. 22 · TEASING PRIX CHOC —
+Demain, c'est parti. On vous dévoile un des prix de la Black Week 👇
+
+6 coquilles Saint-Jacques 55 % de noix : 18,99 € au lieu de 25,19 € 🔥
+
+Et ce n'est qu'un début. Rendez-vous demain sur bontin.fr.
+
+🎁 Et le jeu concours continue jusqu'à jeudi soir : commentez la publication du vendredi 20 novembre pour tenter de gagner le colis !
+
+— LUN. 23 · LANCEMENT —
+🖤 C'EST PARTI : LA BLACK WEEK BONTIN 🖤
+
+Jusqu'au dimanche 29 novembre, voici votre ticket :
+🔥 6 coquilles Saint-Jacques 55 % de noix : 18,99 € (au lieu de 25,19 €)
+🥐 8 paniers jambon fromage : 6,19 € (au lieu de 8,19 €)
+🍔 Steaks hachés 15 % 1 kg : 14,69 € (au lieu de 19,49 €)
+🦃 Rôti fondant de dinde 550 g : 6,79 € (au lieu de 8,99 €)
+🍗 Escalopes de poulet 1 kg : 9,99 € (au lieu de 13,29 €)
+🥘 Paella royale : 9,59 € (au lieu de 12,69 €)
+🍬 12 macarons : 7,89 € (au lieu de 10,45 €)
+
+📦 Et le COLIS BLACK WEEK : 7 produits pour 69,90 € au lieu de 100,54 €.
+
+👉 Commandez sur bontin.fr : livraison chez vous ou retrait au dépôt de Plouédern.
+Dans la limite des stocks.
+
+🎁 Et il est encore temps de gagner le colis : jeu concours jusqu'à jeudi soir (publication du 20 novembre), tirage vendredi midi.
+
+— MAR. 24 · LE COLIS —
+📦 Le colis Black Week, c'est une semaine de repas réglée :
+haché de bœuf, pavés de saumon, filet mignon, hachis parmentier, 28 nems, une tarte aux pommes et des bâtonnets glacés pour le dessert.
+
+100,54 € de produits ➡️ 69,90 € seulement, soit 30,64 € d'économie.
+
+Jusqu'à dimanche sur bontin.fr, en livraison ou en retrait à Plouédern. Quantités limitées !
+
+— MER. 25 · LE PRIX CHOC —
+Un apéritif de fête à prix mini ? 🥂
+
+Nos 6 coquilles Saint-Jacques 55 % de noix passent à 18,99 € au lieu de 25,19 € pendant la Black Week. 30 minutes au four, sans décongélation, et c'est servi.
+
+👉 bontin.fr (dans la limite des stocks)
+
+— JEU. 26 · LES COULISSES —
+Ça s'active au dépôt de Plouédern ! 📦💪
+Les colis Black Week partent ce matin. Merci pour vos commandes 🙏
+
+Il vous reste jusqu'à dimanche pour profiter des prix : bontin.fr
+
+⏰ Dernier jour pour le jeu concours : tirage demain midi, le jour du Black Friday !
+
+— VEN. 27 · BLACK FRIDAY —
+🖤 C'est aujourd'hui le Black Friday !
+
+Chez Bontin, les prix cassés continuent jusqu'à dimanche :
+🔥 jusqu'à -25 % sur une sélection de surgelés
+📦 le colis de 7 produits à 69,90 € au lieu de 100,54 € (-30 %)
+
+👉 bontin.fr, livraison ou retrait à Plouédern.
+
+— VEN. 27 · GAGNANT DU CONCOURS (12 h) —
+🎉 Et le gagnant du colis Black Week est… [Prénom N.] ! Bravo 👏 Nous vous contactons par message privé.
+
+Merci à tous pour votre participation ! Pas gagné ? Le même colis est en vente jusqu'à dimanche à 69,90 € au lieu de 100,54 € sur bontin.fr 😉
+
+— SAM. 28 · PLUS QUE 2 JOURS —
+⏳ Plus que 2 jours pour la Black Week Bontin !
+
+Faites le plein : Saint-Jacques, apéritif, viandes et desserts jusqu'à -25 %, et le colis à 69,90 € (-30 %).
+
+👉 bontin.fr
+
+— DIM. 29 · DERNIER JOUR —
+🚨 DERNIER JOUR 🚨
+
+Ce soir à minuit, les prix de la Black Week remontent.
+Jusqu'à -25 % et le colis à 69,90 € au lieu de 100,54 € : c'est maintenant.
+
+👉 bontin.fr
+
+— LUN. 30 · MERCI —
+Merci à tous pour cette première Black Week Bontin ! 🙏
+Vous avez été nombreux à nous faire confiance, et ça nous fait chaud au cœur.
+
+Prochain rendez-vous : les fêtes de fin d'année 🎄 Restez abonnés, on vous prépare de belles choses.
+
+— GROUPES DE COMMUNES —
+Bonjour à tous 👋
+Petit commerce du coin : Bontin, ce sont des surgelés livrés autour de Landerneau ou à retirer au dépôt de Plouédern.
+Cette semaine, c'est notre Black Week : 6 coquilles Saint-Jacques à 18,99 € au lieu de 25,19 €, jusqu'à -25 % sur une sélection, et un colis de 7 produits à 69,90 € au lieu de 100,54 €.
+Tout est sur bontin.fr. Merci aux admins d'accepter le message 🙏
+
+— RÉPONSES AUX COMMENTAIRES —
+« Vous livrez à … ? »
+Bonjour [Prénom] ! Oui, nous livrons autour de Landerneau et Plouédern : le site vérifie votre code postal au moment de commander. Sinon, le retrait au dépôt de Plouédern est toujours possible 😉
+
+« C'est quoi, Bontin ? »
+Bonjour [Prénom] ! Bontin, c'est la vente de surgelés d'Elorn Gel, à Plouédern : plus de 250 produits (viandes, poissons, plats cuisinés, desserts, glaces), livrés chez vous ou à retirer au dépôt. Tout est sur bontin.fr.
+
+« Il en reste ? »
+Bonjour [Prénom] ! Oui, il en reste pour le moment 😊 Les quantités sont limitées : si le produit est visible sur bontin.fr, c'est qu'il est disponible.
+
+Une réclamation ou une question sur une commande
+Bonjour [Prénom], merci pour votre message. Nous vous répondons en message privé pour regarder ça ensemble.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. DESCRIPTION DU COLIS (fiche produit du site)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Le colis de la Black Week : 7 produits surgelés pour toute la famille, 100,54 € de produits pour 69,90 €.
+• Haché tradition en grain (1 kg)
+• Pavés de saumon sans peau (1 kg)
+• Filet mignon de porc (1 kg)
+• Hachis parmentier bœuf (2 × 500 g)
+• 28 nems au poulet
+• Tarte aux pommes 8 parts
+• 4 bâtonnets glacés double caramel
+Offre valable du 23 au 29 novembre 2026, dans la limite des stocks.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. VENDRE LE COLIS SUR LE SITE, PAS À PAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Le colis se vend comme n'importe quel produit : c'est un produit du catalogue dont le prix est celui du colis complet.
+
+CRÉATION (à faire avant le vendredi 20)
+☐ 1. Admin → onglet Produits → bouton « + Nouveau produit »
+☐ 2. Désignation : COLIS BLACK WEEK (7 PRODUITS) · Catégorie : Plats cuisinés · Poids : 7 produits · Prix livraison : 100.54 → Créer
+     (un nouveau produit est toujours créé « Masqué » : les clients ne le voient pas)
+☐ 3. Sur sa ligne dans le tableau : ajouter la photo « 9-photo-colis-site.jpg » (dossier Black-Week-Facebook du Bureau)
+☐ 4. Bouton « Promo » de la ligne : Prix 69.90 · Du 23/11/2026 · Au 29/11/2026
+☐ 5. Bouton « Fiche » : coller la description (partie 8) et enregistrer
+☐ 6. Vérifier qu'il est disponible en livraison ET en retrait
+☐ 7. Admin → Black Friday : ajouter le colis au ticket, le monter en 1er (▲), Enregistrer
+
+LUNDI 23 À 8 H
+☐ Sur la ligne du colis : passer de « Masqué » à « Publié »
+   → il apparaît sur le ticket de la page d'accueil, dans la page Promotions et dans la recherche, à 69,90 € au lieu de 100,54 €
+
+PENDANT LA SEMAINE
+• Le client l'ajoute au panier comme un autre produit (en livraison ou en retrait)
+• La commande arrive dans Admin → Commandes avec la ligne « COLIS BLACK WEEK (7 PRODUITS) »
+• Préparation : les 7 produits de la partie 2 dans un même sac
+• Plus de stock ? Cocher « rupture » sur sa ligne : il disparaît du ticket et s'affiche « Bientôt de retour »
+
+LUNDI 30
+☐ Repasser le colis en « Masqué » (la promo s'arrête toute seule le 29 au soir)

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { etatAffichage } from '../lib/periode'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
 import HeroFetes from './HeroFetes'
@@ -25,6 +26,8 @@ function Cadre({ titre, children }) {
 function Interrupteur({ settings, updateSettings, modifie }) {
   const [enCours, setEnCours] = useState(false)
   const actif = !!settings?.fetes_actif
+  const enregistre = contenuFetes(settings?.fetes)
+  const etat = etatAffichage(actif, enregistre.debut, enregistre.fin)
   const basculer = async () => {
     if (!actif && modifie) {
       alert("Enregistrez d'abord vos modifications (bouton « Enregistrer » en bas), puis cochez la case.")
@@ -56,15 +59,16 @@ function Interrupteur({ settings, updateSettings, modifie }) {
         </span>
         <span
           className={`ml-auto font-tag text-xs uppercase font-semibold px-2 py-1 ${
-            actif ? 'bg-forest text-paper' : 'bg-stone text-muted'
+            etat.visible ? 'bg-forest text-paper' : etat.programme ? 'bg-rust text-paper' : 'bg-stone text-muted'
           }`}
         >
-          {actif ? 'Visible sur le site' : 'Caché aux clients'}
+          {etat.libelle}
         </span>
       </label>
       <p className="font-body text-xs text-muted mt-2">
-        Décoché : la page d'accueil garde sa bannière habituelle. Les dates déjà passées disparaissent toutes seules du
-        site, et le décompte « J - … » aussi une fois le jour atteint.
+        La bannière s'affiche quand la case est cochée ET que l'on est dans la période choisie plus bas (« Afficher du …
+        au … ») : vous pouvez cocher à l'avance, elle apparaîtra et disparaîtra toute seule. Décoché : bannière
+        habituelle. Les dates à retenir déjà passées et le décompte « J - … » disparaissent aussi tout seuls.
       </p>
     </div>
   )
@@ -241,6 +245,20 @@ export default function FetesPanel() {
   return (
     <div>
       <Interrupteur settings={settings} updateSettings={updateSettings} modifie={modifie} />
+
+      <Cadre titre="Période d'affichage">
+        <div className="grid gap-3 sm:grid-cols-2 max-w-xl">
+          <label>
+            <span className={etiquette}>Afficher à partir du</span>
+            <input type="date" className={champ} value={brouillon.debut || ''} onChange={(e) => changer({ debut: e.target.value })} />
+          </label>
+          <label>
+            <span className={etiquette}>Jusqu'au (inclus)</span>
+            <input type="date" className={champ} value={brouillon.fin || ''} onChange={(e) => changer({ fin: e.target.value })} />
+          </label>
+        </div>
+        <p className="font-body text-[11px] text-muted mt-1">Changement à minuit. Une date vide = pas de limite de ce côté.</p>
+      </Cadre>
 
       <Cadre titre="Textes de la bannière">
         <div className="grid gap-3 sm:grid-cols-2">

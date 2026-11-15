@@ -149,6 +149,11 @@ remplace la bannière de l'accueil (titre plein + contour, ticket Bontin avec li
 `black.lien`, défaut /promotions). Prix = VRAIES promos des fiches produits (`ligneTicket` dans `src/lib/blackFriday.js`,
 même conditionnement et remise retrait que la carte produit) ; produit sans promo en cours / en rupture / masqué = absent
 du ticket client (signalé en rouge dans l'aperçu admin). Contenu `parametres_site.black` (jsonb : textes + liste d'ids).
+**Période d'affichage des bannières saisonnières** (15/11/2026, `src/lib/periode.js`) : Black Friday et Fêtes ont des
+dates `debut`/`fin` (dans `black` / `fetes`, défauts 23→29/11/2026 et 30/11/2026→02/01/2027) ; visible = case cochée ET
+date du jour (Paris) dans la période (`blackVisible` / `fetesVisible`, utilisés par App.jsx et Header.jsx) ; badge
+« Programmé / Visible / Terminé » dans l'admin (`etatAffichage`). Opération Black Week 2026 : promos ≤ 25 % (règle de
+Romuald) + colis à -30 % ; kit Facebook `docs/black-week/` ; programme complet `docs/programme-fin-annee-2026.txt`.
 ATTENTION : l'admin (`/admin`) n'est PAS dans le `PriceModeProvider` du site → tout aperçu admin qui utilise
 `usePriceMode` doit avoir son propre `<PriceModeProvider>` (bug du 14/11/2026 : onglet Black Friday qui plantait).
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`

@@ -12,7 +12,8 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import HeroFetes from './components/HeroFetes'
 import HeroBlack from './components/HeroBlack'
-import { contenuFetes } from './lib/fetes'
+import { contenuFetes, fetesVisible } from './lib/fetes'
+import { blackVisible } from './lib/blackFriday'
 import ProductCard from './components/ProductCard'
 import AdminGate from './components/AdminGate'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -48,7 +49,7 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
   const { estAdmin } = useAuth()
   // Rubrique « Les fêtes » (/fetes) : visible des clients seulement quand le mode fêtes est activé ; un admin la voit toujours.
   const fetes = contenuFetes(reglages?.fetes)
-  const fetesVisibles = !!reglages?.fetes_actif || estAdmin
+  const fetesVisibles = fetesVisible(reglages) || estAdmin
   const { products, loading: produitsEnCours, error } = useProducts({ leger: true })
   const { categories, subcategoriesByCategory, loading: rayonsEnCours } = useCategories()
   // Adresse /rayon/viandes/boeuf → noms réels « Viandes » / « Boeuf ».
@@ -119,7 +120,7 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
         ? {
             titre: fetes.titre || 'Les fêtes',
             description: `Notre sélection pour les fêtes de fin d'année : produits surgelés ${lieu}.`,
-            indexer: !!reglages?.fetes_actif,
+            indexer: fetesVisible(reglages),
           }
         : searchQuery
         ? { titre: title, indexer: false }
@@ -146,9 +147,9 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
       {isHomepage &&
         (!reglages ? (
           <div className="bg-forest h-[420px] lg:h-[528px]" />
-        ) : reglages.black_actif ? (
+        ) : blackVisible(reglages) ? (
           <HeroBlack contenu={reglages.black} />
-        ) : reglages.fetes_actif ? (
+        ) : fetesVisible(reglages) ? (
           <HeroFetes contenu={reglages.fetes} />
         ) : (
           <Hero />
@@ -191,10 +192,10 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
           )}
         </div>
 
-        {fetesOnly && !reglages?.fetes_actif && estAdmin && (
+        {fetesOnly && !fetesVisible(reglages) && estAdmin && (
           <p className="bg-rust text-paper font-body text-sm px-3 py-2 mb-4">
-            Aperçu réservé aux admins : cette rubrique est cachée aux clients tant que le mode fêtes n'est pas activé
-            (admin → onglet Fêtes).
+            Aperçu réservé aux admins : cette rubrique est cachée aux clients (case décochée ou en dehors des dates,
+            admin → onglet Fêtes).
           </p>
         )}
 

@@ -12,6 +12,8 @@ import { urlPhoto, photoDeSecours } from '../lib/photos'
 import { urlProduit, urlRayon, urlRecherche } from '../lib/adresses'
 import { aller } from '../lib/navigation'
 import { correspond } from '../lib/texte'
+import { blackVisible } from '../lib/blackFriday'
+import { fetesVisible } from '../lib/fetes'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -273,7 +275,7 @@ export default function Header({ activeCategory }) {
 
       {/* Navigation catégories avec sous-menus déroulants : à partir de md */}
       <nav ref={navRef} className="hidden md:flex gap-5 text-sm px-4 md:px-5 pb-3 flex-wrap">
-        {settings?.black_actif && (
+        {blackVisible(settings) && (
           <a
             href={settings.black?.lien || '/promotions'}
             className="font-tag text-xs uppercase font-bold bg-[#111] text-paper px-2 py-0.5 self-center hover:bg-rust transition-colors"
@@ -281,7 +283,7 @@ export default function Header({ activeCategory }) {
             {settings.black?.menu || 'Black Week'}
           </a>
         )}
-        {settings?.fetes_actif && (
+        {fetesVisible(settings) && (
           <a
             href="/fetes"
             className={`font-body pb-0.5 border-b-2 text-rust font-semibold transition-colors ${
@@ -399,7 +401,7 @@ export default function Header({ activeCategory }) {
           </div>
 
           <nav className="flex flex-col divide-y divide-ink/10 border-t border-ink/10">
-            {settings?.black_actif && (
+            {blackVisible(settings) && (
               <div className="py-3">
                 <a
                   href={settings.black?.lien || '/promotions'}
@@ -410,7 +412,7 @@ export default function Header({ activeCategory }) {
                 </a>
               </div>
             )}
-            {settings?.fetes_actif && (
+            {fetesVisible(settings) && (
               <div className="py-3">
                 <a href="/fetes" onClick={() => setMenuOpen(false)} className="font-body text-sm text-rust font-semibold">
                   Les fêtes

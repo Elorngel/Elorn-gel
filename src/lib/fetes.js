@@ -4,6 +4,8 @@
 // produits : tous les produits de la rubrique « Les fêtes » (page /fetes), dans l'ordre choisi ; ceux cochés
 // « couverture » (4 au plus) sont les photos de la bannière, avec leur phrase dorée et leur nom affiché.
 
+import { dansPeriode } from './periode'
+
 export const OR = '#d9b86a'
 
 export const FETES_DEFAUT = {
@@ -12,6 +14,9 @@ export const FETES_DEFAUT = {
   texte: "Une sélection de fin d'année, prête à cuire ou à déguster. Livrée chez vous ou à retirer au dépôt de Plouédern.",
   bouton: 'Composer mon menu',
   lien: '/fetes',
+  // Période d'affichage (case cochée + dates) : du lendemain de la Black Week au lendemain du jour de l'an.
+  debut: '2026-11-30',
+  fin: '2027-01-02',
   // Jour visé par le décompte « J - 42 » (le décompte disparaît une fois la date passée).
   date_cible: '2026-12-25',
   produits: [
@@ -35,6 +40,13 @@ export function contenuFetes(enregistre) {
   c.produits = Array.isArray(enregistre?.produits) ? enregistre.produits : FETES_DEFAUT.produits
   c.dates = Array.isArray(enregistre?.dates) ? enregistre.dates : FETES_DEFAUT.dates
   return c
+}
+
+// Bannière et rubrique « Les fêtes » visibles des clients : case cochée ET date du jour dans la période.
+export const fetesVisible = (settings) => {
+  if (!settings?.fetes_actif) return false
+  const c = contenuFetes(settings.fetes)
+  return dansPeriode(c.debut, c.fin)
 }
 
 export const MAX_COUVERTURE = 4

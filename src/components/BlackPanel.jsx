@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { etatAffichage } from '../lib/periode'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
 import HeroBlack from './HeroBlack'
@@ -50,6 +51,8 @@ function Cadre({ titre, children }) {
 function Interrupteur({ settings, updateSettings, modifie }) {
   const [enCours, setEnCours] = useState(false)
   const actif = !!settings?.black_actif
+  const enregistre = contenuBlack(settings?.black)
+  const etat = etatAffichage(actif, enregistre.debut, enregistre.fin)
   const basculer = async () => {
     if (!actif && modifie) {
       alert("Enregistrez d'abord vos modifications (bouton « Enregistrer » en bas), puis cochez la case.")
@@ -81,16 +84,16 @@ function Interrupteur({ settings, updateSettings, modifie }) {
         </span>
         <span
           className={`ml-auto font-tag text-xs uppercase font-semibold px-2 py-1 ${
-            actif ? 'bg-forest text-paper' : 'bg-stone text-muted'
+            etat.visible ? 'bg-forest text-paper' : etat.programme ? 'bg-rust text-paper' : 'bg-stone text-muted'
           }`}
         >
-          {actif ? 'Visible sur le site' : 'Caché aux clients'}
+          {etat.libelle}
         </span>
       </label>
       <p className="font-body text-xs text-muted mt-2">
-        Cochée : la bannière « ticket de caisse » remplace celle de l'accueil (même si le mode fêtes est coché) et un lien
-        « {settings?.black?.menu || BLACK_DEFAUT.menu} » apparaît en tête du menu. Pensez à la décocher à la fin de la
-        semaine.
+        La bannière « ticket de caisse » (et le lien « {settings?.black?.menu || BLACK_DEFAUT.menu} » en tête du menu)
+        s'affiche quand la case est cochée ET que l'on est dans la période choisie plus bas : vous pouvez cocher à
+        l'avance, elle apparaîtra et disparaîtra toute seule. Prioritaire sur la bannière des fêtes.
       </p>
     </div>
   )
@@ -229,6 +232,22 @@ export default function BlackPanel() {
   return (
     <div>
       <Interrupteur settings={settings} updateSettings={updateSettings} modifie={modifie} />
+
+      <Cadre titre="Période d'affichage">
+        <div className="grid gap-3 sm:grid-cols-2 max-w-xl">
+          <label>
+            <span className={etiquette}>Afficher à partir du</span>
+            <input type="date" className={champ} value={brouillon.debut || ''} onChange={(e) => changer({ debut: e.target.value })} />
+          </label>
+          <label>
+            <span className={etiquette}>Jusqu'au (inclus)</span>
+            <input type="date" className={champ} value={brouillon.fin || ''} onChange={(e) => changer({ fin: e.target.value })} />
+          </label>
+        </div>
+        <p className="font-body text-[11px] text-muted mt-1">
+          Changement à minuit. Mettez les mêmes dates que les promos des fiches produits (23 → 29 novembre).
+        </p>
+      </Cadre>
 
       <Cadre titre="Textes de la bannière">
         <div className="grid gap-3 sm:grid-cols-2">

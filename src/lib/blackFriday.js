@@ -3,6 +3,7 @@
 // Les prix du ticket sont les vraies promotions des fiches produits (prix promo + dates) : un produit sans promo en cours
 // n'apparaît pas sur le ticket côté clients. Prioritaire sur le mode fêtes si les deux sont cochés.
 import { getBasePrice, getDiscountPercent, getVarianteAffichee } from './pricing'
+import { dansPeriode } from './periode'
 
 export const BLACK_DEFAUT = {
   sur: 'Black Week · 23 → 29 novembre',
@@ -12,14 +13,26 @@ export const BLACK_DEFAUT = {
   bouton: "J'en profite",
   lien: '/promotions',
   menu: 'Black Week',
+  // Période d'affichage (case cochée + dates) : la semaine du Black Friday.
+  debut: '2026-11-23',
+  fin: '2026-11-29',
+  // Sélection du 15/11/2026 (25 % de remise au plus, choix de Romuald ; le colis à -30 % s'ajoute en tête).
   produits: [
-    '834da703-a014-455f-8037-299f911247ea', // 6 coquilles Saint-Jacques
-    'a51290b8-3c52-4939-9830-5e1c22a7a4cb', // 25 mini quiches apéritives
-    'ef0cba66-10fe-4a67-a81a-65838a02b67e', // chipolatas artisanales
-    'c4b1d987-b09a-4bd1-9ab5-99e8aadb4911', // cœur de filet de merlu
-    'f4d77846-a9b2-4aed-9795-5699b55a5f0e', // 8 éclairs au chocolat
-    'dcc23560-2666-44b2-91c5-b63fd48ba153', // 4 bâtonnets vanille amandes
+    '834da703-a014-455f-8037-299f911247ea', // 6 coquilles Saint-Jacques 55 %
+    '13cb4802-6271-46ca-8925-e61aa463f356', // 8 paniers jambon fromage
+    '38d78bbb-4ee9-41cd-be58-3dffe293f7a9', // steaks hachés 15 % 1 kg
+    '87911acd-b73e-4956-b4d9-08b2be254573', // rôti fondant de dinde au beurre 550 g
+    'a02e3b23-03a4-41d1-a33b-6fa4ef0b667f', // escalope de poulet
+    '422a3cde-59bd-466a-9056-773e512e9dce', // paella royale
+    '1a0a2cff-d494-4506-a95f-832b61b6b42e', // 12 macarons assortis
   ],
+}
+
+// Bannière Black Friday visible des clients : case cochée ET date du jour dans la période.
+export const blackVisible = (settings) => {
+  if (!settings?.black_actif) return false
+  const c = contenuBlack(settings.black)
+  return dansPeriode(c.debut, c.fin)
 }
 
 export function contenuBlack(enregistre) {
