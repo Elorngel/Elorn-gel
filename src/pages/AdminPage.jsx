@@ -15,6 +15,7 @@ import DeliveryZonePanel from '../components/DeliveryZonePanel'
 import CalendarPanel from '../components/CalendarPanel'
 import TourneesPanel from '../components/TourneesPanel'
 import FetesPanel from '../components/FetesPanel'
+import ChoixFetes from '../components/ChoixFetes'
 import BlackPanel from '../components/BlackPanel'
 import OffresPanel from '../components/OffresPanel'
 import ClientsPanel from '../components/ClientsPanel'
@@ -671,6 +672,8 @@ function SiteSettingsPanel() {
 export default function AdminPage() {
   const { deconnexion } = useAuth()
   const { products, loading, error, updateProduct, uploadPhotoOnly, refetch, createProduct, deleteProduct } = useProducts()
+  // Pour ranger un produit dans la rubrique « Les fêtes » depuis sa ligne (ChoixFetes).
+  const { settings: reglagesSite, updateSettings: majReglagesSite } = useSiteSettings()
   const categoriesHook = useCategories()
   const { categories, subcategoriesByCategory } = categoriesHook
   const [editingProduct, setEditingProduct] = useState(null)
@@ -999,6 +1002,7 @@ export default function AdminPage() {
                       subcategoriesByCategory={subcategoriesByCategory}
                       onSave={(changes) => updateProduct(product.id, changes)}
                     />
+                    <ChoixFetes product={product} settings={reglagesSite} updateSettings={majReglagesSite} />
                   </td>
                   <td className="px-1.5 py-2 align-top">
                     <EditableCell
