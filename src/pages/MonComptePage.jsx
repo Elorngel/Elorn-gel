@@ -303,6 +303,7 @@ function MesInformations({ client, onEnregistre }) {
     ville: client.ville,
     complement: client.complement || '',
     accepteOffres: client.accepte_offres,
+    accepteSms: client.accepte_sms === true,
   }))
   const [message, setMessage] = useState('')
   const [envoi, setEnvoi] = useState(false)
@@ -323,6 +324,7 @@ function MesInformations({ client, onEnregistre }) {
         ville: valeurs.ville.trim(),
         complement: valeurs.complement.trim() || null,
         accepte_offres: valeurs.accepteOffres,
+        accepte_sms: !!valeurs.accepteSms,
       })
       .eq('id', client.id)
     setEnvoi(false)

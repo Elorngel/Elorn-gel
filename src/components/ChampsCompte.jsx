@@ -27,6 +27,7 @@ export const COMPTE_VIDE = {
   source: '',
   accepteCgv: false,
   accepteOffres: false,
+  accepteSms: false,
   codeParrain: '',
 }
 
@@ -81,6 +82,19 @@ export default function ChampsCompte({ valeurs, onChange, creation = true, idPre
         {texte('telephone', 'Téléphone', { type: 'tel', autoComplete: 'tel' })}
         {texte('dateNaissance', 'Date de naissance', { type: 'date', autoComplete: 'bday' })}
       </div>
+      {/* Consentement SMS (16/11/2026) : jamais coché d'office, la prospection par SMS exige un accord explicite. */}
+      <label className="flex items-start gap-2 font-body text-sm cursor-pointer -mt-1">
+        <input
+          type="checkbox"
+          checked={!!valeurs.accepteSms}
+          onChange={(e) => onChange('accepteSms', e.target.checked)}
+          className="mt-0.5 w-4 h-4 accent-forest shrink-0"
+        />
+        <span>
+          J'accepte de recevoir les promotions de Bontin par SMS sur ce numéro.
+          Désinscription possible à tout moment (réponse STOP ou « Mon compte »).
+        </span>
+      </label>
       {texte('adresse', 'Adresse (numéro et rue)', { autoComplete: 'address-line1' })}
       <div className="grid grid-cols-[110px_1fr] gap-3">
         {texte('codePostal', 'Code postal', {

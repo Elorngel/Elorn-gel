@@ -48,6 +48,21 @@ async function tests() {
   ok((await post('/rest/v1/commandes', { nom_client: 'TEST CLAUDE', telephone: '0', mode: 'retrait', total: 0 })).status >= 400, 'écriture directe d’une commande refusée')
   ok((await get('/rest/v1/clients?select=id', h())).length === 0, 'un visiteur ne voit aucune fiche client')
 
+  // Consentement SMS (16/11/2026) : enregistré à la création avec sa date, retirable par le client lui-même.
+  {
+    const e = `${PREFIXE}sms@example.com`
+    const r = await post('/functions/v1/creer-compte', { email: e, motDePasse: MDP, prenom: 'Testclaude', nom: 'ESSAI', telephone: '0633333333', dateNaissance: '1990-01-01', adresse: '9 rue des SMS', codePostal: '29800', ville: 'Plouedern', accepteCgv: true, accepteSms: true })
+    let c = (await get(`/rest/v1/clients?select=id,accepte_sms,sms_consenti_le&email=eq.${e}`))[0]
+    ok(r.status === 200 && c?.accepte_sms === true && !!c?.sms_consenti_le, 'accord SMS enregistré à la création, avec sa date')
+    const j = await jeton(e)
+    const m = await fetch(`${URL_}/rest/v1/clients?id=eq.${c.id}`, { method: 'PATCH', headers: h(j), body: JSON.stringify({ accepte_sms: false }) })
+    c = (await get(`/rest/v1/clients?select=accepte_sms,sms_consenti_le&id=eq.${c.id}`))[0]
+    ok(m.status < 300 && c?.accepte_sms === false && !c?.sms_consenti_le, 'le client retire lui-même son accord SMS (date effacée)')
+    await compte(`${PREFIXE}sanssms@example.com`, '0644444444', '10 rue Sans SMS')
+    const s2 = (await get(`/rest/v1/clients?select=accepte_sms&email=eq.${PREFIXE}sanssms@example.com`))[0]
+    ok(s2?.accepte_sms === false, 'sans case cochée : pas d’accord SMS')
+  }
+
   // Comptes et parrainage
   await compte(`${PREFIXE}parrain@example.com`, '0611111111', '1 rue du Parrain')
   const P = (await get(`/rest/v1/clients?select=id,code_parrain&email=eq.${PREFIXE}parrain@example.com`))[0]

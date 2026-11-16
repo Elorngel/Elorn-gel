@@ -100,6 +100,17 @@ export default function ClientsPanel() {
   const moisCourant = new Date().getMonth()
   const anniversairesDuMois = clients.filter((c) => new Date(`${c.date_naissance}T12:00:00`).getMonth() === moisCourant)
   const optin = clients.filter((c) => c.accepte_offres).length
+  const optinSms = clients.filter((c) => c.accepte_sms).length
+  // Numéros des clients qui acceptent les SMS, un par ligne, pour l'outil d'envoi de SMS.
+  const copierNumerosSms = async () => {
+    const numeros = clients.filter((c) => c.accepte_sms && c.telephone).map((c) => c.telephone.replace(/\s+/g, ''))
+    try {
+      await navigator.clipboard.writeText(numeros.join('\n'))
+      alert(`${numeros.length} numéro${numeros.length > 1 ? 's' : ''} copié${numeros.length > 1 ? 's' : ''} (clients qui acceptent les SMS).`)
+    } catch {
+      alert(numeros.join('\n'))
+    }
+  }
   const privileges = clients.filter((c) => privilegeActif(c.privilege_debut)).length
   const majPrivilege = (id, date) =>
     setClients((prev) => prev.map((c) => (c.id === id ? { ...c, privilege_debut: date } : c)))
@@ -115,10 +126,20 @@ export default function ClientsPanel() {
           className="border border-ink/30 px-3 py-2 font-body text-sm w-full max-w-xs focus:border-forest focus:outline-none"
         />
         <p className="font-tag text-xs uppercase text-muted">
-          {clients.length} compte{clients.length > 1 ? 's' : ''} · {optin} accepte{optin > 1 ? 'nt' : ''} les offres ·{' '}
+          {clients.length} compte{clients.length > 1 ? 's' : ''} · {optin} accepte{optin > 1 ? 'nt' : ''} les offres par email ·{' '}
+          {optinSms} par SMS ·{' '}
           {anniversairesDuMois.length} anniversaire{anniversairesDuMois.length > 1 ? 's' : ''} ce mois-ci ·{' '}
           {privileges} client{privileges > 1 ? 's' : ''} Privilège
         </p>
+        {optinSms > 0 && (
+          <button
+            type="button"
+            onClick={copierNumerosSms}
+            className="font-tag text-xs uppercase font-semibold border border-ink/40 px-3 py-1.5 hover:bg-stone"
+          >
+            Copier les numéros (SMS acceptés)
+          </button>
+        )}
       </div>
 
       {clients.length === 0 ? (
@@ -135,7 +156,8 @@ export default function ClientsPanel() {
                 <th className="p-2">Naissance</th>
                 <th className="p-2">Adresse</th>
                 <th className="p-2">Privilège</th>
-                <th className="p-2">Offres</th>
+                <th className="p-2">Offres email</th>
+                <th className="p-2">SMS</th>
                 <th className="p-2">Connu par</th>
                 <th className="p-2">Inscrit le</th>
                 <th className="p-2 text-right">Commandes</th>
@@ -166,6 +188,12 @@ export default function ClientsPanel() {
                     <CellulePrivilege client={c} onChange={(date) => majPrivilege(c.id, date)} />
                   </td>
                   <td className="p-2 font-tag text-xs">{c.accepte_offres ? 'Oui' : 'Non'}</td>
+                  <td className="p-2 font-tag text-xs">
+                    {c.accepte_sms ? 'Oui' : 'Non'}
+                    {c.accepte_sms && c.sms_consenti_le && (
+                      <span className="block text-muted normal-case">depuis le {dateFr(c.sms_consenti_le)}</span>
+                    )}
+                  </td>
                   <td className="p-2 font-tag text-xs">{c.source || '—'}</td>
                   <td className="p-2 font-tag text-xs">{dateFr(c.created_at)}</td>
                   <td className="p-2 font-tag text-xs text-right">{nbCommandes[c.id] || 0}</td>

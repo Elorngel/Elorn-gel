@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     ville: texte(d.ville, 100),
     complement: texte(d.complement, 200) || null,
     accepte_offres: d.accepteOffres === true,
+    accepte_sms: d.accepteSms === true,
     source: texte(d.source, 60) || null,
   }
 

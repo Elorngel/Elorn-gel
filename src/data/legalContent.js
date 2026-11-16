@@ -155,7 +155,9 @@ forme chiffrée que personne, y compris nous, ne peut relire.
 <strong>Gérer votre compte et vos commandes</strong> (préparation, livraison ou retrait, historique,
 service client) : c'est nécessaire à l'exécution de votre commande.<br>
 <strong>Vous envoyer nos offres par email, dont votre bon d'achat d'anniversaire</strong> : uniquement si
-vous l'avez accepté. Vous pouvez retirer cet accord à tout moment depuis « Mon compte ». Votre date de
+vous l'avez accepté. Vous pouvez retirer cet accord à tout moment depuis « Mon compte ».<br>
+<strong>Vous envoyer nos promotions par SMS</strong> : uniquement si vous avez coché la case prévue sous votre
+numéro de téléphone. Vous pouvez retirer cet accord à tout moment depuis « Mon compte » ou en répondant STOP à un SMS. Votre date de
 naissance sert à ce bon d'anniversaire et à vérifier votre majorité pour l'achat de boissons alcoolisées (obligation légale).<br>
 <strong>Mieux comprendre comment nos clients nous connaissent</strong>, pour améliorer notre communication.
 </p>

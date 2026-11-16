@@ -175,6 +175,11 @@ date du jour (Paris) dans la période (`blackVisible` / `fetesVisible`, utilisé
 Romuald) + colis à -30 % ; kit Facebook `docs/black-week/` ; programme complet `docs/programme-fin-annee-2026.txt`.
 ATTENTION : l'admin (`/admin`) n'est PAS dans le `PriceModeProvider` du site → tout aperçu admin qui utilise
 `usePriceMode` doit avoir son propre `<PriceModeProvider>` (bug du 14/11/2026 : onglet Black Friday qui plantait).
+**Consentement SMS** (16/11/2026, `supabase-consentement-sms.sql`) : case « J'accepte de recevoir les promotions de Bontin par
+SMS » sous le téléphone (`ChampsCompte.jsx`, création ET « Mon compte »), jamais cochée d'office ; `clients.accepte_sms` +
+`sms_consenti_le` (posée par le déclencheur `clients_consentement_sms`, preuve de l'accord, vidée au retrait) ; enregistré
+par `creer-compte` ; admin Clients : colonne SMS + bouton « Copier les numéros (SMS acceptés) » ; politique de
+confidentialité mise à jour (STOP). Tout SMS promo doit contenir « STOP » (mention de désinscription).
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au
