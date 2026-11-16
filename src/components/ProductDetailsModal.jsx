@@ -33,6 +33,7 @@ export default function ProductDetailsModal({
   const [dispoLivraison, setDispoLivraison] = useState(product.dispo_livraison !== false)
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
   const [alcool, setAlcool] = useState(product.alcool === true)
+  const [sansCode, setSansCode] = useState(product.sans_code_promo === true)
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
   const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
@@ -156,6 +157,12 @@ export default function ProductDetailsModal({
     const newValue = !alcool
     setAlcool(newValue)
     updateProduct(product.id, { alcool: newValue })
+  }
+
+  const toggleSansCode = () => {
+    const newValue = !sansCode
+    setSansCode(newValue)
+    updateProduct(product.id, { sans_code_promo: newValue })
   }
 
   const toggleDispoRetrait = () => {
@@ -319,6 +326,12 @@ export default function ProductDetailsModal({
             />
             <span className="font-body text-sm">
               Boisson alcoolisée (mention légale affichée, achat réservé aux majeurs)
+            </span>
+          </label>
+          <label className="flex items-center gap-2 mb-4 cursor-pointer">
+            <input type="checkbox" checked={sansCode} onChange={toggleSansCode} className="w-4 h-4" />
+            <span className="font-body text-sm">
+              Exclu des codes promo (ex. colis déjà remisé : le code du client ne s'applique pas à ce produit)
             </span>
           </label>
 

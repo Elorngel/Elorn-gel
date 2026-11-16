@@ -541,8 +541,19 @@ export default function CartPage() {
                       )}
                       {calcul.codeSousMinimum && (
                         <span className="block font-tag text-[11px] text-rust">
-                          Pas encore appliqué : encore {euros(Math.max(0, codeApplique.minimum_commande - calcul.sousTotal))}{' '}
-                          de produits.
+                          Pas encore appliqué : encore {euros(Math.max(0, codeApplique.minimum_commande - calcul.baseCode))}{' '}
+                          de produits{calcul.produitsSansCode.length > 0 ? ' (hors produits exclus des codes)' : ''}.
+                        </span>
+                      )}
+                      {calcul.codeSansProduit && (
+                        <span className="block font-tag text-[11px] text-rust">
+                          Pas appliqué : ce code ne s'applique pas à {calcul.produitsSansCode.join(', ').toLowerCase()} (offre
+                          non cumulable).
+                        </span>
+                      )}
+                      {calcul.produitsSansCode.length > 0 && !calcul.codeMauvaisMode && !calcul.codeSansProduit && (
+                        <span className="block font-tag text-[11px] text-muted">
+                          Ne s'applique pas à : {calcul.produitsSansCode.join(', ').toLowerCase()} (offre non cumulable).
                         </span>
                       )}
                       {codeApplique.restantes != null && (

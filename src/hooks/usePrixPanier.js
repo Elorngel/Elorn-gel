@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
-const COLONNES =
-  'id, nom, nom_retrait, actif, en_rupture, en_promo, taux_promo, prix_promo, promo_debut, promo_fin, en_destockage, prix_destockage, prix_livraison, dispo_livraison, dispo_retrait, alcool'
+// Toutes les colonnes (quelques produits seulement) : une colonne ajoutée plus tard (ex. sans_code_promo, 16/11/2026)
+// ne peut pas casser le panier si le site est mis en ligne avant la modification de la base.
+const COLONNES = '*'
 
 export const varianteDuPanier = (item) => item.cartKey.split('::')[1] || null
 

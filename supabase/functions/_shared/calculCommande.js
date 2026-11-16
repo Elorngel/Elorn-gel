@@ -92,6 +92,10 @@ export function articleIndisponible(produit, variante, mode) {
 // deux sont possibles, on garde automatiquement le plus avantageux pour le client. avantageEcarte dit
 // lequel n'a pas été appliqué ('code' ou 'bon'), pour l'expliquer dans le panier. Les promotions et la
 // remise retrait, elles, restent cumulables.
+// PRODUITS EXCLUS DES CODES PROMO (16/11/2026) : un produit coché « Exclu des codes promo » (produits.sans_code_promo,
+// ex. le colis Black Week déjà à -30 %) ne compte ni dans la remise du code, ni pour atteindre son minimum. Si le
+// panier ne contient que des produits exclus, le code n'a aucun effet (même un code « livraison offerte »).
+// baseCode = montant des produits concernés par le code ; produitsSansCode = noms des produits exclus du panier.
 // livraisonOfferte : client Privilège (carte annuelle vendue hors site, voir privilegeActif) → pas de frais de
 // livraison. Le reste du calcul (minimum de livraison, codes, bons) ne change pas.
 export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, code = null, bon = null, livraisonOfferte = false, today = aujourdhuiParis() }) {
@@ -100,6 +104,9 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
     return { ...l, prixUnitaire: pu, totalLigne: arrondi(pu * l.quantite) }
   })
   const sousTotal = arrondi(detail.reduce((s, l) => s + l.totalLigne, 0))
+  const exclus = detail.filter((l) => l.produit?.sans_code_promo === true)
+  const baseCode = arrondi(sousTotal - exclus.reduce((s, l) => s + l.totalLigne, 0))
+  const produitsSansCode = [...new Set(exclus.map((l) => l.produit.nom?.trim()).filter(Boolean))]
   // Code promo : pourcentage des produits, ou montant fixe (jamais plus que les produits), ou livraison offerte
   // (code.livraison_offerte, 12/11/2026), dès son minimum. Code réservé au retrait (ou à la livraison) : sans
   // effet dans l'autre mode ; un code « livraison offerte » n'a d'effet qu'en livraison.
@@ -107,13 +114,13 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
   const privilege = mode !== 'retrait' && !!livraisonOfferte
   const codeLivraison = !!code?.livraison_offerte
   const codeMauvaisMode = !!code && ((!!code.mode && code.mode !== mode) || (codeLivraison && mode === 'retrait'))
-  const codeMinimumAtteint = !!code && sousTotal >= Number(code.minimum_commande || 0)
+  const codeMinimumAtteint = !!code && baseCode > 0 && baseCode >= Number(code.minimum_commande || 0)
   const codeValable = !!code && !codeMauvaisMode && codeMinimumAtteint
   let remiseCode = !codeValable || codeLivraison
     ? 0
     : Number(code.montant) > 0
-      ? Math.min(arrondi(code.montant), sousTotal)
-      : arrondi((sousTotal * Number(code.pourcentage || 0)) / 100)
+      ? Math.min(arrondi(code.montant), baseCode)
+      : arrondi((baseCode * Number(code.pourcentage || 0)) / 100)
   // Livraison offerte par le code (sans intérêt si la livraison est déjà offerte : carte Privilège).
   let livraisonParCode = codeValable && codeLivraison && !privilege && fraisNormaux > 0
   const bonUtilisable = !!bon && sousTotal >= Number(bon.minimum_commande || 0)
@@ -132,14 +139,19 @@ export function calculerCommande({ lignes, mode, remiseRetrait, fraisLivraison, 
   }
   const frais = privilege || livraisonParCode ? 0 : fraisNormaux
   const total = arrondi(sousTotal - remiseCode - remiseBon + frais)
-  const codeSousMinimum = !!code && !codeMauvaisMode && !codeMinimumAtteint
+  // Panier composé uniquement de produits exclus des codes : le code n'a rien à quoi s'appliquer.
+  const codeSansProduit = !!code && !codeMauvaisMode && baseCode === 0 && exclus.length > 0
+  const codeSousMinimum = !!code && !codeMauvaisMode && !codeMinimumAtteint && !codeSansProduit
   // Code réellement utilisé sur cette commande (il sera alors compté comme utilisé).
   const codeApplique = remiseCode > 0 || livraisonParCode
   return {
     lignes: detail,
     sousTotal,
+    baseCode,
+    produitsSansCode,
     remiseCode,
     codeSousMinimum,
+    codeSansProduit,
     codeMauvaisMode,
     codeApplique,
     livraisonParCode,

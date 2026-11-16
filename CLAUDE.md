@@ -62,7 +62,12 @@ fonction SQL `definir_privilege` réservée aux admins ; colonne `clients.privil
 Valable jusqu'à la veille du même jour l'année suivante (`finPrivilege`/`privilegeActif` dans `calculCommande.js`,
 paramètre `livraisonOfferte` de `calculerCommande`) ; appliqué par le panier ET `passer-commande`, minimum de livraison
 inchangé ; `commandes.privilege` affiché dans l'admin, le bon imprimé, Mon compte et les emails. Pas appliqué aux
-commandes saisies par un admin. **Un seul avantage par commande** (06/11/2026) : code promo et bon d'achat ne se cumulent
+commandes saisies par un admin. **Produits exclus des codes promo** (16/11/2026, `supabase-sans-code-promo.sql`) : case « Exclu des codes promo » dans la
+Fiche produit de l'admin (`produits.sans_code_promo`) ; le code du client ne s'applique pas à ces produits et ils ne comptent
+pas pour le minimum du code (`baseCode`, `produitsSansCode`, `codeSansProduit` dans `calculCommande.js`, panier ET
+`passer-commande`). Utilisé pour le colis Black Week (-30 %, non cumulable avec BIENVENUE10). Les bons d'achat ne sont
+pas concernés. `usePrixPanier` lit toutes les colonnes (`*`) pour qu'une nouvelle colonne ne casse jamais le panier.
+**Un seul avantage par commande** (06/11/2026) : code promo et bon d'achat ne se cumulent
 pas, le plus avantageux est appliqué (`avantageEcarte`), l'autre n'est pas consommé.
 **Alcool et minimum de livraison** (01/11/2026, `supabase-alcool-minimum.sql`) : case « Boisson alcoolisée » sur la
 fiche admin (`produits.alcool`) → mentions légales (`MentionAlcool.jsx` : carte, fiche, panier, pied de page, CGV

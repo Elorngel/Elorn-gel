@@ -65,7 +65,7 @@ Le message à répéter partout :
 ☐ Avant ven. 20 — Admin → Produits : créer le colis, MASQUÉ (pas à pas : partie 9)
 ☐ Avant ven. 20 — Admin → Black Friday : ajouter le colis et le monter en 1er (▲), Enregistrer, cocher la case → badge « Programmé : s'affichera le 23/11/2026 »
 ☐ Avant ven. 20 — Avec Sylvie : stocks des 8 produits (surtout les Saint-Jacques) + de quoi préparer les colis
-☐ Avant ven. 20 — Décider : code BIENVENUE10 (-10 %) actif ou non pendant la Black Week (Admin → Offres). Il s'ajoute aux prix Black Week (colis à 58,68 €).
+☐ Avant ven. 20 — Colis : cocher « Exclu des codes promo » dans sa Fiche (Admin → Produits → Fiche). Décidé le 16/11 : BIENVENUE10 reste actif mais ne s'applique pas au colis (il s'applique aux autres produits).
 ☐ Avant dim. 22 — Admin → Fêtes : produits de la rubrique, 4 photos « en couverture », textes, dates à retenir calées sur vos vrais horaires, Enregistrer, cocher la case → badge « Programmé : s'affichera le 30/11/2026 »
 ☐ Avant dim. 22 — Admin → Calendrier : fermetures des fêtes (25/12, 01/01) et horaires du 24/12 et du 31/12
 
@@ -319,7 +319,7 @@ CRÉATION (à faire avant le vendredi 20)
 ☐ 3. Sur sa ligne dans le tableau : ajouter la photo « 9-photo-colis-site.jpg » (dossier Black-Week-Facebook du Bureau)
 ☐ 4. Bouton « Promo » de la ligne : Prix 65.20 · Du 23/11/2026 · Au 29/11/2026
 ☐ 5. Bouton « Fiche » : coller la description (partie 8) et enregistrer
-☐ 6. Vérifier qu'il est disponible en livraison ET en retrait
+☐ 6. Vérifier qu'il est disponible en livraison ET en retrait, et cocher « Exclu des codes promo »
 ☐ 7. Admin → Black Friday : ajouter le colis au ticket, le monter en 1er (▲), Enregistrer
 
 LUNDI 23 À 8 H
