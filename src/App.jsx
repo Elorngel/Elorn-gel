@@ -13,7 +13,7 @@ import Hero from './components/Hero'
 import HeroFetes from './components/HeroFetes'
 import HeroBlack from './components/HeroBlack'
 import EtoilesFetes from './components/EtoilesFetes'
-import { contenuFetes, fetesVisible, urlFetes, sousRayonsUtilises, sousRayonDepuisAdresse } from './lib/fetes'
+import { contenuFetes, fetesVisible, rubriqueFetesVisible, urlFetes, rayonFetes, sousRayonsFetes, sousRayonDepuisAdresse, libelleSousRayon } from './lib/fetes'
 import { blackVisible } from './lib/blackFriday'
 import ProductCard from './components/ProductCard'
 import AdminGate from './components/AdminGate'
@@ -50,11 +50,7 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
   const { estAdmin } = useAuth()
   // Rubrique « Les fêtes » (/fetes) : visible des clients seulement quand le mode fêtes est activé ; un admin la voit toujours.
   const fetes = contenuFetes(reglages?.fetes)
-  const fetesVisibles = fetesVisible(reglages) || estAdmin
-  // Sous-catégorie de la rubrique Fêtes (/fetes/aperitif → « Apéritif ») ; adresse inconnue = aucun produit.
-  const fetesSr = fetesOnly && fetesSousRayon ? sousRayonDepuisAdresse(fetes, fetesSousRayon) : null
-  const fetesSrInconnue = fetesOnly && !!fetesSousRayon && !fetesSr
-  const fetesSousRayons = fetesOnly ? sousRayonsUtilises(fetes) : []
+  const fetesVisibles = rubriqueFetesVisible(reglages) || estAdmin
   const { products, loading: produitsEnCours, error } = useProducts({ leger: true })
   const { categories, subcategoriesByCategory, loading: rayonsEnCours } = useCategories()
   // Adresse /rayon/viandes/boeuf → noms réels « Viandes » / « Boeuf ».
@@ -64,6 +60,13 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
       ? (subcategoriesByCategory[activeCategory] || []).find((s) => slug(s) === sousRayon) || null
       : null
   const rayonInconnu = !!rayon && !rayonsEnCours && (!activeCategory || (!!sousRayon && !activeSubcategory))
+  // Rubrique « Les fêtes » = le rayon « Fêtes » de l'admin (produits rangés par Sylvie, sous-catégories de l'onglet
+  // Catégories). /fetes/aperitif → sous-catégorie « -Apéritif » ; adresse inconnue = aucun produit.
+  const fetesRayon = fetesOnly ? rayonFetes(categories) : null
+  const fetesListe = fetesRayon ? subcategoriesByCategory[fetesRayon] || [] : []
+  const fetesSr = fetesOnly && fetesSousRayon ? sousRayonDepuisAdresse(fetesListe, fetesSousRayon) : null
+  const fetesSrInconnue = fetesOnly && !!fetesSousRayon && !rayonsEnCours && !fetesSr
+  const fetesSousRayons = fetesOnly ? sousRayonsFetes(categories, subcategoriesByCategory, products) : []
   const loading = produitsEnCours || (!!rayon && rayonsEnCours)
   const { suppliers } = useSuppliers()
 
@@ -83,13 +86,11 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
 
   if (fetesOnly) {
     // Dans l'ordre choisi dans l'admin (onglet Fêtes).
-    visibleProducts = fetesVisibles && !fetesSrInconnue
-      ? fetes.produits
-          .filter((f) => !fetesSr || f.sr === fetesSr)
-          .map((f) => publishedProducts.find((p) => p.id === f.id))
-          .filter(Boolean)
-      : []
-    title = fetesSr ? `${fetes.titre || 'Les fêtes'} — ${fetesSr}` : fetes.titre || 'Les fêtes'
+    visibleProducts =
+      fetesVisibles && fetesRayon && !fetesSrInconnue
+        ? publishedProducts.filter((p) => estDansRayon(p, fetesRayon, fetesSr))
+        : []
+    title = fetesSr ? `${fetes.titre || 'Les fêtes'} — ${libelleSousRayon(fetesSr)}` : fetes.titre || 'Les fêtes'
   } else if (promoOnly) {
     visibleProducts = publishedProducts.filter(isPromoActive)
     title = 'Promotions'
@@ -127,9 +128,9 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
       : fetesOnly
         ? {
             titre: title,
-            description: `${fetesSr ? `${fetesSr} : n` : 'N'}otre sélection pour les fêtes de fin d'année, produits surgelés ${lieu}.`,
+            description: `${fetesSr ? `${libelleSousRayon(fetesSr)} : n` : 'N'}otre sélection pour les fêtes de fin d'année, produits surgelés ${lieu}.`,
             chemin: urlFetes(fetesSr),
-            indexer: fetesVisible(reglages) && !fetesSrInconnue,
+            indexer: rubriqueFetesVisible(reglages) && !fetesSrInconnue,
           }
         : searchQuery
         ? { titre: title, indexer: false }
@@ -171,7 +172,7 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
               { label: 'Accueil', href: '/' },
               ...(fetesOnly
                 ? fetesSr
-                  ? [{ label: 'Les fêtes', href: '/fetes' }, { label: fetesSr }]
+                  ? [{ label: 'Les fêtes', href: '/fetes' }, { label: libelleSousRayon(fetesSr) }]
                   : [{ label: 'Les fêtes' }]
                 : promoOnly
                 ? [{ label: 'Promotions' }]
@@ -203,10 +204,10 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
           )}
         </div>
 
-        {fetesOnly && !fetesVisible(reglages) && estAdmin && (
+        {fetesOnly && !rubriqueFetesVisible(reglages) && estAdmin && (
           <p className="bg-rust text-paper font-body text-sm px-3 py-2 mb-4">
-            Aperçu réservé aux admins : cette rubrique est cachée aux clients (case décochée ou en dehors des dates,
-            admin → onglet Fêtes).
+            Aperçu réservé aux admins : cette rubrique est cachée aux clients (case « Afficher la
+            rubrique » décochée, admin → onglet Fêtes).
           </p>
         )}
 
@@ -220,7 +221,7 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
                   (fetesSr || null) === sr ? 'border-rust bg-rust text-paper' : 'border-ink/30 text-ink hover:border-ink'
                 }`}
               >
-                {sr || 'Tout'}
+                {sr ? libelleSousRayon(sr) : 'Tout'}
               </a>
             ))}
           </div>
@@ -288,21 +289,19 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
           // Rubrique Fêtes sur « Tout » : les produits rangés par sous-catégorie, avec un titre pour chacune.
           (fetesOnly && !fetesSr && fetesSousRayons.length > 0
             ? [
-                ...fetesSousRayons.map((sr) => ({ titre: sr, ids: fetes.produits.filter((f) => f.sr === sr).map((f) => f.id) })),
-                { titre: 'Et aussi', ids: fetes.produits.filter((f) => !fetesSousRayons.includes(f.sr)).map((f) => f.id) },
+                ...fetesSousRayons.map((sr) => ({ titre: sr, filtre: (p) => estDansRayon(p, fetesRayon, sr) })),
+                { titre: 'Et aussi', filtre: (p) => !fetesSousRayons.some((sr) => estDansRayon(p, fetesRayon, sr)) },
               ]
-            : [{ titre: null, ids: null }]
+            : [{ titre: null, filtre: null }]
           ).map((groupe, g) => {
-            const produits = groupe.ids
-              ? groupe.ids.map((id) => visibleProducts.find((p) => p.id === id)).filter(Boolean)
-              : visibleProducts
+            const produits = groupe.filtre ? visibleProducts.filter(groupe.filtre) : visibleProducts
             if (!produits.length) return null
             return (
               <section key={groupe.titre || g} className={groupe.titre ? 'mb-8' : ''}>
                 {groupe.titre && (
                   <h3 className="font-display text-3xl text-ink mb-3 flex items-center gap-3">
                     <a href={groupe.titre === 'Et aussi' ? undefined : urlFetes(groupe.titre)} className="hover:text-rust">
-                      {groupe.titre}
+                      {libelleSousRayon(groupe.titre)}
                     </a>
                     <span className="flex-1 h-px bg-ink/15" />
                   </h3>
@@ -443,15 +442,15 @@ function App() {
             <div className="min-h-screen bg-stone" />
           ) : (
             <Shop
-              rayon={page.type === 'rayon' ? page.categorie : null}
-              sousRayon={page.type === 'rayon' ? page.sousCategorie : null}
+              rayon={page.type === 'rayon' && page.categorie !== 'fetes' ? page.categorie : null}
+              sousRayon={page.type === 'rayon' && page.categorie !== 'fetes' ? page.sousCategorie : null}
               searchQuery={page.type === 'recherche' ? page.texte : null}
               promoOnly={page.type === 'promotions'}
               destockageOnly={page.type === 'destockage'}
               showFullCatalog={page.type === 'catalogue'}
               petitsFormatsOnly={page.type === 'petits-formats'}
-              fetesOnly={page.type === 'fetes'}
-              fetesSousRayon={page.type === 'fetes' ? page.sousRayon || null : null}
+              fetesOnly={page.type === 'fetes' || (page.type === 'rayon' && page.categorie === 'fetes')}
+              fetesSousRayon={page.type === 'fetes' ? page.sousRayon || null : page.type === 'rayon' && page.categorie === 'fetes' ? page.sousCategorie || null : null}
             />
           )}
           <ConseilAssistant />

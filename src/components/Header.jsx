@@ -13,7 +13,7 @@ import { urlProduit, urlRayon, urlRecherche } from '../lib/adresses'
 import { aller } from '../lib/navigation'
 import { correspond } from '../lib/texte'
 import { blackVisible } from '../lib/blackFriday'
-import { fetesVisible, contenuFetes, sousRayonsUtilises, urlFetes } from '../lib/fetes'
+import { rubriqueFetesVisible, sousRayonsFetes, urlFetes, estRayonFetes, libelleSousRayon } from '../lib/fetes'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -52,8 +52,6 @@ export default function Header({ activeCategory }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openCategory, setOpenCategory] = useState(null)
   const [openMobileCategory, setOpenMobileCategory] = useState(null)
-  // Sous-catégories de la rubrique « Les fêtes » (menu déroulant, comme un rayon).
-  const fetesSousRayons = settings ? sousRayonsUtilises(contenuFetes(settings.fetes)) : []
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchProducts, setSearchProducts] = useState([])
   // Le lien vers l'admin n'est visible que pour une personne connectée en mode admin.
@@ -83,13 +81,20 @@ export default function Header({ activeCategory }) {
   useEffect(() => {
     supabase
       .from('produits')
-      .select('id, nom, categorie, en_destockage, prix_destockage, prix_livraison')
+      .select('id, nom, categorie, sous_categorie, autres_rayons, actif, en_destockage, prix_destockage, prix_livraison')
       .eq('actif', true)
       .order('nom', { ascending: true })
       .then(({ data }) => setSearchProducts(data || []))
   }, [])
 
   const hasDestockage = useMemo(() => searchProducts.some(isDestockage), [searchProducts])
+  // Rayon « Fêtes » de l'admin : jamais en rayon ordinaire dans le menu ; ses sous-catégories (qui ont des produits)
+  // forment le menu déroulant « Les fêtes », en tête, pendant la période des fêtes.
+  const categoriesMenu = categories.filter((c) => !estRayonFetes(c))
+  const fetesSousRayons = useMemo(
+    () => sousRayonsFetes(categories, subcategoriesByCategory, searchProducts),
+    [categories, subcategoriesByCategory, searchProducts]
+  )
 
   const suggestions = useMemo(() => {
     const q = searchText.trim()
@@ -288,7 +293,7 @@ export default function Header({ activeCategory }) {
             {settings.black?.menu || 'Black Week'}
           </a>
         )}
-        {fetesVisible(settings) && (
+        {rubriqueFetesVisible(settings) && (
           <div className="relative">
             {fetesSousRayons.length > 0 ? (
               <button
@@ -326,14 +331,14 @@ export default function Header({ activeCategory }) {
                     onClick={() => setOpenCategory(null)}
                     className="block px-3 py-2 font-body text-sm text-ink hover:bg-stone"
                   >
-                    {sr}
+                    {libelleSousRayon(sr)}
                   </a>
                 ))}
               </div>
             )}
           </div>
         )}
-        {categories.map((cat) => {
+        {categoriesMenu.map((cat) => {
           const subcats = subcategoriesByCategory[cat] || []
           const isOpen = openCategory === cat
 
@@ -452,7 +457,7 @@ export default function Header({ activeCategory }) {
                 </a>
               </div>
             )}
-            {fetesVisible(settings) && (
+            {rubriqueFetesVisible(settings) && (
               <div>
                 <div className="flex items-center justify-between py-3">
                   <a href="/fetes" onClick={() => setMenuOpen(false)} className="font-body text-sm text-rust font-semibold">
@@ -477,14 +482,14 @@ export default function Header({ activeCategory }) {
                         onClick={() => setMenuOpen(false)}
                         className="font-tag text-xs uppercase text-muted hover:text-ink"
                       >
-                        {sr}
+                        {libelleSousRayon(sr)}
                       </a>
                     ))}
                   </div>
                 )}
               </div>
             )}
-            {categories.map((cat) => {
+            {categoriesMenu.map((cat) => {
               const subcats = subcategoriesByCategory[cat] || []
               const isOpen = openMobileCategory === cat
 

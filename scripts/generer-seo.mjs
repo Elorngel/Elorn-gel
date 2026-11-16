@@ -57,6 +57,8 @@ async function principal() {
     ])
     produits = p
     for (const cat of c) {
+      // Le rayon « Fêtes » n'est montré que pendant la période des fêtes (rubrique « Les fêtes ») : pas dans le plan.
+      if (urlRayon(cat.nom) === '/rayon/fetes') continue
       rayons.push(urlRayon(cat.nom))
       for (const sous of sc.filter((s) => s.categorie_id === cat.id)) rayons.push(urlRayon(cat.nom, sous.nom))
     }

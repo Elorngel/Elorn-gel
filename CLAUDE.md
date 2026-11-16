@@ -147,14 +147,17 @@ bannière) : liste libre de produits dans l'ordre choisi (`fetes.produits` = [{i
 « En couverture » (4 max, `produitsCouverture`) = photos de la bannière. Page et lien cachés aux clients tant que la case
 est décochée (un admin voit `/fetes` avec un bandeau « aperçu »), pas dans le sitemap. Contenu dans
 `parametres_site.fetes` (jsonb, SQL appliqué le 13/11/2026), valeurs de départ et calculs dans `src/lib/fetes.js`.
-Sous-catégories de la rubrique (16/11/2026) : `fetes.sous_rayons` (liste ordonnée, défaut Apéritif / Entrées / Poissons et
-fruits de mer / Viandes / Desserts) + `sr` sur chaque produit ; admin : cadre « Sous-catégories de la rubrique » (renommage
-à la sortie du champ, répercuté sur les produits) + menu « sous-catégorie » par article ; site : menu déroulant « Les fêtes »
-(Header, clé `FETES`), adresses `/fetes/<sous-catégorie>` (`urlFetes`, `sousRayonDepuisAdresse`), boutons de filtre et,
-sur « Tout », produits groupés par sous-catégorie avec titres (App.jsx). Sélection par défaut de 41 produits festifs.
-Aussi depuis la liste de tous les produits (Admin → Produits, colonne rayon) : menu « + les fêtes » / « Fêtes › … » par ligne
-(`ChoixFetes.jsx`, demandé pour Sylvie), enregistré aussitôt dans `parametres_site.fetes` (ajout rangé après le dernier
-produit de la même sous-catégorie, retrait avec confirmation si photo de couverture).
+CONTENU DE LA RUBRIQUE = RAYON « Fêtes » DE L'ADMIN (16/11/2026, décision de Romuald) : Sylvie range les produits avec
+« + autre rayon » → Fêtes › sous-catégorie (ou Fêtes en rayon principal) et gère les sous-catégories (et leur ordre) dans
+l'onglet Catégories ; tout apparaît automatiquement dans `/fetes` (`rayonFetes`, `sousRayonsFetes`, `estRayonFetes`,
+`libelleSousRayon` qui retire un tiret de tri « -Apéritif » dans `src/lib/fetes.js`). Le rayon « Fêtes » n'apparaît JAMAIS
+comme rayon ordinaire dans le menu (`categoriesMenu` dans Header.jsx) ; `/rayon/fetes[/x]` affiche la rubrique ; exclu du
+sitemap. Menu déroulant « Les fêtes » en tête (sous-catégories qui ont des produits), boutons de filtre, groupes par
+sous-catégorie sur « Tout » (+ « Et aussi » pour les produits sans sous-catégorie). `fetes.produits` ne sert plus qu'aux
+4 photos de la bannière (onglet Fêtes → « Les 4 photos de la bannière d'accueil »). La RUBRIQUE (menu + page) a sa propre case
+`fetes.rubrique` (défaut cochée, `rubriqueFetesVisible`), en haut de l'onglet Fêtes, INDÉPENDANTE de la bannière, des étoiles
+et de leurs dates (Romuald, 16/11/2026 : visible dès maintenant pour ceux qui veulent déjà voir les produits de fêtes). Les anciennes listes propres
+(`fetes.sous_rayons`, menu « + les fêtes » par ligne) ont été retirées le même jour.
 Étoiles dorées sur tout le site pendant la période des fêtes (16/11/2026, `EtoilesFetes.jsx`, canvas fixe sans clics, ~22 étoiles
 à 4 branches comme la bannière, descente lente + scintillement ; pas dans l'admin ni si « réduire les animations ») ; case
 `fetes.etoiles` dans l'onglet Fêtes. La neige a été essayée puis refusée par Romuald. Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).

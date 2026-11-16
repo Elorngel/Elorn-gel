@@ -3,8 +3,9 @@ import { etatAffichage } from '../lib/periode'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
 import HeroFetes from './HeroFetes'
-import { FETES_DEFAUT, MAX_COUVERTURE, contenuFetes } from '../lib/fetes'
-import { correspond } from '../lib/texte'
+import { FETES_DEFAUT, MAX_COUVERTURE, contenuFetes, rayonFetes, urlFetes, libelleSousRayon } from '../lib/fetes'
+import { estDansRayon } from '../lib/rayons'
+import { useCategories } from '../hooks/useCategories'
 import { urlPhoto, photoDeSecours } from '../lib/photos'
 
 // Onglet « Fêtes » de l'admin (13/11/2026) : bannière « Le menu des fêtes » de la page d'accueil.
@@ -74,233 +75,112 @@ function Interrupteur({ settings, updateSettings, modifie }) {
   )
 }
 
-// Nom d'une sous-catégorie : modifié dans le champ, enregistré en sortant du champ (ou Entrée) s'il n'est ni vide ni
-// déjà pris, pour que les produits suivent le nouveau nom sans jamais passer par un nom vide.
-function NomSousRayon({ nom, onValider, existe }) {
-  const [texte, setTexte] = useState(nom)
-  const [vu, setVu] = useState(nom)
-  if (nom !== vu) {
-    setVu(nom)
-    setTexte(nom)
-  }
-  const valider = () => {
-    const t = texte.trim()
-    if (!t || t === nom || existe(t)) setTexte(nom)
-    else onValider(t)
-  }
+// Contenu de la rubrique (16/11/2026) : c'est le rayon « Fêtes » de l'admin. On l'affiche ici pour information, avec
+// le nombre de produits par sous-catégorie et des liens pour voir chaque page.
+function ContenuRubrique({ categories, subcategoriesByCategory, produits, visible, onVisible }) {
+  const rayon = rayonFetes(categories)
+  const publies = produits.filter((p) => p.actif !== false)
+  const sousRayons = rayon ? subcategoriesByCategory[rayon] || [] : []
+  const total = rayon ? publies.filter((p) => estDansRayon(p, rayon)).length : 0
+  const sansSous = rayon ? publies.filter((p) => estDansRayon(p, rayon) && !sousRayons.some((sr) => estDansRayon(p, rayon, sr))).length : 0
   return (
-    <input
-      className={champ}
-      value={texte}
-      onChange={(e) => setTexte(e.target.value)}
-      onBlur={valider}
-      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-    />
-  )
-}
-
-// Sous-catégories de la rubrique (Apéritif, Entrées…) : ordre du menu, renommage (répercuté sur les produits),
-// suppression (les produits concernés passent sans sous-catégorie).
-function SousRayonsFetes({ sousRayons, produits, onChange }) {
-  const [nouveau, setNouveau] = useState('')
-  const compte = (sr) => produits.filter((p) => p.sr === sr).length
-  const renommer = (i, nom) => {
-    const ancien = sousRayons[i]
-    onChange(
-      sousRayons.map((x, j) => (j === i ? nom : x)),
-      produits.map((p) => (p.sr === ancien ? { ...p, sr: nom } : p))
-    )
-  }
-  const supprimer = (i) => {
-    const sr = sousRayons[i]
-    if (compte(sr) && !confirm(`${compte(sr)} produit(s) sont dans « ${sr} » : ils resteront dans la rubrique, sans sous-catégorie. Supprimer ?`)) return
-    onChange(
-      sousRayons.filter((_, j) => j !== i),
-      produits.map((p) => (p.sr === sr ? { ...p, sr: '' } : p))
-    )
-  }
-  const deplacer = (i, sens) => {
-    const j = i + sens
-    if (j < 0 || j >= sousRayons.length) return
-    const copie = [...sousRayons]
-    ;[copie[i], copie[j]] = [copie[j], copie[i]]
-    onChange(copie, produits)
-  }
-  const ajouter = () => {
-    const nom = nouveau.trim()
-    if (!nom || sousRayons.some((x) => x.toLowerCase() === nom.toLowerCase())) return
-    onChange([...sousRayons, nom], produits)
-    setNouveau('')
-  }
-  return (
-    <Cadre titre="Sous-catégories de la rubrique">
-      <p className="font-body text-xs text-muted mb-3">
-        Elles apparaissent dans le menu déroulant « Les fêtes » et en boutons sur la page, dans cet ordre (seules celles qui
-        ont au moins un produit sont montrées). Chaque produit se range dans une sous-catégorie juste en dessous.
-      </p>
-      <div className="space-y-1.5 max-w-xl">
-        {sousRayons.map((sr, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="flex flex-col">
-              <button type="button" onClick={() => deplacer(i, -1)} disabled={i === 0} className="text-xs leading-none px-1 disabled:opacity-20" aria-label="Monter">▲</button>
-              <button type="button" onClick={() => deplacer(i, 1)} disabled={i === sousRayons.length - 1} className="text-xs leading-none px-1 disabled:opacity-20" aria-label="Descendre">▼</button>
-            </div>
-            <NomSousRayon nom={sr} onValider={(nom) => renommer(i, nom)} existe={(nom) => sousRayons.some((x, j) => j !== i && x.toLowerCase() === nom.toLowerCase())} />
-            <span className="font-tag text-[11px] text-muted whitespace-nowrap w-20">{compte(sr)} produit{compte(sr) > 1 ? 's' : ''}</span>
-            <button type="button" onClick={() => supprimer(i)} className="font-tag text-xs uppercase font-semibold text-rust hover:underline">
-              Supprimer
-            </button>
+    <Cadre titre="Contenu de la rubrique « Les fêtes »">
+      {!rayon ? (
+        <p className="font-body text-sm text-rust">
+          Aucun rayon « Fêtes » dans l'onglet Catégories : créez-le pour remplir la rubrique.
+        </p>
+      ) : (
+        <>
+          <label className="flex items-center gap-2 mb-3 cursor-pointer">
+            <input type="checkbox" checked={visible} onChange={(e) => onVisible(e.target.checked)} className="w-5 h-5 accent-forest" />
+            <span className="font-tag text-sm uppercase font-semibold text-ink">Afficher la rubrique « Les fêtes » en tête du menu</span>
+            <span className={`ml-auto font-tag text-xs uppercase font-semibold px-2 py-1 ${visible ? 'bg-forest text-paper' : 'bg-stone text-muted'}`}>
+              {visible ? 'Visible sur le site' : 'Cachée aux clients'}
+            </span>
+          </label>
+          <p className="font-body text-xs text-muted mb-3">
+            Indépendant de la bannière d'accueil et de ses dates (plus bas) : la rubrique reste visible tant que cette case est
+            cochée (pensez à « Enregistrer » en bas). La rubrique affiche <strong>automatiquement tous les produits du rayon « {rayon} »</strong> : dans l'onglet
+            Produits, « + autre rayon » → {rayon} › sous-catégorie (ou {rayon} en rayon principal). Les sous-catégories
+            (et leur ordre) se règlent dans l'onglet <strong>Catégories</strong> ; un tiret au début du nom (« -Apéritif »)
+            n'est pas affiché aux clients. Le rayon « {rayon} » n'apparaît pas comme un rayon ordinaire dans le menu : il
+            devient le menu « Les fêtes », en tête.
+          </p>
+          <div className="grid gap-1.5 sm:grid-cols-2 max-w-2xl">
+            {sousRayons.map((sr) => {
+              const n = publies.filter((p) => estDansRayon(p, rayon, sr)).length
+              return (
+                <a
+                  key={sr}
+                  href={urlFetes(sr)}
+                  className={`flex justify-between border px-3 py-1.5 font-body text-sm hover:border-ink ${n ? 'border-ink/20 text-ink' : 'border-ink/10 text-muted'}`}
+                >
+                  <span>{libelleSousRayon(sr)}</span>
+                  <span className="font-tag text-xs">{n ? `${n} produit${n > 1 ? 's' : ''}` : 'vide (non affichée)'}</span>
+                </a>
+              )
+            })}
           </div>
-        ))}
-      </div>
-      <div className="flex gap-2 mt-3 max-w-xl">
-        <input
-          className={champ}
-          value={nouveau}
-          placeholder="Nouvelle sous-catégorie (ex. : Plateaux de fruits de mer)"
-          onChange={(e) => setNouveau(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), ajouter())}
-        />
-        <button type="button" onClick={ajouter} className={bouton}>
-          Ajouter
-        </button>
-      </div>
+          <p className="font-body text-xs text-muted mt-2">
+            {total} produit{total > 1 ? 's' : ''} publié{total > 1 ? 's' : ''} dans la rubrique
+            {sansSous ? `, dont ${sansSous} sans sous-catégorie (affichés en fin de page, « Et aussi »)` : ''}.{' '}
+            <a href="/fetes" className="underline">Voir la page</a>
+          </p>
+        </>
+      )}
     </Cadre>
   )
 }
 
-// Produits de la rubrique « Les fêtes » : ajout par recherche, ordre, et case « En couverture » (photos de la bannière).
-function ProduitsFetes({ produits, catalogue, sousRayons, onChange }) {
-  const [recherche, setRecherche] = useState('')
-  const nbCouverture = produits.filter((p) => p.couverture).length
-  const changerLigne = (i, changes) => onChange(produits.map((p, j) => (j === i ? { ...p, ...changes } : p)))
-  const deplacer = (i, sens) => {
-    const j = i + sens
-    if (j < 0 || j >= produits.length) return
-    const copie = [...produits]
-    ;[copie[i], copie[j]] = [copie[j], copie[i]]
-    onChange(copie)
-  }
-  const ajouter = (p) => {
-    onChange([...produits, { id: p.id, couverture: false, phrase: '', nom: '' }])
-    setRecherche('')
-  }
-  const dejaLa = new Set(produits.map((p) => p.id))
-  const suggestions =
-    recherche.trim().length >= 2
-      ? catalogue.filter((p) => !dejaLa.has(p.id) && correspond(p.nom, recherche.trim())).slice(0, 8)
-      : []
-
+// Les 4 photos de la bannière d'accueil : produit, phrase dorée, nom affiché.
+function PhotosBanniere({ produits, catalogue, onChange }) {
+  const couvertures = produits.filter((p) => p.couverture).slice(0, MAX_COUVERTURE)
+  const cases = Array.from({ length: MAX_COUVERTURE }, (_, i) => couvertures[i] || { id: '', couverture: true, phrase: '', nom: '' })
+  const choix = catalogue.filter((p) => p.photo_url).sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+  const changerCase = (i, changes) =>
+    onChange(cases.map((c, j) => (j === i ? { ...c, ...changes } : c)).filter((c) => c.id))
   return (
-    <Cadre titre="Produits du menu des fêtes">
+    <Cadre titre="Les 4 photos de la bannière d'accueil">
       <p className="font-body text-xs text-muted mb-3">
-        Tous ces produits apparaissent dans la rubrique « Les fêtes » du site (lien en tête du menu, et bouton de la
-        bannière), rangés par sous-catégorie, dans cet ordre. Cochez <strong>« En couverture »</strong> pour les {MAX_COUVERTURE} photos de la
-        bannière d'accueil ({nbCouverture}/{MAX_COUVERTURE} cochées).
+        Chaque photo mène à la fiche du produit, cadrée comme sur le site. Un produit masqué n'apparaît pas.
       </p>
-
-      <div className="relative max-w-md mb-4">
-        <span className={etiquette}>Ajouter un produit</span>
-        <input
-          className={champ}
-          value={recherche}
-          placeholder="Tapez le nom d'un produit…"
-          onChange={(e) => setRecherche(e.target.value)}
-        />
-        {suggestions.length > 0 && (
-          <div className="absolute z-30 left-0 right-0 bg-paper border border-ink/30 shadow-lg">
-            {suggestions.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => ajouter(p)}
-                className="w-full text-left px-3 py-2 font-body text-sm hover:bg-stone flex items-center gap-2"
-              >
-                {p.nom}
-                {p.actif === false && <span className="text-rust text-xs">(masqué)</span>}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {produits.length === 0 && <p className="font-body text-sm text-muted">Aucun produit pour l'instant.</p>}
-      <div className="divide-y divide-ink/10 border-y border-ink/10">
-        {produits.map((t, i) => {
-          const p = catalogue.find((x) => x.id === t.id)
-          const bloquee = !t.couverture && nbCouverture >= MAX_COUVERTURE
+      <div className="grid gap-4 sm:grid-cols-2">
+        {cases.map((t, i) => {
+          const produit = catalogue.find((p) => p.id === t.id)
           return (
-            <div key={t.id} className={`py-2.5 ${t.couverture ? 'bg-forest/5' : ''}`}>
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex flex-col">
-                  <button type="button" onClick={() => deplacer(i, -1)} disabled={i === 0} className="text-xs leading-none px-1 disabled:opacity-20" aria-label="Monter">
-                    ▲
-                  </button>
-                  <button type="button" onClick={() => deplacer(i, 1)} disabled={i === produits.length - 1} className="text-xs leading-none px-1 disabled:opacity-20" aria-label="Descendre">
-                    ▼
-                  </button>
-                </div>
-                <div className="relative w-12 h-12 bg-stone overflow-hidden shrink-0">
-                  {p?.photo_url && (
-                    <img
-                      src={urlPhoto(p.photo_url)}
-                      onError={(e) => photoDeSecours(e.currentTarget, p.photo_url)}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-                <div className="flex-1 min-w-[180px]">
-                  <p className="font-body text-sm text-ink">{p ? p.nom : 'Produit introuvable (supprimé ?)'}</p>
-                  {p?.actif === false && <p className="font-body text-xs text-rust">Masqué sur le site : n'apparaît pas</p>}
-                  {p && !p.photo_url && t.couverture && <p className="font-body text-xs text-rust">Pas de photo : pas affiché en couverture</p>}
-                </div>
-                <select
-                  className={`border border-ink/20 px-1.5 py-1 font-body text-xs bg-paper focus:border-forest focus:outline-none ${
-                    t.sr && sousRayons.includes(t.sr) ? 'text-ink' : 'text-rust'
-                  }`}
-                  value={sousRayons.includes(t.sr) ? t.sr : ''}
-                  onChange={(e) => changerLigne(i, { sr: e.target.value })}
-                  aria-label="Sous-catégorie"
-                >
-                  <option value="">— sous-catégorie —</option>
-                  {sousRayons.map((sr) => (
-                    <option key={sr} value={sr}>
-                      {sr}
-                    </option>
-                  ))}
-                </select>
-                <label className={`flex items-center gap-2 font-tag text-xs uppercase font-semibold ${bloquee ? 'text-muted' : 'text-forest cursor-pointer'}`}
-                  title={bloquee ? `Déjà ${MAX_COUVERTURE} photos en couverture : décochez-en une d'abord` : ''}>
-                  <input
-                    type="checkbox"
-                    checked={!!t.couverture}
-                    disabled={bloquee}
-                    onChange={(e) => changerLigne(i, { couverture: e.target.checked })}
-                    className="w-4 h-4 accent-forest"
+            <div key={i} className="border border-ink/15 p-3 flex gap-3">
+              <div className="relative w-16 h-16 bg-stone overflow-hidden shrink-0">
+                {produit?.photo_url && (
+                  <img
+                    src={urlPhoto(produit.photo_url)}
+                    onError={(e) => photoDeSecours(e.currentTarget, produit.photo_url)}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
-                  En couverture
-                </label>
-                <button
-                  type="button"
-                  onClick={() => onChange(produits.filter((_, j) => j !== i))}
-                  className="font-tag text-xs uppercase font-semibold text-rust hover:underline"
-                >
-                  Retirer
-                </button>
+                )}
               </div>
-              {t.couverture && (
-                <div className="grid gap-2 sm:grid-cols-2 mt-2 sm:ml-[88px]">
-                  <label>
-                    <span className={etiquette}>Phrase dorée sur la photo</span>
-                    <input className={champ} value={t.phrase || ''} placeholder="Ex. : Pour trinquer" onChange={(e) => changerLigne(i, { phrase: e.target.value })} />
-                  </label>
-                  <label>
-                    <span className={etiquette}>Nom affiché (vide = nom du produit)</span>
-                    <input className={champ} value={t.nom || ''} placeholder={p?.nom || ''} onChange={(e) => changerLigne(i, { nom: e.target.value })} />
-                  </label>
-                </div>
-              )}
+              <div className="flex-1 space-y-2">
+                <label className="block">
+                  <span className={etiquette}>Photo {i + 1} : produit</span>
+                  <select className={champ} value={t.id || ''} onChange={(e) => changerCase(i, { id: e.target.value })}>
+                    <option value="">— aucun —</option>
+                    {choix.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nom}
+                        {p.actif === false ? ' (masqué)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className={etiquette}>Phrase dorée</span>
+                  <input className={champ} value={t.phrase || ''} placeholder="Ex. : Pour trinquer" onChange={(e) => changerCase(i, { phrase: e.target.value })} />
+                </label>
+                <label className="block">
+                  <span className={etiquette}>Nom affiché (vide = nom du produit)</span>
+                  <input className={champ} value={t.nom || ''} placeholder={produit?.nom || ''} onChange={(e) => changerCase(i, { nom: e.target.value })} />
+                </label>
+              </div>
             </div>
           )
         })}
@@ -312,6 +192,7 @@ function ProduitsFetes({ produits, catalogue, sousRayons, onChange }) {
 export default function FetesPanel() {
   const { settings, updateSettings } = useSiteSettings()
   const { products } = useProducts({ leger: true })
+  const { categories, subcategoriesByCategory } = useCategories()
   // Modifications en cours (null = contenu enregistré).
   const [modifs, setModifs] = useState(null)
   const [modifie, setModifie] = useState(false)
@@ -354,6 +235,14 @@ export default function FetesPanel() {
 
   return (
     <div>
+      <ContenuRubrique
+        categories={categories}
+        subcategoriesByCategory={subcategoriesByCategory}
+        produits={products}
+        visible={brouillon.rubrique !== false}
+        onVisible={(v) => changer({ rubrique: v })}
+      />
+
       <Interrupteur settings={settings} updateSettings={updateSettings} modifie={modifie} />
 
       <Cadre titre="Période d'affichage">
@@ -424,18 +313,7 @@ export default function FetesPanel() {
         </div>
       </Cadre>
 
-      <SousRayonsFetes
-        sousRayons={brouillon.sous_rayons}
-        produits={brouillon.produits}
-        onChange={(sous_rayons, produits) => changer({ sous_rayons, produits })}
-      />
-
-      <ProduitsFetes
-        produits={brouillon.produits}
-        catalogue={products}
-        sousRayons={brouillon.sous_rayons}
-        onChange={(produits) => changer({ produits })}
-      />
+      <PhotosBanniere produits={brouillon.produits} catalogue={products} onChange={(produits) => changer({ produits })} />
 
       <Cadre titre="Les dates à retenir">
         <label className="block mb-3 max-w-sm">
