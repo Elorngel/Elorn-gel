@@ -18,6 +18,8 @@ export const FETES_DEFAUT = {
   // Période d'affichage (case cochée + dates) : du lendemain de la Black Week au lendemain du jour de l'an.
   debut: '2026-11-30',
   fin: '2027-01-02',
+  // Petites étoiles dorées sur tout le site pendant la période (EtoilesFetes.jsx) ; décochable dans l'admin.
+  etoiles: true,
   // Jour visé par le décompte « J - 42 » (le décompte disparaît une fois la date passée).
   date_cible: '2026-12-25',
   // Sous-catégories de la rubrique « Les fêtes » (16/11/2026), dans l'ordre du menu ; renommables dans l'admin.

@@ -154,7 +154,10 @@ fruits de mer / Viandes / Desserts) + `sr` sur chaque produit ; admin : cadre «
 sur « Tout », produits groupés par sous-catégorie avec titres (App.jsx). Sélection par défaut de 41 produits festifs.
 Aussi depuis la liste de tous les produits (Admin → Produits, colonne rayon) : menu « + les fêtes » / « Fêtes › … » par ligne
 (`ChoixFetes.jsx`, demandé pour Sylvie), enregistré aussitôt dans `parametres_site.fetes` (ajout rangé après le dernier
-produit de la même sous-catégorie, retrait avec confirmation si photo de couverture). Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).
+produit de la même sous-catégorie, retrait avec confirmation si photo de couverture).
+Étoiles dorées sur tout le site pendant la période des fêtes (16/11/2026, `EtoilesFetes.jsx`, canvas fixe sans clics, ~22 étoiles
+à 4 branches comme la bannière, descente lente + scintillement ; pas dans l'admin ni si « réduire les animations ») ; case
+`fetes.etoiles` dans l'onglet Fêtes. La neige a été essayée puis refusée par Romuald. Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).
 **Mode Black Friday** (13/11/2026, `supabase-black-friday.sql`, maquette 2 « ticket de caisse » choisie) : admin → onglet
 « Black Friday » (`BlackPanel.jsx`) : case `parametres_site.black_actif` (prioritaire sur le mode fêtes) → `HeroBlack.jsx`
 remplace la bannière de l'accueil (titre plein + contour, ticket Bontin avec lignes prix barré / prix remisé, « Vous

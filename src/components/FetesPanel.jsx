@@ -368,6 +368,17 @@ export default function FetesPanel() {
           </label>
         </div>
         <p className="font-body text-[11px] text-muted mt-1">Changement à minuit. Une date vide = pas de limite de ce côté.</p>
+        <label className="flex items-center gap-2 mt-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={brouillon.etoiles !== false}
+            onChange={(e) => changer({ etoiles: e.target.checked })}
+            className="w-4 h-4 accent-forest"
+          />
+          <span className="font-body text-sm">
+            Petites étoiles dorées sur tout le site pendant cette période (comme sur la bannière, jamais dans l'admin)
+          </span>
+        </label>
       </Cadre>
 
       <Cadre titre="Textes de la bannière">

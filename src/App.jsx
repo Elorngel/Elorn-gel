@@ -12,6 +12,7 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import HeroFetes from './components/HeroFetes'
 import HeroBlack from './components/HeroBlack'
+import EtoilesFetes from './components/EtoilesFetes'
 import { contenuFetes, fetesVisible, urlFetes, sousRayonsUtilises, sousRayonDepuisAdresse } from './lib/fetes'
 import { blackVisible } from './lib/blackFriday'
 import ProductCard from './components/ProductCard'
@@ -454,6 +455,7 @@ function App() {
             />
           )}
           <ConseilAssistant />
+          {fetesVisible(settings) && contenuFetes(settings.fetes).etoiles !== false && <EtoilesFetes />}
         </ConseilProvider>
       </CartProvider>
     </PriceModeProvider>

@@ -3,3 +3,8 @@ dist
 dist-ssr
 *.local
 .DS_Store
+
+# Pages d aperçu locales (jamais publiées)
+apercu-*.html
+apercu-*.jsx
+.claude/launch.json
