@@ -13,7 +13,7 @@ import { urlProduit, urlRayon, urlRecherche } from '../lib/adresses'
 import { aller } from '../lib/navigation'
 import { correspond } from '../lib/texte'
 import { blackVisible } from '../lib/blackFriday'
-import { fetesVisible } from '../lib/fetes'
+import { fetesVisible, contenuFetes, sousRayonsUtilises, urlFetes } from '../lib/fetes'
 
 const MIN_CHARS_SUGGESTIONS = 3
 const MAX_SUGGESTIONS = 8
@@ -40,6 +40,9 @@ function SearchSuggestions({ suggestions, onSelect }) {
   )
 }
 
+// Clé du menu déroulant « Les fêtes » (ne peut pas être confondue avec un nom de rayon).
+const FETES = '__fetes__'
+
 export default function Header({ activeCategory }) {
   const { mode, setMode, discountPercent } = usePriceMode()
   const { settings } = useSiteSettings()
@@ -49,6 +52,8 @@ export default function Header({ activeCategory }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openCategory, setOpenCategory] = useState(null)
   const [openMobileCategory, setOpenMobileCategory] = useState(null)
+  // Sous-catégories de la rubrique « Les fêtes » (menu déroulant, comme un rayon).
+  const fetesSousRayons = settings ? sousRayonsUtilises(contenuFetes(settings.fetes)) : []
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchProducts, setSearchProducts] = useState([])
   // Le lien vers l'admin n'est visible que pour une personne connectée en mode admin.
@@ -284,14 +289,49 @@ export default function Header({ activeCategory }) {
           </a>
         )}
         {fetesVisible(settings) && (
-          <a
-            href="/fetes"
-            className={`font-body pb-0.5 border-b-2 text-rust font-semibold transition-colors ${
-              activeCategory === 'Les fêtes' ? 'border-rust' : 'border-transparent hover:border-rust/40'
-            }`}
-          >
-            Les fêtes
-          </a>
+          <div className="relative">
+            {fetesSousRayons.length > 0 ? (
+              <button
+                onClick={() => setOpenCategory(openCategory === FETES ? null : FETES)}
+                className={`flex items-center gap-1 font-body pb-0.5 border-b-2 text-rust font-semibold transition-colors ${
+                  activeCategory === 'Les fêtes' ? 'border-rust' : 'border-transparent hover:border-rust/40'
+                }`}
+              >
+                Les fêtes
+                <span className={`text-[10px] transition-transform ${openCategory === FETES ? 'rotate-180' : ''}`}>▾</span>
+              </button>
+            ) : (
+              <a
+                href="/fetes"
+                className={`font-body pb-0.5 border-b-2 text-rust font-semibold transition-colors ${
+                  activeCategory === 'Les fêtes' ? 'border-rust' : 'border-transparent hover:border-rust/40'
+                }`}
+              >
+                Les fêtes
+              </a>
+            )}
+            {openCategory === FETES && (
+              <div className="absolute left-0 top-full mt-1 bg-paper border border-ink/20 shadow-sm z-30 min-w-[200px] py-1">
+                <a
+                  href="/fetes"
+                  onClick={() => setOpenCategory(null)}
+                  className="block px-3 py-2 font-tag text-xs uppercase font-semibold text-rust hover:bg-stone border-b border-ink/10"
+                >
+                  Tout le menu des fêtes
+                </a>
+                {fetesSousRayons.map((sr) => (
+                  <a
+                    key={sr}
+                    href={urlFetes(sr)}
+                    onClick={() => setOpenCategory(null)}
+                    className="block px-3 py-2 font-body text-sm text-ink hover:bg-stone"
+                  >
+                    {sr}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         )}
         {categories.map((cat) => {
           const subcats = subcategoriesByCategory[cat] || []
@@ -413,10 +453,35 @@ export default function Header({ activeCategory }) {
               </div>
             )}
             {fetesVisible(settings) && (
-              <div className="py-3">
-                <a href="/fetes" onClick={() => setMenuOpen(false)} className="font-body text-sm text-rust font-semibold">
-                  Les fêtes
-                </a>
+              <div>
+                <div className="flex items-center justify-between py-3">
+                  <a href="/fetes" onClick={() => setMenuOpen(false)} className="font-body text-sm text-rust font-semibold">
+                    Les fêtes
+                  </a>
+                  {fetesSousRayons.length > 0 && (
+                    <button
+                      onClick={() => setOpenMobileCategory(openMobileCategory === FETES ? null : FETES)}
+                      aria-label="Sous-catégories des fêtes"
+                      className="w-8 h-8 flex items-center justify-center text-muted"
+                    >
+                      <span className={`text-xs transition-transform ${openMobileCategory === FETES ? 'rotate-180' : ''}`}>▾</span>
+                    </button>
+                  )}
+                </div>
+                {openMobileCategory === FETES && (
+                  <div className="pb-2 pl-3 flex flex-col gap-2">
+                    {fetesSousRayons.map((sr) => (
+                      <a
+                        key={sr}
+                        href={urlFetes(sr)}
+                        onClick={() => setMenuOpen(false)}
+                        className="font-tag text-xs uppercase text-muted hover:text-ink"
+                      >
+                        {sr}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {categories.map((cat) => {

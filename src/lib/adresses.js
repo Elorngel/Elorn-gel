@@ -60,6 +60,8 @@ export function lirePage(chemin) {
   if (m) return { type: 'produit', id8: m[1].toLowerCase() }
   m = c.match(/^\/rayon\/([^/]+)(?:\/([^/]+))?$/)
   if (m) return { type: 'rayon', categorie: m[1], sousCategorie: m[2] || null }
+  m = c.match(/^\/fetes\/([^/]+)$/)
+  if (m) return { type: 'fetes', sousRayon: m[1] }
   m = c.match(/^\/recherche\/(.+)$/)
   if (m) return { type: 'recherche', texte: m[1] }
   m = c.match(/^\/parrainage(?:\/([^/]+))?$/)

@@ -146,7 +146,12 @@ passées masquées automatiquement). Rubrique « Les fêtes » (page `/fetes`, l
 bannière) : liste libre de produits dans l'ordre choisi (`fetes.produits` = [{id, couverture, phrase, nom}]), ceux cochés
 « En couverture » (4 max, `produitsCouverture`) = photos de la bannière. Page et lien cachés aux clients tant que la case
 est décochée (un admin voit `/fetes` avec un bandeau « aperçu »), pas dans le sitemap. Contenu dans
-`parametres_site.fetes` (jsonb, SQL appliqué le 13/11/2026), valeurs de départ et calculs dans `src/lib/fetes.js`. Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).
+`parametres_site.fetes` (jsonb, SQL appliqué le 13/11/2026), valeurs de départ et calculs dans `src/lib/fetes.js`.
+Sous-catégories de la rubrique (16/11/2026) : `fetes.sous_rayons` (liste ordonnée, défaut Apéritif / Entrées / Poissons et
+fruits de mer / Viandes / Desserts) + `sr` sur chaque produit ; admin : cadre « Sous-catégories de la rubrique » (renommage
+à la sortie du champ, répercuté sur les produits) + menu « sous-catégorie » par article ; site : menu déroulant « Les fêtes »
+(Header, clé `FETES`), adresses `/fetes/<sous-catégorie>` (`urlFetes`, `sousRayonDepuisAdresse`), boutons de filtre et,
+sur « Tout », produits groupés par sous-catégorie avec titres (App.jsx). Sélection par défaut de 41 produits festifs. Rappel « Passer en Retrait » sorti dans `BandeauRetrait.jsx` (commun aux deux bannières).
 **Mode Black Friday** (13/11/2026, `supabase-black-friday.sql`, maquette 2 « ticket de caisse » choisie) : admin → onglet
 « Black Friday » (`BlackPanel.jsx`) : case `parametres_site.black_actif` (prioritaire sur le mode fêtes) → `HeroBlack.jsx`
 remplace la bannière de l'accueil (titre plein + contour, ticket Bontin avec lignes prix barré / prix remisé, « Vous

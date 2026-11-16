@@ -74,8 +74,103 @@ function Interrupteur({ settings, updateSettings, modifie }) {
   )
 }
 
+// Nom d'une sous-catégorie : modifié dans le champ, enregistré en sortant du champ (ou Entrée) s'il n'est ni vide ni
+// déjà pris, pour que les produits suivent le nouveau nom sans jamais passer par un nom vide.
+function NomSousRayon({ nom, onValider, existe }) {
+  const [texte, setTexte] = useState(nom)
+  const [vu, setVu] = useState(nom)
+  if (nom !== vu) {
+    setVu(nom)
+    setTexte(nom)
+  }
+  const valider = () => {
+    const t = texte.trim()
+    if (!t || t === nom || existe(t)) setTexte(nom)
+    else onValider(t)
+  }
+  return (
+    <input
+      className={champ}
+      value={texte}
+      onChange={(e) => setTexte(e.target.value)}
+      onBlur={valider}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+    />
+  )
+}
+
+// Sous-catégories de la rubrique (Apéritif, Entrées…) : ordre du menu, renommage (répercuté sur les produits),
+// suppression (les produits concernés passent sans sous-catégorie).
+function SousRayonsFetes({ sousRayons, produits, onChange }) {
+  const [nouveau, setNouveau] = useState('')
+  const compte = (sr) => produits.filter((p) => p.sr === sr).length
+  const renommer = (i, nom) => {
+    const ancien = sousRayons[i]
+    onChange(
+      sousRayons.map((x, j) => (j === i ? nom : x)),
+      produits.map((p) => (p.sr === ancien ? { ...p, sr: nom } : p))
+    )
+  }
+  const supprimer = (i) => {
+    const sr = sousRayons[i]
+    if (compte(sr) && !confirm(`${compte(sr)} produit(s) sont dans « ${sr} » : ils resteront dans la rubrique, sans sous-catégorie. Supprimer ?`)) return
+    onChange(
+      sousRayons.filter((_, j) => j !== i),
+      produits.map((p) => (p.sr === sr ? { ...p, sr: '' } : p))
+    )
+  }
+  const deplacer = (i, sens) => {
+    const j = i + sens
+    if (j < 0 || j >= sousRayons.length) return
+    const copie = [...sousRayons]
+    ;[copie[i], copie[j]] = [copie[j], copie[i]]
+    onChange(copie, produits)
+  }
+  const ajouter = () => {
+    const nom = nouveau.trim()
+    if (!nom || sousRayons.some((x) => x.toLowerCase() === nom.toLowerCase())) return
+    onChange([...sousRayons, nom], produits)
+    setNouveau('')
+  }
+  return (
+    <Cadre titre="Sous-catégories de la rubrique">
+      <p className="font-body text-xs text-muted mb-3">
+        Elles apparaissent dans le menu déroulant « Les fêtes » et en boutons sur la page, dans cet ordre (seules celles qui
+        ont au moins un produit sont montrées). Chaque produit se range dans une sous-catégorie juste en dessous.
+      </p>
+      <div className="space-y-1.5 max-w-xl">
+        {sousRayons.map((sr, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="flex flex-col">
+              <button type="button" onClick={() => deplacer(i, -1)} disabled={i === 0} className="text-xs leading-none px-1 disabled:opacity-20" aria-label="Monter">▲</button>
+              <button type="button" onClick={() => deplacer(i, 1)} disabled={i === sousRayons.length - 1} className="text-xs leading-none px-1 disabled:opacity-20" aria-label="Descendre">▼</button>
+            </div>
+            <NomSousRayon nom={sr} onValider={(nom) => renommer(i, nom)} existe={(nom) => sousRayons.some((x, j) => j !== i && x.toLowerCase() === nom.toLowerCase())} />
+            <span className="font-tag text-[11px] text-muted whitespace-nowrap w-20">{compte(sr)} produit{compte(sr) > 1 ? 's' : ''}</span>
+            <button type="button" onClick={() => supprimer(i)} className="font-tag text-xs uppercase font-semibold text-rust hover:underline">
+              Supprimer
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2 mt-3 max-w-xl">
+        <input
+          className={champ}
+          value={nouveau}
+          placeholder="Nouvelle sous-catégorie (ex. : Plateaux de fruits de mer)"
+          onChange={(e) => setNouveau(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), ajouter())}
+        />
+        <button type="button" onClick={ajouter} className={bouton}>
+          Ajouter
+        </button>
+      </div>
+    </Cadre>
+  )
+}
+
 // Produits de la rubrique « Les fêtes » : ajout par recherche, ordre, et case « En couverture » (photos de la bannière).
-function ProduitsFetes({ produits, catalogue, onChange }) {
+function ProduitsFetes({ produits, catalogue, sousRayons, onChange }) {
   const [recherche, setRecherche] = useState('')
   const nbCouverture = produits.filter((p) => p.couverture).length
   const changerLigne = (i, changes) => onChange(produits.map((p, j) => (j === i ? { ...p, ...changes } : p)))
@@ -100,7 +195,7 @@ function ProduitsFetes({ produits, catalogue, onChange }) {
     <Cadre titre="Produits du menu des fêtes">
       <p className="font-body text-xs text-muted mb-3">
         Tous ces produits apparaissent dans la rubrique « Les fêtes » du site (lien en tête du menu, et bouton de la
-        bannière), dans cet ordre. Cochez <strong>« En couverture »</strong> pour les {MAX_COUVERTURE} photos de la
+        bannière), rangés par sous-catégorie, dans cet ordre. Cochez <strong>« En couverture »</strong> pour les {MAX_COUVERTURE} photos de la
         bannière d'accueil ({nbCouverture}/{MAX_COUVERTURE} cochées).
       </p>
 
@@ -160,6 +255,21 @@ function ProduitsFetes({ produits, catalogue, onChange }) {
                   {p?.actif === false && <p className="font-body text-xs text-rust">Masqué sur le site : n'apparaît pas</p>}
                   {p && !p.photo_url && t.couverture && <p className="font-body text-xs text-rust">Pas de photo : pas affiché en couverture</p>}
                 </div>
+                <select
+                  className={`border border-ink/20 px-1.5 py-1 font-body text-xs bg-paper focus:border-forest focus:outline-none ${
+                    t.sr && sousRayons.includes(t.sr) ? 'text-ink' : 'text-rust'
+                  }`}
+                  value={sousRayons.includes(t.sr) ? t.sr : ''}
+                  onChange={(e) => changerLigne(i, { sr: e.target.value })}
+                  aria-label="Sous-catégorie"
+                >
+                  <option value="">— sous-catégorie —</option>
+                  {sousRayons.map((sr) => (
+                    <option key={sr} value={sr}>
+                      {sr}
+                    </option>
+                  ))}
+                </select>
                 <label className={`flex items-center gap-2 font-tag text-xs uppercase font-semibold ${bloquee ? 'text-muted' : 'text-forest cursor-pointer'}`}
                   title={bloquee ? `Déjà ${MAX_COUVERTURE} photos en couverture : décochez-en une d'abord` : ''}>
                   <input
@@ -303,7 +413,18 @@ export default function FetesPanel() {
         </div>
       </Cadre>
 
-      <ProduitsFetes produits={brouillon.produits} catalogue={products} onChange={(produits) => changer({ produits })} />
+      <SousRayonsFetes
+        sousRayons={brouillon.sous_rayons}
+        produits={brouillon.produits}
+        onChange={(sous_rayons, produits) => changer({ sous_rayons, produits })}
+      />
+
+      <ProduitsFetes
+        produits={brouillon.produits}
+        catalogue={products}
+        sousRayons={brouillon.sous_rayons}
+        onChange={(produits) => changer({ produits })}
+      />
 
       <Cadre titre="Les dates à retenir">
         <label className="block mb-3 max-w-sm">
