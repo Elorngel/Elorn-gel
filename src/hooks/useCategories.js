@@ -118,11 +118,24 @@ export function useCategories() {
     const suite = [...liste]
     ;[suite[i], suite[j]] = [suite[j], suite[i]]
     const changes = suite.map((x, n) => ({ id: x.id, ordre: n })).filter((x, n) => suite[n].ordre !== n)
-    for (const c of changes) {
-      const { error } = await supabase.from(table).update({ ordre: c.ordre }).eq('id', c.id)
-      if (error) throw error
+    // Mise à jour sur place, sans « Chargement… » : la page ne remonte pas en haut à chaque clic.
+    const nouvelOrdre = new Map(suite.map((x, n) => [x.id, n]))
+    const appliquer = (prev) =>
+      prev
+        .map((x) => (nouvelOrdre.has(x.id) ? { ...x, ordre: nouvelOrdre.get(x.id) } : x))
+        .sort((a, b) => a.ordre - b.ordre)
+    if (table === 'categories') setCategoriesFull(appliquer)
+    else setSubcategoriesFull(appliquer)
+    try {
+      for (const c of changes) {
+        const { error } = await supabase.from(table).update({ ordre: c.ordre }).eq('id', c.id)
+        if (error) throw error
+      }
+    } catch (err) {
+      await fetchAll()
+      throw err
     }
-    await fetchAll()
+    oublierRequetes('categories')
   }
   const moveCategory = (id, sens) => renumeroter('categories', categoriesFull, id, sens)
   const moveSubcategory = (id, sens) => {
