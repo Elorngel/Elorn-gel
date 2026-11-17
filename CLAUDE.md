@@ -177,6 +177,11 @@ date du jour (Paris) dans la période (`blackVisible` / `fetesVisible`, utilisé
 Romuald) + colis à -30 % ; kit Facebook `docs/black-week/` ; programme complet `docs/programme-fin-annee-2026.txt`.
 ATTENTION : l'admin (`/admin`) n'est PAS dans le `PriceModeProvider` du site → tout aperçu admin qui utilise
 `usePriceMode` doit avoir son propre `<PriceModeProvider>` (bug du 14/11/2026 : onglet Black Friday qui plantait).
+**Deuxième photo produit** (17/11/2026, `supabase-photo2.sql`, demandé pour les bûches) : colonnes
+`produits.photo2_url`/`photo2_zoom`/`photo2_pos_x`/`photo2_pos_y` ; réglée dans la Fiche produit de l'admin (carré
+« Deuxième photo », `ProductDetailsModal`, même éditeur de cadrage) ; visible SEULEMENT sur la fiche produit du site
+(`ProductDetailPage` : flèche › / ‹ sur la photo, deux petits carrés en bas, glisser du doigt sur téléphone) ; jamais
+sur les cartes. Remplacer/retirer la 2e photo ou supprimer le produit supprime aussi son fichier (`useProducts`).
 **Consentement SMS** (16/11/2026, `supabase-consentement-sms.sql`) : case « J'accepte de recevoir les promotions de Bontin par
 SMS » sous le téléphone (`ChampsCompte.jsx`, création ET « Mon compte »), jamais cochée d'office ; `clients.accepte_sms` +
 `sms_consenti_le` (posée par le déclencheur `clients_consentement_sms`, preuve de l'accord, vidée au retrait) ; enregistré
@@ -271,7 +276,7 @@ bon d'anniversaire de 10 € (valable 14 jours après l'anniversaire), qui deman
   fournisseurs (table `fournisseurs`, même bucket `photos-produits`) ont été
   supprimés par erreur puis restaurés — si un futur nettoyage du stockage est
   refait, bien vérifier les **trois** sources avant de considérer un fichier
-  orphelin : `produits.photo_url`, `parametres_site.hero_url`/`logo_url`, et
+  orphelin : `produits.photo_url` (et `produits.photo2_url`), `parametres_site.hero_url`/`logo_url`, et
   `fournisseurs.logo_url`.
 - **Bascule vers bontin.fr** : la fonction `send-order-emails` lit `FROM_EMAIL`
   et `ADMIN_EMAIL` dans les secrets Supabase (défaut : expéditeur de test Resend

@@ -1140,6 +1140,7 @@ export default function AdminPage() {
           product={detailsProduct}
           onSave={(changes) => updateProduct(detailsProduct.id, changes)}
           updateProduct={updateProduct}
+          uploadPhotoOnly={uploadPhotoOnly}
           onOpenVariants={() => {
             setVariantsProduct(detailsProduct)
             setDetailsProduct(null)

@@ -26,6 +26,9 @@ export default function ProductDetailPage({ id }) {
   const [activeTab, setActiveTab] = useState('description')
   const [justAdded, setJustAdded] = useState(false)
   const [selectedVariantId, setSelectedVariantId] = useState(null)
+  // 2e photo (17/11/2026) : affichée en cliquant sur la petite flèche de la photo (ou en glissant le doigt).
+  const [photoVue, setPhotoVue] = useState({ id: null, n: 0 })
+  const [departDoigt, setDepartDoigt] = useState(null)
 
   // Ce que Google affiche pour cette fiche, et adresse officielle (avec le nom à jour du produit).
   const adresse = product ? urlProduit(product) : null
@@ -69,6 +72,9 @@ export default function ProductDetailPage({ id }) {
     )
   }
 
+  const deuxPhotos = !!(product.photo_url && product.photo2_url)
+  const photoN = deuxPhotos && photoVue.id === product.id ? photoVue.n : 0
+  const voirPhoto = (n) => setPhotoVue({ id: product.id, n })
   const hasVariants = product.variantes && product.variantes.length > 0
   const availableVariants = hasVariants ? getAvailableVariants(product, isPickup) : []
   const productAvailableNoVariants = !hasVariants && isProductAvailable(product, isPickup)
@@ -126,16 +132,43 @@ export default function ProductDetailPage({ id }) {
           ]}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-          <div className="relative bg-paper border border-ink/15 overflow-hidden aspect-square">
+          <div
+            className="relative bg-paper border border-ink/15 overflow-hidden aspect-square"
+            onTouchStart={deuxPhotos ? (e) => setDepartDoigt(e.touches[0].clientX) : undefined}
+            onTouchEnd={
+              deuxPhotos
+                ? (e) => {
+                    const ecart = e.changedTouches[0].clientX - (departDoigt ?? e.changedTouches[0].clientX)
+                    if (Math.abs(ecart) > 40) voirPhoto(ecart < 0 ? 1 : 0)
+                    setDepartDoigt(null)
+                  }
+                : undefined
+            }
+          >
             {product.photo_url ? (
-              <CroppableImage
-                src={product.photo_url}
-                alt={product.nom}
-                loading="eager"
-                zoom={product.photo_zoom ?? 1}
-                posX={product.photo_pos_x ?? 50}
-                posY={product.photo_pos_y ?? 50}
-              />
+              <>
+                <div className={`absolute inset-0 transition-opacity duration-300 ${photoN === 0 ? 'opacity-100' : 'opacity-0'}`}>
+                  <CroppableImage
+                    src={product.photo_url}
+                    alt={product.nom}
+                    loading="eager"
+                    zoom={product.photo_zoom ?? 1}
+                    posX={product.photo_pos_x ?? 50}
+                    posY={product.photo_pos_y ?? 50}
+                  />
+                </div>
+                {deuxPhotos && (
+                  <div className={`absolute inset-0 transition-opacity duration-300 ${photoN === 1 ? 'opacity-100' : 'opacity-0'}`}>
+                    <CroppableImage
+                      src={product.photo2_url}
+                      alt={`${product.nom}, autre vue`}
+                      zoom={product.photo2_zoom ?? 1}
+                      posX={product.photo2_pos_x ?? 50}
+                      posY={product.photo2_pos_y ?? 50}
+                    />
+                  </div>
+                )}
+              </>
             ) : (
               <span className="absolute inset-0 flex items-center justify-center font-tag text-xs uppercase text-muted">
                 Photo produit
@@ -148,6 +181,30 @@ export default function ProductDetailPage({ id }) {
                   Bientôt de retour
                 </span>
               </div>
+            )}
+
+            {deuxPhotos && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => voirPhoto(photoN === 0 ? 1 : 0)}
+                  aria-label={photoN === 0 ? 'Voir la deuxième photo' : 'Revenir à la première photo'}
+                  className={`absolute top-1/2 -translate-y-1/2 ${photoN === 0 ? 'right-2' : 'left-2'} w-9 h-9 flex items-center justify-center bg-paper/90 border border-ink/20 text-ink text-lg leading-none hover:bg-paper hover:border-ink shadow-sm`}
+                >
+                  {photoN === 0 ? '›' : '‹'}
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {[0, 1].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => voirPhoto(n)}
+                      aria-label={`Photo ${n + 1}`}
+                      className={`w-2 h-2 border border-paper ${photoN === n ? 'bg-paper' : 'bg-ink/40'}`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
 

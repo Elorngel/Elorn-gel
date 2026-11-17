@@ -1,6 +1,8 @@
 import { correspond } from '../lib/texte'
 import { useState } from 'react'
 import RichTextEditor from './RichTextEditor'
+import PhotoEditorModal from './PhotoEditorModal'
+import CroppableImage from './CroppableImage'
 import { getPricePerUnitLabel } from '../lib/pricing'
 import { useAccompagnements } from '../hooks/useAccompagnements'
 import { useSuppliers } from '../hooks/useSuppliers'
@@ -17,6 +19,7 @@ export default function ProductDetailsModal({
   product,
   onSave,
   updateProduct,
+  uploadPhotoOnly,
   onOpenVariants,
   onClose,
   allProducts = [],
@@ -34,6 +37,14 @@ export default function ProductDetailsModal({
   const [dispoRetrait, setDispoRetrait] = useState(product.dispo_retrait !== false)
   const [alcool, setAlcool] = useState(product.alcool === true)
   const [sansCode, setSansCode] = useState(product.sans_code_promo === true)
+  // 2e photo, visible seulement sur la fiche produit du site (flèche sur la photo) — 17/11/2026, pour les bûches.
+  const [photo2, setPhoto2] = useState({
+    url: product.photo2_url || '',
+    zoom: product.photo2_zoom ?? 1,
+    posX: product.photo2_pos_x ?? 50,
+    posY: product.photo2_pos_y ?? 50,
+  })
+  const [editionPhoto2, setEditionPhoto2] = useState(false)
   const [refQuantiteDraft, setRefQuantiteDraft] = useState(product.poids_reference ?? '')
   const [refUnite, setRefUnite] = useState(product.unite_reference || 'kg')
   const [nomRetraitDraft, setNomRetraitDraft] = useState(product.nom_retrait || '')
@@ -157,6 +168,26 @@ export default function ProductDetailsModal({
     const newValue = !alcool
     setAlcool(newValue)
     updateProduct(product.id, { alcool: newValue })
+  }
+
+  const enregistrerPhoto2 = async ({ url, zoom, posX, posY }) => {
+    await updateProduct(product.id, {
+      photo2_url: url || null,
+      photo2_zoom: zoom,
+      photo2_pos_x: posX,
+      photo2_pos_y: posY,
+    })
+    setPhoto2({ url: url || '', zoom, posX, posY })
+  }
+
+  const retirerPhoto2 = async () => {
+    if (!confirm('Retirer la deuxième photo de ce produit ?')) return
+    try {
+      await updateProduct(product.id, { photo2_url: null, photo2_zoom: 1, photo2_pos_x: 50, photo2_pos_y: 50 })
+      setPhoto2({ url: '', zoom: 1, posX: 50, posY: 50 })
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    }
   }
 
   const toggleSansCode = () => {
@@ -299,6 +330,50 @@ export default function ProductDetailsModal({
         </div>
 
         <div className="p-4">
+          <div className="flex items-center gap-3 mb-4 border border-ink/15 p-2">
+            <button
+              type="button"
+              onClick={() => setEditionPhoto2(true)}
+              className="relative w-16 h-16 bg-stone border border-ink/15 overflow-hidden shrink-0"
+            >
+              {photo2.url ? (
+                <CroppableImage src={photo2.url} zoom={photo2.zoom} posX={photo2.posX} posY={photo2.posY} />
+              ) : (
+                <span className="flex items-center justify-center h-full font-tag text-[9px] text-muted text-center px-1">
+                  Ajouter
+                </span>
+              )}
+            </button>
+            <div className="flex-1">
+              <p className="font-tag text-xs uppercase font-semibold text-ink">Deuxième photo (facultatif)</p>
+              <p className="font-body text-[11px] text-muted">
+                Visible seulement sur la fiche produit du site, en cliquant sur la petite flèche de la photo (ex. bûche
+                coupée). Cliquez sur le carré pour la choisir et la cadrer.
+              </p>
+              {photo2.url && (
+                <button
+                  type="button"
+                  onClick={retirerPhoto2}
+                  className="font-tag text-[10px] uppercase font-semibold text-rust hover:underline mt-1"
+                >
+                  Retirer la 2e photo
+                </button>
+              )}
+            </div>
+          </div>
+          {editionPhoto2 && (
+            <PhotoEditorModal
+              title={`${product.nom} · 2e photo`}
+              initialUrl={photo2.url}
+              initialZoom={photo2.zoom}
+              initialPosX={photo2.posX}
+              initialPosY={photo2.posY}
+              onUpload={(file) => uploadPhotoOnly(product.id, file)}
+              onSave={enregistrerPhoto2}
+              onClose={() => setEditionPhoto2(false)}
+              hint="Cadre identique à la photo principale de la fiche produit (carré)."
+            />
+          )}
           <label className="flex items-center gap-2 mb-1 cursor-pointer">
             <input
               type="checkbox"

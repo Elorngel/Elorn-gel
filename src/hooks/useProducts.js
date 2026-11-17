@@ -70,10 +70,12 @@ export function useProducts({ leger = false } = {}) {
     // Si la photo change, on retient l'ancienne pour la supprimer du stockage
     // une fois le changement confirmé — sinon elle reste coincée pour toujours
     // (c'est ce qui a fait gonfler le stockage avant le ménage du 01/10/2026).
-    let previousPhotoUrl = null
-    if (changes.photo_url !== undefined) {
-      const { data } = await supabase.from('produits').select('photo_url').eq('id', id).single()
-      previousPhotoUrl = data?.photo_url ?? null
+    // Deux photos possibles : photo_url (principale) et photo2_url (2e photo de la fiche, 17/11/2026).
+    const champsPhoto = ['photo_url', 'photo2_url'].filter((c) => changes[c] !== undefined)
+    let anciennes = {}
+    if (champsPhoto.length) {
+      const { data } = await supabase.from('produits').select(champsPhoto.join(', ')).eq('id', id).single()
+      anciennes = data || {}
     }
 
     const { error } = await supabase.from('produits').update(changes).eq('id', id)
@@ -83,8 +85,9 @@ export function useProducts({ leger = false } = {}) {
       prev.map((p) => (p.id === id ? { ...p, ...changes } : p))
     )
 
-    if (previousPhotoUrl && previousPhotoUrl !== changes.photo_url) {
-      const oldName = storageFileName(previousPhotoUrl)
+    for (const c of champsPhoto) {
+      if (!anciennes[c] || anciennes[c] === changes[c]) continue
+      const oldName = storageFileName(anciennes[c])
       if (oldName) {
         // Best-effort : un échec ici ne doit jamais faire échouer la sauvegarde du produit.
         supabase.storage.from('photos-produits').remove([oldName]).catch(() => {})
@@ -147,16 +150,16 @@ export function useProducts({ leger = false } = {}) {
   }, [fetchProducts])
 
   const deleteProduct = useCallback(async (id) => {
-    const { data: produit } = await supabase.from('produits').select('photo_url').eq('id', id).single()
+    const { data: produit } = await supabase.from('produits').select('photo_url, photo2_url').eq('id', id).single()
 
     const { error } = await supabase.from('produits').delete().eq('id', id)
     if (error) throw error
     oublierRequetes('produits')
     setProducts((prev) => prev.filter((p) => p.id !== id))
 
-    const oldName = storageFileName(produit?.photo_url)
-    if (oldName) {
-      supabase.storage.from('photos-produits').remove([oldName]).catch(() => {})
+    const anciens = [produit?.photo_url, produit?.photo2_url].map(storageFileName).filter(Boolean)
+    if (anciens.length) {
+      supabase.storage.from('photos-produits').remove(anciens).catch(() => {})
     }
   }, [])
 
