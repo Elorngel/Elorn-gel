@@ -13,7 +13,7 @@ import Hero from './components/Hero'
 import HeroFetes from './components/HeroFetes'
 import HeroBlack from './components/HeroBlack'
 import EtoilesFetes from './components/EtoilesFetes'
-import { contenuFetes, fetesVisible, rubriqueFetesVisible, urlFetes, rayonFetes, sousRayonsFetes, sousRayonDepuisAdresse, libelleSousRayon } from './lib/fetes'
+import { contenuFetes, fetesVisible, rubriqueFetesVisible, urlFetes, rayonFetes, sousRayonsFetes, sousRayonDepuisAdresse, libelleSousRayon, trierFetes } from './lib/fetes'
 import { blackVisible } from './lib/blackFriday'
 import ProductCard from './components/ProductCard'
 import AdminGate from './components/AdminGate'
@@ -88,7 +88,7 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
     // Dans l'ordre choisi dans l'admin (onglet Fêtes).
     visibleProducts =
       fetesVisibles && fetesRayon && !fetesSrInconnue
-        ? publishedProducts.filter((p) => estDansRayon(p, fetesRayon, fetesSr))
+        ? trierFetes(publishedProducts.filter((p) => estDansRayon(p, fetesRayon, fetesSr)), fetes.ordre, fetesSr)
         : []
     title = fetesSr ? `${fetes.titre || 'Les fêtes'} — ${libelleSousRayon(fetesSr)}` : fetes.titre || 'Les fêtes'
   } else if (promoOnly) {
@@ -289,12 +289,13 @@ function Shop({ rayon, sousRayon, searchQuery, promoOnly, destockageOnly, showFu
           // Rubrique Fêtes sur « Tout » : les produits rangés par sous-catégorie, avec un titre pour chacune.
           (fetesOnly && !fetesSr && fetesSousRayons.length > 0
             ? [
-                ...fetesSousRayons.map((sr) => ({ titre: sr, filtre: (p) => estDansRayon(p, fetesRayon, sr) })),
-                { titre: 'Et aussi', filtre: (p) => !fetesSousRayons.some((sr) => estDansRayon(p, fetesRayon, sr)) },
+                ...fetesSousRayons.map((sr) => ({ titre: sr, cle: sr, filtre: (p) => estDansRayon(p, fetesRayon, sr) })),
+                { titre: 'Et aussi', cle: '', filtre: (p) => !fetesSousRayons.some((sr) => estDansRayon(p, fetesRayon, sr)) },
               ]
             : [{ titre: null, filtre: null }]
           ).map((groupe, g) => {
-            const produits = groupe.filtre ? visibleProducts.filter(groupe.filtre) : visibleProducts
+            // Chaque sous-catégorie dans l'ordre choisi dans l'admin (onglet Fêtes).
+            const produits = groupe.filtre ? trierFetes(visibleProducts.filter(groupe.filtre), fetes.ordre, groupe.cle) : visibleProducts
             if (!produits.length) return null
             return (
               <section key={groupe.titre || g} className={groupe.titre ? 'mb-8' : ''}>

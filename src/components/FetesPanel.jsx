@@ -3,7 +3,7 @@ import { etatAffichage } from '../lib/periode'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { useProducts } from '../hooks/useProducts'
 import HeroFetes from './HeroFetes'
-import { FETES_DEFAUT, MAX_COUVERTURE, contenuFetes, rayonFetes, urlFetes, libelleSousRayon } from '../lib/fetes'
+import { FETES_DEFAUT, MAX_COUVERTURE, contenuFetes, rayonFetes, urlFetes, libelleSousRayon, trierFetes } from '../lib/fetes'
 import { estDansRayon } from '../lib/rayons'
 import { useCategories } from '../hooks/useCategories'
 import { urlPhoto, photoDeSecours } from '../lib/photos'
@@ -77,7 +77,8 @@ function Interrupteur({ settings, updateSettings, modifie }) {
 
 // Contenu de la rubrique (16/11/2026) : c'est le rayon « Fêtes » de l'admin. On l'affiche ici pour information, avec
 // le nombre de produits par sous-catégorie et des liens pour voir chaque page.
-function ContenuRubrique({ categories, subcategoriesByCategory, produits, visible, onVisible }) {
+function ContenuRubrique({ categories, subcategoriesByCategory, produits, visible, onVisible, ordre, onOrdre }) {
+  const [ouvert, setOuvert] = useState(null)
   const rayon = rayonFetes(categories)
   const publies = produits.filter((p) => p.actif !== false)
   const sousRayons = rayon ? subcategoriesByCategory[rayon] || [] : []
@@ -106,18 +107,97 @@ function ContenuRubrique({ categories, subcategoriesByCategory, produits, visibl
             n'est pas affiché aux clients. Le rayon « {rayon} » n'apparaît pas comme un rayon ordinaire dans le menu : il
             devient le menu « Les fêtes », en tête.
           </p>
-          <div className="grid gap-1.5 sm:grid-cols-2 max-w-2xl">
-            {sousRayons.map((sr) => {
-              const n = publies.filter((p) => estDansRayon(p, rayon, sr)).length
+          <p className="font-body text-xs text-ink mb-2">
+            <strong>Ordre des produits :</strong> cliquez sur une sous-catégorie pour voir ses produits dans l'ordre du site,
+            puis déplacez-les avec les flèches (▲ ▼) ou « En 1er ». Pensez à « Enregistrer » en bas. Un produit ajouté plus
+            tard se place à la fin, par ordre alphabétique.
+          </p>
+          <div className="max-w-3xl border-t border-ink/10">
+            {[...sousRayons, ...(sansSous ? [''] : [])].map((sr) => {
+              const liste = trierFetes(
+                publies.filter((p) =>
+                  sr ? estDansRayon(p, rayon, sr) : estDansRayon(p, rayon) && !sousRayons.some((x) => estDansRayon(p, rayon, x))
+                ),
+                ordre,
+                sr
+              )
+              const n = liste.length
+              const estOuvert = ouvert === sr
+              const deplacer = (i, vers) => {
+                const ids = liste.map((p) => p.id)
+                const [id] = ids.splice(i, 1)
+                ids.splice(vers, 0, id)
+                onOrdre(sr, ids)
+              }
               return (
-                <a
-                  key={sr}
-                  href={urlFetes(sr)}
-                  className={`flex justify-between border px-3 py-1.5 font-body text-sm hover:border-ink ${n ? 'border-ink/20 text-ink' : 'border-ink/10 text-muted'}`}
-                >
-                  <span>{libelleSousRayon(sr)}</span>
-                  <span className="font-tag text-xs">{n ? `${n} produit${n > 1 ? 's' : ''}` : 'vide (non affichée)'}</span>
-                </a>
+                <div key={sr || '__sans__'} className="border-b border-ink/10">
+                  <div className="flex items-center gap-2 py-1.5">
+                    <button
+                      type="button"
+                      disabled={!n}
+                      onClick={() => setOuvert(estOuvert ? null : sr)}
+                      className={`flex-1 flex justify-between items-center text-left px-2 py-1 font-body text-sm ${n ? 'text-ink hover:bg-stone' : 'text-muted'}`}
+                    >
+                      <span>
+                        <span className={`inline-block w-4 text-[10px] transition-transform ${estOuvert ? 'rotate-90' : ''}`}>{n ? '▶' : ''}</span>
+                        {sr ? libelleSousRayon(sr) : 'Et aussi (sans sous-catégorie)'}
+                      </span>
+                      <span className="font-tag text-xs">{n ? `${n} produit${n > 1 ? 's' : ''}` : 'vide (non affichée)'}</span>
+                    </button>
+                    {n > 0 && (
+                      <a href={sr ? urlFetes(sr) : '/fetes'} className="font-tag text-[10px] uppercase text-muted hover:text-ink underline">
+                        Voir
+                      </a>
+                    )}
+                  </div>
+                  {estOuvert && (
+                    <ol className="pb-3 pl-6 space-y-1">
+                      {liste.map((p, i) => (
+                        <li key={p.id} className="flex items-center gap-2 bg-stone/50 border border-ink/10 pr-2">
+                          <span className="w-6 text-center font-tag text-xs text-muted">{i + 1}</span>
+                          <div className="relative w-12 h-12 bg-stone overflow-hidden shrink-0">
+                            {p.photo_url && (
+                              <img
+                                src={urlPhoto(p.photo_url)}
+                                onError={(e) => photoDeSecours(e.currentTarget, p.photo_url)}
+                                alt=""
+                                loading="lazy"
+                                className="absolute inset-0 w-full h-full object-cover"
+                              />
+                            )}
+                          </div>
+                          <span className="flex-1 font-body text-sm text-ink truncate">{p.nom}</span>
+                          <button
+                            type="button"
+                            disabled={i === 0}
+                            onClick={() => deplacer(i, 0)}
+                            className="font-tag text-[10px] uppercase font-semibold text-forest hover:underline disabled:invisible"
+                          >
+                            En 1er
+                          </button>
+                          <button
+                            type="button"
+                            disabled={i === 0}
+                            onClick={() => deplacer(i, i - 1)}
+                            aria-label="Monter"
+                            className="w-8 h-8 border border-ink/20 bg-paper text-ink hover:border-ink disabled:opacity-30"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            disabled={i === n - 1}
+                            onClick={() => deplacer(i, i + 1)}
+                            aria-label="Descendre"
+                            className="w-8 h-8 border border-ink/20 bg-paper text-ink hover:border-ink disabled:opacity-30"
+                          >
+                            ▼
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
               )
             })}
           </div>
@@ -230,7 +310,8 @@ export default function FetesPanel() {
   }
   const parDefaut = () => {
     if (!confirm('Remettre tous les textes, produits et dates proposés au départ ? (Pensez ensuite à « Enregistrer ».)')) return
-    changer(contenuFetes(FETES_DEFAUT))
+    // L'ordre des produits et la case de la rubrique ne sont pas touchés.
+    changer({ ...contenuFetes(FETES_DEFAUT), ordre: brouillon.ordre, rubrique: brouillon.rubrique })
   }
 
   return (
@@ -241,6 +322,8 @@ export default function FetesPanel() {
         produits={products}
         visible={brouillon.rubrique !== false}
         onVisible={(v) => changer({ rubrique: v })}
+        ordre={brouillon.ordre}
+        onOrdre={(sr, ids) => changer({ ordre: { ...brouillon.ordre, [sr]: ids } })}
       />
 
       <Interrupteur settings={settings} updateSettings={updateSettings} modifie={modifie} />

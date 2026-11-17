@@ -153,7 +153,9 @@ l'onglet Catégories ; tout apparaît automatiquement dans `/fetes` (`rayonFetes
 `libelleSousRayon` qui retire un tiret de tri « -Apéritif » dans `src/lib/fetes.js`). Le rayon « Fêtes » n'apparaît JAMAIS
 comme rayon ordinaire dans le menu (`categoriesMenu` dans Header.jsx) ; `/rayon/fetes[/x]` affiche la rubrique ; exclu du
 sitemap. Menu déroulant « Les fêtes » en tête (sous-catégories qui ont des produits), boutons de filtre, groupes par
-sous-catégorie sur « Tout » (+ « Et aussi » pour les produits sans sous-catégorie). `fetes.produits` ne sert plus qu'aux
+sous-catégorie sur « Tout » (+ « Et aussi » pour les produits sans sous-catégorie). ORDRE DES PRODUITS par sous-catégorie (17/11/2026) : onglet Fêtes → cliquer une sous-catégorie → ▲ ▼ / « En 1er »,
+enregistré dans `fetes.ordre` = { sous-catégorie: [ids] } (clé '' = « Et aussi »), appliqué par `trierFetes` (App.jsx, page et
+groupes de « Tout ») ; produit absent de la liste = à la fin, alphabétique. `fetes.produits` ne sert plus qu'aux
 4 photos de la bannière (onglet Fêtes → « Les 4 photos de la bannière d'accueil »). La RUBRIQUE (menu + page) a sa propre case
 `fetes.rubrique` (défaut cochée, `rubriqueFetesVisible`), en haut de l'onglet Fêtes, INDÉPENDANTE de la bannière, des étoiles
 et de leurs dates (Romuald, 16/11/2026 : visible dès maintenant pour ceux qui veulent déjà voir les produits de fêtes). Les anciennes listes propres

@@ -48,7 +48,20 @@ export function contenuFetes(enregistre) {
   const c = { ...FETES_DEFAUT, ...(enregistre || {}) }
   c.produits = Array.isArray(enregistre?.produits) ? enregistre.produits : FETES_DEFAUT.produits
   c.dates = Array.isArray(enregistre?.dates) ? enregistre.dates : FETES_DEFAUT.dates
+  c.ordre = enregistre?.ordre && typeof enregistre.ordre === 'object' ? enregistre.ordre : {}
   return c
+}
+
+// Ordre des produits dans chaque sous-catégorie de la rubrique (17/11/2026, onglet Fêtes de l'admin) :
+// fetes.ordre = { "Apéritif": [id, …], "": [...] } (clé vide = « Et aussi » / rayon Fêtes sans sous-catégorie).
+// Un produit absent de la liste (ajouté depuis) passe à la suite, par ordre alphabétique.
+export function trierFetes(produits, ordre, sousRayon) {
+  const liste = (ordre && ordre[sousRayon || '']) || []
+  const rang = (p) => {
+    const i = liste.indexOf(p.id)
+    return i < 0 ? Infinity : i
+  }
+  return [...produits].sort((a, b) => rang(a) - rang(b) || String(a.nom).localeCompare(String(b.nom), 'fr'))
 }
 
 // Bannière et rubrique « Les fêtes » visibles des clients : case cochée ET date du jour dans la période.
