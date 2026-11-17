@@ -1,5 +1,43 @@
 import { useState } from 'react'
 
+// Petites flèches ▲ ▼ pour changer l'ordre (17/11/2026).
+function Fleches({ premier, dernier, onMove, petit }) {
+  const [enCours, setEnCours] = useState(false)
+  const bouger = async (sens) => {
+    setEnCours(true)
+    try {
+      await onMove(sens)
+    } catch (err) {
+      alert(`Erreur : ${err.message}`)
+    } finally {
+      setEnCours(false)
+    }
+  }
+  const taille = petit ? 'w-6 h-6 text-[9px]' : 'w-7 h-7 text-[10px]'
+  return (
+    <span className="flex gap-1 shrink-0">
+      <button
+        type="button"
+        disabled={premier || enCours}
+        onClick={() => bouger(-1)}
+        aria-label="Monter"
+        className={`${taille} border border-ink/20 bg-paper text-ink hover:border-ink disabled:opacity-25`}
+      >
+        ▲
+      </button>
+      <button
+        type="button"
+        disabled={dernier || enCours}
+        onClick={() => bouger(1)}
+        aria-label="Descendre"
+        className={`${taille} border border-ink/20 bg-paper text-ink hover:border-ink disabled:opacity-25`}
+      >
+        ▼
+      </button>
+    </span>
+  )
+}
+
 function EditableName({ value, onSave }) {
   const [draft, setDraft] = useState(value)
   return (
@@ -25,6 +63,8 @@ export default function CategoriesPanel({
   addSubcategory,
   renameSubcategory,
   deleteSubcategory,
+  moveCategory,
+  moveSubcategory,
 }) {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newSubcategoryDrafts, setNewSubcategoryDrafts] = useState({})
@@ -62,13 +102,19 @@ export default function CategoriesPanel({
         Ajoute, renomme ou supprime les rayons et leurs sous-catégories. Renommer un
         rayon met aussi à jour les produits déjà classés dedans.
       </p>
+      <p className="font-body text-sm text-ink mb-4">
+        <strong>Ordre du menu :</strong> les flèches ▲ ▼ à côté du nom d'un rayon le déplacent dans le menu du site (les
+        rayons ci-dessous sont dans l'ordre du menu : de gauche à droite, puis ligne suivante). Les petites flèches des
+        sous-catégories changent leur ordre dans le rayon. Enregistré tout de suite.
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {categoriesFull.map((cat) => {
+        {categoriesFull.map((cat, iCat) => {
           const subs = subcategoriesFull.filter((s) => s.categorie_id === cat.id)
           return (
             <div key={cat.id} className="bg-paper border border-ink/15 p-3">
               <div className="flex items-center gap-2 mb-2 pb-2 border-b border-ink/10">
+                <span className="font-tag text-xs text-muted w-5 text-right shrink-0">{iCat + 1}</span>
                 <EditableName
                   value={cat.nom}
                   onSave={(newNom) => renameCategory(cat.id, cat.nom, newNom)}
@@ -83,10 +129,15 @@ export default function CategoriesPanel({
                 >
                   Suppr.
                 </button>
+                <Fleches
+                  premier={iCat === 0}
+                  dernier={iCat === categoriesFull.length - 1}
+                  onMove={(sens) => moveCategory(cat.id, sens)}
+                />
               </div>
 
               <div className="flex flex-col gap-1 mb-2">
-                {subs.map((sub) => (
+                {subs.map((sub, iSub) => (
                   <div key={sub.id} className="flex items-center gap-2">
                     <span className="font-tag text-xs text-muted">—</span>
                     <EditableName
@@ -99,6 +150,12 @@ export default function CategoriesPanel({
                     >
                       Suppr.
                     </button>
+                    <Fleches
+                      petit
+                      premier={iSub === 0}
+                      dernier={iSub === subs.length - 1}
+                      onMove={(sens) => moveSubcategory(sub.id, sens)}
+                    />
                   </div>
                 ))}
                 {subs.length === 0 && (

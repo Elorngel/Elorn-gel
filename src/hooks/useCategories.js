@@ -109,6 +109,27 @@ export function useCategories() {
     await fetchAll()
   }
 
+  // Ordre des rayons dans le menu / des sous-catégories dans leur rayon (17/11/2026) : on déplace d'un cran puis on
+  // renumérote 0, 1, 2… (seules les lignes dont le numéro change sont enregistrées).
+  const renumeroter = async (table, liste, id, sens) => {
+    const i = liste.findIndex((x) => x.id === id)
+    const j = i + sens
+    if (i < 0 || j < 0 || j >= liste.length) return
+    const suite = [...liste]
+    ;[suite[i], suite[j]] = [suite[j], suite[i]]
+    const changes = suite.map((x, n) => ({ id: x.id, ordre: n })).filter((x, n) => suite[n].ordre !== n)
+    for (const c of changes) {
+      const { error } = await supabase.from(table).update({ ordre: c.ordre }).eq('id', c.id)
+      if (error) throw error
+    }
+    await fetchAll()
+  }
+  const moveCategory = (id, sens) => renumeroter('categories', categoriesFull, id, sens)
+  const moveSubcategory = (id, sens) => {
+    const parent = subcategoriesFull.find((s) => s.id === id)?.categorie_id
+    return renumeroter('sous_categories', subcategoriesFull.filter((s) => s.categorie_id === parent), id, sens)
+  }
+
   return {
     categoriesFull,
     subcategoriesFull,
@@ -121,6 +142,8 @@ export function useCategories() {
     addSubcategory,
     renameSubcategory,
     deleteSubcategory,
+    moveCategory,
+    moveSubcategory,
     refetch: fetchAll,
   }
 }

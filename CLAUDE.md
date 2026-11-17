@@ -177,6 +177,9 @@ date du jour (Paris) dans la période (`blackVisible` / `fetesVisible`, utilisé
 Romuald) + colis à -30 % ; kit Facebook `docs/black-week/` ; programme complet `docs/programme-fin-annee-2026.txt`.
 ATTENTION : l'admin (`/admin`) n'est PAS dans le `PriceModeProvider` du site → tout aperçu admin qui utilise
 `usePriceMode` doit avoir son propre `<PriceModeProvider>` (bug du 14/11/2026 : onglet Black Friday qui plantait).
+**Ordre des rayons et sous-catégories** (17/11/2026) : flèches ▲ ▼ dans l'onglet Catégories (`CategoriesPanel.jsx`,
+`moveCategory`/`moveSubcategory` dans `useCategories`, colonnes `ordre` existantes, renumérotées 0, 1, 2…) ; le menu
+du site suit cet ordre.
 **Deuxième photo produit** (17/11/2026, `supabase-photo2.sql`, demandé pour les bûches) : colonnes
 `produits.photo2_url`/`photo2_zoom`/`photo2_pos_x`/`photo2_pos_y` ; réglée dans la Fiche produit de l'admin (carré
 « Deuxième photo », `ProductDetailsModal`, même éditeur de cadrage) ; visible SEULEMENT sur la fiche produit du site
