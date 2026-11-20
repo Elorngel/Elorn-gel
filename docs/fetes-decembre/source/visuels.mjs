@@ -310,6 +310,8 @@ export function pagesVisuels(photosParId, PRODUITS, logoSrc) {
     else if (v.type === 'dates') pages[cle] = dates(v, v.format, logoSrc)
     else if (v.type === 'voeux') pages[cle] = (v.mise === 'nuit' ? voeuxNuit : voeux)(v, v.format, logoSrc)
     else if (v.type === 'couverture') pages[cle] = couverture(v, logoSrc)
+    // Bûches glacées en carrousel : même bleu nuit que les visuels de découpe du fournisseur, sur les 2 images.
+    if (v.fond === 'bleu') pages[cle] = pages[cle].replace('<body style="', '<body style="--forest:#0c2d57;')
   }
   return pages
 }

@@ -45,12 +45,13 @@ export const VISUELS = {
   '01-story-dates': { base: '01-dates', format: 'story' },
 
   '02-buche-breizh': {
+    fond: 'bleu',
     type: 'produit', format: 'post', produit: 'breizh', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'La bûche de chez nous', titre: 'Bûche Breizh',
     phrase: 'Palet breton, caramel au beurre salé et éclats de caramel.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
   },
-  '02b-buche-breizh-interieur': { type: 'interieur', format: 'post', produit: 'breizh', titre: 'La bûche Breizh' },
+  '02b-buche-breizh-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'breizh', titre: 'La bûche Breizh' },
 
   '03-mini-feuilletes': {
     mise: 'plein', type: 'produit', format: 'post', produit: 'feuilletesApero', pos: '50% 55%',
@@ -60,12 +61,13 @@ export const VISUELS = {
   },
 
   '04-buche-rocher': {
+    fond: 'bleu',
     mise: 'arche', type: 'produit', format: 'post', produit: 'rocher', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Pour les fans de praliné', titre: 'Bûche façon Rocher',
     phrase: 'Praliné, vanille, cœur caramel au lait, coque chocolat au lait et riz soufflé.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
   },
-  '04b-buche-rocher-interieur': { type: 'interieur', format: 'post', produit: 'rocher', titre: 'La bûche façon Rocher' },
+  '04b-buche-rocher-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'rocher', titre: 'La bûche façon Rocher' },
 
   '05-cassolettes': {
     mise: 'haut', type: 'produit', format: 'post', produit: 'cassolette', pos: '50% 55%',
@@ -75,12 +77,13 @@ export const VISUELS = {
   },
 
   '06-buche-frambissima': {
+    fond: 'bleu',
     type: 'produit', format: 'post', produit: 'framb', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Fruitée et légère', titre: 'Bûche Frambissima',
     phrase: 'Framboise, vanille Bourbon de Madagascar, coulis de framboise et meringue.',
     prix: '26,90 €', infos: 'Glacée<br>6 à 8 parts',
   },
-  '06b-buche-frambissima-interieur': { type: 'interieur', format: 'post', produit: 'framb', titre: 'La bûche Frambissima' },
+  '06b-buche-frambissima-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'framb', titre: 'La bûche Frambissima' },
 
   '07-pintade': {
     mise: 'plein', type: 'produit', format: 'post', produit: 'pintade', pos: '50% 55%',
@@ -109,12 +112,13 @@ export const VISUELS = {
   },
 
   '10-buche-citron': {
+    fond: 'bleu',
     mise: 'arche', type: 'produit', format: 'post', produit: 'citron', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Comme une tarte au citron', titre: 'Bûche citron meringuée',
     phrase: 'Citron de Sicile, sorbet citron vert, pâte sucrée et meringue italienne.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
   },
-  '10b-buche-citron-interieur': { type: 'interieur', format: 'post', produit: 'citron', titre: 'La bûche citron meringuée' },
+  '10b-buche-citron-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'citron', titre: 'La bûche citron meringuée' },
 
   '11-j-6': {
     type: 'dates', format: 'post',
