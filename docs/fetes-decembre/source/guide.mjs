@@ -176,7 +176,7 @@ ${calendrier}
 <table><tr><th>Produit (nom sur le site)</th><th>Publié le</th></tr>${lignesProduits}</table>
 <h3>Volontairement laissés de côté</h3>
 <ul>
-  <li><b>Bûche profiteroles et noix de Saint-Jacques de Saint-Brieuc</b> : déjà sur la publication « Merci + place aux fêtes » du 30 novembre et sur la photo de couverture Facebook, visible tout le mois. (La pintade farcie et les mini feuilletés y sont aussi, mais ils ont leur publication en décembre, à la demande de Romuald.)</li>
+  <li><b>Noix de Saint-Jacques de Saint-Brieuc</b> : déjà sur la publication « Merci + place aux fêtes » du 30 novembre et sur la photo de couverture Facebook, visible tout le mois. (La bûche profiteroles, la pintade farcie et les mini feuilletés y sont aussi, mais ils ont leur publication en décembre, à la demande de Romuald.)</li>
   <li><b>Les vins de la « Cave de Noël »</b> : la loi Évin encadre strictement la publicité pour l'alcool sur les réseaux sociaux. Mieux vaut ne pas les mettre en avant.</li>
   <li>Les coquilles Saint-Jacques ont été le « prix choc » de la Black Week. Les macarons, en promo pendant la Black Week, reviennent seulement comme dessert du menu du 16 décembre, à leur prix normal.</li>
 </ul>

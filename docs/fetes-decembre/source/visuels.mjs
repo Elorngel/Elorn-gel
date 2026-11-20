@@ -110,9 +110,10 @@ function produit(v, photos, logoSrc) {
 // Variante « plein cadre » : la photo occupe tout le visuel, le texte est posé dessus en bas (cadre or à coins coupés).
 function produitPlein(v, photos, logoSrc) {
   const fond = img(photos, v.produit)
+  const c = v.fond === 'bleu' ? '12,45,87' : '19,38,25'
   return pageHtml('post', `
 <div class="photo" style="left:0;top:0;width:1080px;height:1350px;box-shadow:none;background-image:url('${fond}');background-position:${v.pos || '50% 50%'}"></div>
-<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,38,25,.6) 0%,rgba(19,38,25,0) 16%,rgba(19,38,25,0) 42%,rgba(19,38,25,.88) 66%,rgba(19,38,25,.97) 100%)"></div>
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(${c},.6) 0%,rgba(${c},0) 16%,rgba(${c},0) 42%,rgba(${c},.88) 66%,rgba(${c},.97) 100%)"></div>
 <div style="position:absolute;inset:26px;border:2px solid var(--or);clip-path:${coins(26)}"></div>
 ${etoile('right:70px;top:70px;width:34px;height:34px')}${etoile('left:66px;bottom:250px;width:18px;height:18px;opacity:.8')}
 <div style="position:absolute;left:80px;right:80px;bottom:150px">
@@ -191,7 +192,7 @@ function interieur(v, photos, logoSrc) {
   <div class="sur" style="color:var(--or)">✦ Ce qu'il y a dedans ✦</div>
   <div class="titre fit" style="color:var(--paper);font-size:96px;margin:14px 60px 0">${v.titre}</div>
 </div>
-<div class="photo" style="left:120px;top:330px;width:840px;height:840px;background-image:url('${fond}');background-position:50% 50%"></div>
+<div class="photo" style="left:120px;top:330px;width:840px;height:840px;background-image:url('${fond}');background-position:50% 50%;background-size:${v.zoom || 100}%"></div>
 <div class="pied" style="bottom:56px">bontin.fr · rubrique « Les fêtes »</div>`,
   { logo: { src: logoSrc, top: 44, h: 66 } })
 }

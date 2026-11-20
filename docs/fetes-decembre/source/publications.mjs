@@ -12,6 +12,7 @@ const TAGS_BASE = '#Bontin #Plouédern #Landerneau #Finistère #Bretagne #commer
 
 // Produits mis en avant (id = 8 premiers caractères de l'id Supabase). Chacun n'apparaît qu'une seule fois.
 export const PRODUITS = {
+  profiteroles: { id: '7b4e5a0c', nom: 'BÛCHE PROFITEROLES-10/12 PARTS' },
   breizh: { id: 'ecd0f35c', nom: 'BÛCHE BREIZH- 8 PARTS' },
   rocher: { id: '8cca28d5', nom: 'BÛCHE FAÇON ROCHER- 8 PARTS' },
   framb: { id: '9c3e2e04', nom: 'BÛCHE FRAMBISSIMA- 8 PARTS' },
@@ -32,8 +33,16 @@ export const PRODUITS = {
 // Visuels. type : dates | produit | interieur | duo | menu | voeux | couverture. format : post (1080×1350),
 // story (1080×1920), couv (1640×624).
 export const VISUELS = {
-  '01-dates': {
-    type: 'dates', format: 'post',
+  '01-buche-profiteroles': {
+    mise: 'plein', fond: 'bleu', type: 'produit', format: 'post', produit: 'profiteroles', pos: '50% 50%',
+    chip: 'Les bûches de Noël', sur: 'Notre plus grande bûche', titre: 'Bûche profiteroles',
+    phrase: '12 choux à la vanille Bourbon, glace praliné, chocolat noir et noisettes croquantes.',
+    prix: '32,90 €', infos: 'Glacée<br>10 à 12 parts',
+  },
+  '01b-buche-profiteroles-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'profiteroles', zoom: 108, titre: 'La bûche profiteroles' },
+
+  '01-story-dates': {
+    type: 'dates', format: 'story',
     sur: 'Décembre chez Bontin', titre: 'Les dates à retenir',
     lignes: [
       { j: 'Dès', n: '✦', m: 'maintenant', t: 'Commandez tôt', x: 'Les créneaux de la semaine de Noël partent vite.' },
@@ -42,7 +51,6 @@ export const VISUELS = {
       { j: 'Lundi', n: '04', m: 'janv.', t: 'Réouverture', x: 'Fermé du 25 décembre au 3 janvier.' },
     ],
   },
-  '01-story-dates': { base: '01-dates', format: 'story' },
 
   '02-buche-breizh': {
     fond: 'bleu',
@@ -192,11 +200,14 @@ export const VISUELS = {
 // « carrousel » = toutes les images dans la même publication). story / couverture : à faire le même jour.
 export const PUBLICATIONS = [
   {
-    date: '2026-12-01', heure: '18 h 30', titre: 'Les dates à retenir', visuels: ['01-dates'], story: '01-story-dates',
-    tags: '#Noël #menudefêtes #bûchedeNoël',
-    texte: `🎄 Décembre est là, et le menu des fêtes Bontin aussi !
+    date: '2026-12-01', heure: '18 h 30', titre: 'Bûche profiteroles + dates à retenir', visuels: ['01-buche-profiteroles', '01b-buche-profiteroles-interieur'], carrousel: true, story: '01-story-dates',
+    produits: ['profiteroles'], tags: '#bûchedeNoël #bûcheglacée #profiteroles #Noël #menudefêtes',
+    texte: `🎄 Décembre est là, et pour ouvrir le bal : notre plus belle bûche !
 
-Apéritif, entrées de la mer, plats du réveillon et bûches glacées : tout est réuni dans la rubrique « Les fêtes » du site.
+La bûche profiteroles : 12 petits choux garnis de crème glacée à la vanille Bourbon de Madagascar, sur une base glacée au praliné enrobée de chocolat noir et de noisettes croquantes, avec une mousse vanillée et une ganache au chocolat. Glissez pour voir l'intérieur 👉
+
+10 à 12 parts · 32,90 €
+Une bûche glacée : commandez-la dès maintenant, elle attend au congélateur jusqu'au jour J.
 
 📅 Les dates à retenir :
 • Mercredi 23 décembre : dernières livraisons avant Noël
@@ -204,7 +215,7 @@ Apéritif, entrées de la mer, plats du réveillon et bûches glacées : tout es
 • Commande au plus tard la veille
 • Du 25 décembre au 3 janvier : on ferme pour les fêtes, réouverture le lundi 4 janvier
 
-💡 L'avantage du surgelé : vous commandez dès maintenant, vous rangez au congélateur, et le jour J tout est prêt. Pas de course de dernière minute !
+Tout le menu des fêtes est dans la rubrique « Les fêtes » du site.
 
 {LIEN}`,
   },
