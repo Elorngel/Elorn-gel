@@ -60,7 +60,7 @@ Le message à répéter partout :
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ☐ Pousser la dernière version du site avec GitHub Desktop (dates automatiques + nouvelle liste du ticket)
-☐ Avant ven. 20 à midi — Meta Business Suite : programmer toutes les publications de la partie 4 (sauf les coulisses du 26 et le gagnant du 27)
+☐ Avant ven. 20 à midi — Meta Business Suite : programmer toutes les publications de la partie 4 (sauf le gagnant du 27)
 ☐ Avant ven. 20 — Admin → Produits : saisir les 7 promos ci-dessus, du 23/11/2026 au 29/11/2026
 ☐ Avant ven. 20 — Admin → Produits : créer le colis, MASQUÉ (pas à pas : partie 9)
 ☐ Avant ven. 20 — Admin → Black Friday : ajouter le colis et le monter en 1er (▲), Enregistrer, cocher la case → badge « Programmé : s'affichera le 23/11/2026 »
@@ -105,27 +105,37 @@ MERCREDI 25
 • 18 h 30 (P) Le prix choc — visuel 4-produit-appel
 
 JEUDI 26
-☐ 12 h : photo ou courte vidéo des coulisses au dépôt (téléphone à la verticale) + texte de la partie 7 (rappelle la fin du concours)
+• (P) Rappel fin du concours — visuel « 08c - Rappel fin du concours » (billet de tombola, sans le colis)
 • Minuit : fin du jeu concours
 
 VENDREDI 27 — BLACK FRIDAY
-• 8 h (P) Jour du Black Friday — visuel 3-lancement
+• 8 h (P) Jour du Black Friday — visuel « 09 - Jour du Black Friday » (nouveau, fond clair, sans date)
 ☐ Story (visuel 7-story)
 ☐ 12 h : tirage au sort du concours + annonce du gagnant (commentaire sous le concours + publication)
 ☐ Contacter le gagnant par message privé (retrait ou livraison du colis)
+  TIRAGE PAS À PAS (vendredi matin, avant 12 h) :
+  1. Publication du concours → commentaires triés sur « Tous les commentaires » (pas « Les plus pertinents »)
+  2. Dans Notes : un nom par ligne, une seule fois par personne (même si elle a commenté plusieurs fois).
+     Pas les commentaires postés après jeudi 23 h 59, ni ceux de l'équipe.
+  3. « compte créé ✅ » : vérifier dans Admin → Clients qu'un compte à ce nom existe → écrire le nom une 2e fois
+  4. Copier la liste → random.org/lists → coller → « Randomize » → le 1er nom = gagnant, les 2e et 3e = remplaçants
+  5. Capture d'écran du résultat (preuve du tirage, à garder)
+  6. Vérifier que le gagnant aime la page (Paramètres de la page → personnes qui aiment la page)
+  7. 12 h : réponse sous son commentaire + publication « Bravo » ; message privé via Meta Business Suite →
+     Boîte de réception → Commentaires → « Répondre en privé » (commune ? retrait ou livraison ?)
+  8. Pas de réponse sous 7 jours (vendredi 4 décembre) → le 2e de la liste
 
 SAMEDI 28
 • 11 h 30 (P) Plus que 2 jours — visuel 5-colis
 
 DIMANCHE 29
-• 10 h (P) Dernier jour — visuel 6-dernier-jour
-☐ Story
+• Rien sur Facebook (décidé le 18/11 : pas une publication par jour)
 • Minuit : fin automatique de la Black Week
 
 LUNDI 30 — DÉBUT DES FÊTES (bannière des fêtes affichée toute seule à minuit)
 ☐ Masquer le colis
-☐ Remettre l'ancienne photo de couverture Facebook
-• 12 h (P) Merci
+☐ Photo de couverture Facebook : mettre « 15 - Photo de couverture Facebook FETES » (jusqu’au 2 janvier)
+• 12 h (P) Merci + place aux fêtes — visuel « 14 - Merci + debut des fetes »
 ☐ Noter les chiffres : commandes, colis vendus, nouveaux comptes « connu par Facebook », coût par clic des publicités
 
 
@@ -133,7 +143,8 @@ LUNDI 30 — DÉBUT DES FÊTES (bannière des fêtes affichée toute seule à mi
 5. FÊTES (30 NOVEMBRE → 2 JANVIER)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-☐ Début décembre — Avec Claude : kit Facebook des fêtes (même principe que la Black Week)
+✔ Kit Facebook / Instagram des fêtes PRÊT (20/11) : docs/fetes-decembre/kit-fetes.html + dossier « Fetes Bontin 2026 » du Bureau
+  17 publications (1er → 24 décembre, + 31/12 et 01/01), 8 bûches, 16 produits jamais répétés. À programmer avant le 1er décembre.
 Dates à retenir affichées sur le site (à vérifier dans l'onglet Fêtes) :
 • 15/12 : commandez tôt
 • 23/12 : dernières livraisons
@@ -228,13 +239,16 @@ Nos 6 coquilles Saint-Jacques 55 % de noix passent à 18,99 € au lieu de 25,19
 
 👉 bontin.fr (dans la limite des stocks)
 
-— JEU. 26 · LES COULISSES —
-Ça s'active au dépôt de Plouédern ! 📦💪
-Les colis Black Week partent ce matin. Merci pour vos commandes 🙏
+— JEU. 26 · RAPPEL FIN DU CONCOURS —
+⏰ Dernière chance pour le jeu concours Bontin !
 
-Il vous reste jusqu'à dimanche pour profiter des prix : bontin.fr
+Vous avez jusqu'à ce soir 23 h 59 pour tenter de gagner notre colis Black Week (valeur 93,14 €) :
+1️⃣ Aimez la page Bontin
+2️⃣ Dites-nous en commentaire, sous la publication du concours, votre plat préféré pour les fêtes
+🍀 Compte créé sur bontin.fr = une 2e chance
 
-⏰ Dernier jour pour le jeu concours : tirage demain midi, le jour du Black Friday !
+Tirage au sort demain à 12 h, le jour du Black Friday 🖤
+Jeu gratuit, sans obligation d'achat.
 
 — VEN. 27 · BLACK FRIDAY —
 🖤 C'est aujourd'hui le Black Friday !

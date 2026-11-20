@@ -175,6 +175,9 @@ dates `debut`/`fin` (dans `black` / `fetes`, défauts 23→29/11/2026 et 30/11/2
 date du jour (Paris) dans la période (`blackVisible` / `fetesVisible`, utilisés par App.jsx et Header.jsx) ; badge
 « Programmé / Visible / Terminé » dans l'admin (`etatAffichage`). Opération Black Week 2026 : promos ≤ 25 % (règle de
 Romuald) + colis à -30 % ; kit Facebook `docs/black-week/` ; programme complet `docs/programme-fin-annee-2026.txt`.
+**Kit réseaux sociaux des fêtes** (20/11/2026) : `docs/fetes-decembre/` (guide `kit-fetes.html`, visuels, programme) fabriqué par
+`node docs/fetes-decembre/source/generer.mjs` (calendrier et textes dans `source/publications.mjs`, photos lues chez Supabase,
+rendu Chrome) ; copie nommée par jour dans « Fetes Bontin 2026 » sur le Bureau. Règle : jamais 2 fois le même produit dans le mois.
 ATTENTION : l'admin (`/admin`) n'est PAS dans le `PriceModeProvider` du site → tout aperçu admin qui utilise
 `usePriceMode` doit avoir son propre `<PriceModeProvider>` (bug du 14/11/2026 : onglet Black Friday qui plantait).
 **Ordre des rayons et sous-catégories** (17/11/2026) : flèches ▲ ▼ dans l'onglet Catégories (`CategoriesPanel.jsx`,
