@@ -15,19 +15,18 @@ export const PRODUITS = {
   breizh: { id: 'ecd0f35c', nom: 'BÛCHE BREIZH- 8 PARTS' },
   rocher: { id: '8cca28d5', nom: 'BÛCHE FAÇON ROCHER- 8 PARTS' },
   framb: { id: '9c3e2e04', nom: 'BÛCHE FRAMBISSIMA- 8 PARTS' },
-  tonka: { id: '47cbc562', nom: 'BÛCHE CHOCO TONKA- 8 PARTS' },
   citron: { id: 'd377938f', nom: 'BÛCHE CITRON MERINGUE 8 PARTS' },
   pomme: { id: '10a4662d', nom: 'BÛCHE CARAMEL / POMME CIDREE - 6-8 PARTS' },
   cafe: { id: '3efb84a9', nom: 'BÛCHE PÂTISSIÈRE AU CAFÉ-6-8 PARTS' },
-  buchettes: { id: '3f6ded01', nom: 'BÛCHETTES INDIVIDUELLES x 6' },
-  canapes: { id: '8dc3420a', nom: '32 CANAPES SIGNATURE' },
+  feuilletesApero: { id: '3831d66e', nom: '16 MINI FEUILLETES APERITIF' },
   cassolette: { id: 'a523d1b9', nom: 'CASSOLETTE ST JACQUES SAUCE CHAMPAGNE' },
-  magrets: { id: '91640918', nom: "RÔTI DE 2 MAGRETS DE CANARD AU PIMENT D'ESPELETTE" },
+  pintade: { id: '8279a8ed', nom: 'PINTADE FARCIE AUX CEPES' },
+  langoustines: { id: '981c1048', nom: 'LANGOUSTINES CRUES ENTIERES' },
   quiches: { id: 'a51290b8', nom: '25 MINI QUICHES APERITIVES' },
   feuilletes: { id: 'ce891ba6', nom: '4 FEUILLETÉS ST JACQUES' },
   dinde: { id: '349d3038', nom: 'ROTI DE DINDE FARCI MARRONS CEPES' },
+  macarons: { id: '1a0a2cff', nom: '12 MACARONS ASSORTIS' },
   petitsfours: { id: '836e50ee', nom: '12 PETITS FOURS DESSERT' },
-  chocolats: { id: '1b88309b', nom: 'CHOCOLATS PRÊTS A OFFRIR 250G' },
 }
 
 // Visuels. type : dates | produit | interieur | duo | menu | voeux | couverture. format : post (1080×1350),
@@ -53,15 +52,15 @@ export const VISUELS = {
   },
   '02b-buche-breizh-interieur': { type: 'interieur', format: 'post', produit: 'breizh', titre: 'La bûche Breizh' },
 
-  '03-canapes': {
-    type: 'produit', format: 'post', produit: 'canapes', pos: '50% 55%',
-    chip: "L'apéritif", sur: 'Pour trinquer', titre: '32 canapés signature',
-    phrase: 'Foie gras et fruits rouges, saumon fumé, écrevisse aux agrumes… Rien à cuire.',
-    prix: '26,70 €', infos: 'Les 32<br>5 h au frigo',
+  '03-mini-feuilletes': {
+    mise: 'plein', type: 'produit', format: 'post', produit: 'feuilletesApero', pos: '50% 55%',
+    chip: "L'apéritif", sur: 'Pour trinquer', titre: '16 mini feuilletés apéritif',
+    phrase: 'Pâte feuilletée pur beurre : emmental, tomate, truite et jambon-emmental.',
+    prix: '8,99 €', infos: 'Les 16<br>15 min au four',
   },
 
   '04-buche-rocher': {
-    type: 'produit', format: 'post', produit: 'rocher', pos: '50% 60%',
+    mise: 'arche', type: 'produit', format: 'post', produit: 'rocher', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Pour les fans de praliné', titre: 'Bûche façon Rocher',
     phrase: 'Praliné, vanille, cœur caramel au lait, coque chocolat au lait et riz soufflé.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
@@ -69,7 +68,7 @@ export const VISUELS = {
   '04b-buche-rocher-interieur': { type: 'interieur', format: 'post', produit: 'rocher', titre: 'La bûche façon Rocher' },
 
   '05-cassolettes': {
-    type: 'produit', format: 'post', produit: 'cassolette', pos: '50% 55%',
+    mise: 'haut', type: 'produit', format: 'post', produit: 'cassolette', pos: '50% 55%',
     chip: "L'entrée", sur: "L'entrée chic sans effort", titre: 'Cassolettes de Saint-Jacques',
     phrase: 'Sauce au champagne, servies dans leur cassolette en céramique.',
     prix: '13,99 €', infos: '4 cassolettes<br>20 min au four',
@@ -83,20 +82,19 @@ export const VISUELS = {
   },
   '06b-buche-frambissima-interieur': { type: 'interieur', format: 'post', produit: 'framb', titre: 'La bûche Frambissima' },
 
-  '07-magrets': {
-    type: 'produit', format: 'post', produit: 'magrets', pos: '50% 55%',
-    chip: 'Le plat', sur: 'Le plat du réveillon', titre: 'Rôti de 2 magrets de canard',
-    phrase: "Tendre et généreux, relevé au piment d'Espelette fumé.",
-    prix: '22,75 €', infos: '800 g env.<br>15-20 min au four',
+  '07-pintade': {
+    mise: 'plein', type: 'produit', format: 'post', produit: 'pintade', pos: '50% 55%',
+    chip: 'Le plat', sur: 'Le plat du réveillon', titre: 'Pintade farcie aux cèpes',
+    phrase: 'Pintade française semi-désossée, farce aux cèpes et touche de vieil Armagnac.',
+    prix: '24,99 €', infos: '1,2 kg<br>1 h 30 au four',
   },
 
-  '08-buche-choco-tonka': {
-    type: 'produit', format: 'post', produit: 'tonka', pos: '50% 60%',
-    chip: 'Les bûches de Noël', sur: 'Pour les amateurs de chocolat', titre: 'Bûche Choco Tonka',
-    phrase: 'Chocolat noir, fève tonka, cœur caramel au lait et croustillant praliné.',
-    prix: '26,90 €', infos: 'Glacée<br>6 à 8 parts',
+  '08-langoustines': {
+    mise: 'haut', type: 'produit', format: 'post', produit: 'langoustines', pos: '50% 50%',
+    chip: 'Les produits de la mer', sur: "Un produit d'exception", titre: 'Langoustines entières',
+    phrase: 'Pêchées en pleine mer, une chair fine et délicatement sucrée.',
+    prix: '18,59 €', infos: '1 kg<br>20 à 30 pièces',
   },
-  '08b-buche-choco-tonka-interieur': { type: 'interieur', format: 'post', produit: 'tonka', titre: 'La bûche Choco Tonka' },
 
   '09-menu-reveillon': {
     type: 'menu', format: 'post',
@@ -105,13 +103,13 @@ export const VISUELS = {
       { produit: 'quiches', role: "L'apéritif", nom: '25 mini quiches', prix: '13,90 €' },
       { produit: 'feuilletes', role: "L'entrée", nom: '4 feuilletés Saint-Jacques', prix: '8,89 €' },
       { produit: 'dinde', role: 'Le plat', nom: 'Rôti de dinde marrons-cèpes', prix: '14,99 €' },
-      { produit: 'petitsfours', role: 'Le dessert', nom: '12 petits fours', prix: '10,39 €' },
+      { produit: 'macarons', role: 'Le dessert', nom: '12 macarons assortis', prix: '10,45 €' },
     ],
-    total: '48,17 €',
+    total: '48,23 €',
   },
 
   '10-buche-citron': {
-    type: 'produit', format: 'post', produit: 'citron', pos: '50% 60%',
+    mise: 'arche', type: 'produit', format: 'post', produit: 'citron', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Comme une tarte au citron', titre: 'Bûche citron meringuée',
     phrase: 'Citron de Sicile, sorbet citron vert, pâte sucrée et meringue italienne.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
@@ -140,14 +138,10 @@ export const VISUELS = {
   },
 
   '13-dernier-jour-livraison': {
-    type: 'duo', format: 'post',
-    tuiles: [
-      { produit: 'buchettes', role: 'Pour les enfants', nom: '6 bûchettes glacées', prix: '5,19 €', pos: '50% 55%' },
-      { produit: 'chocolats', role: 'À offrir', nom: 'Chocolats fins en boîte', prix: '8,50 €', pos: '50% 55%' },
-    ],
-    sur: 'Aujourd’hui', titre: 'Dernier jour en livraison',
-    phrase: 'Commandez aujourd’hui, on vous livre demain, juste à temps pour Noël.',
-    bas: '<span class="bandeau">Livraison le mercredi 23 · retrait jusqu’au 24 à midi</span>',
+    mise: 'plein', type: 'produit', format: 'post', produit: 'petitsfours', pos: '50% 55%',
+    chip: 'Aujourd’hui : dernier jour en livraison', sur: 'Pour finir le repas en douceur', titre: '12 petits fours dessert',
+    phrase: 'Opéra café-chocolat, mini-éclairs, tartelettes au citron et financiers à la framboise.',
+    prix: '10,39 €', infos: 'Les 12<br>5 h au frigo',
   },
 
   '14-dernier-jour-commande': {
@@ -174,7 +168,7 @@ export const VISUELS = {
   },
 
   '16-bon-reveillon': {
-    type: 'voeux', format: 'post',
+    mise: 'nuit', type: 'voeux', format: 'post',
     sur: 'Pour la dernière soirée de 2026', titre: 'Bon<br><span>réveillon</span>',
     texte: 'Plein de bons moments, de rires<br>et de bonnes choses à partager.',
     info: 'On se retrouve le lundi 4 janvier',
@@ -225,14 +219,13 @@ Vous êtes plutôt Breizh ou chocolat ? Dites-le-nous en commentaire 👇
 {LIEN}`,
   },
   {
-    date: '2026-12-05', heure: '11 h 30', titre: '32 canapés signature', visuels: ['03-canapes'],
-    produits: ['canapes'], tags: '#apéritif #apérodefêtes #Noël #réveillon',
-    texte: `🥂 L'apéritif des fêtes, sans passer l'après-midi en cuisine.
+    date: '2026-12-05', heure: '11 h 30', titre: '16 mini feuilletés apéritif', visuels: ['03-mini-feuilletes'],
+    produits: ['feuilletesApero'], tags: '#apéritif #apérodefêtes #Noël #réveillon',
+    texte: `🥂 L'apéritif des fêtes, prêt en 15 minutes.
 
-32 canapés signature : foie gras et fruits rouges, jambon sec, écrevisse aux agrumes, saumon fumé, légumes du soleil, œuf mimosa au curry, pesto…
+16 mini feuilletés en pâte feuilletée pur beurre, en quatre saveurs : emmental, tomate, truite et jambon-emmental. Direction le four, sans décongélation, et c'est l'heure de trinquer !
 
-26,70 € les 32
-⏱ Il suffit de les sortir 5 heures avant, au réfrigérateur. Rien à cuire !
+8,99 € les 16
 
 {LIEN}`,
   },
@@ -272,42 +265,41 @@ Glissez pour voir l'intérieur 👉
 {LIEN}`,
   },
   {
-    date: '2026-12-13', heure: '11 h', titre: 'Rôti de 2 magrets de canard', visuels: ['07-magrets'],
-    produits: ['magrets'], tags: '#magretdecanard #platdefêtes #Noël #réveillon',
-    texte: `🦆 Le plat du réveillon qui fait son effet.
+    date: '2026-12-13', heure: '11 h', titre: 'Pintade farcie aux cèpes', visuels: ['07-pintade'],
+    produits: ['pintade'], tags: '#pintade #platdefêtes #Noël #réveillon',
+    texte: `🍽 Le plat du réveillon qui fait son effet sur la table.
 
-Rôti de 2 magrets de canard au piment d'Espelette fumé : tendre, généreux, et prêt en 15 à 20 minutes au four, sans décongélation.
+Une pintade française semi-désossée, généreusement farcie aux cèpes et aux champignons, avec une délicate touche de vieil Armagnac. Elle va au four sans décongélation : 1 h 30 à 180 °C, et c'est prêt.
 
-Environ 800 g · 22,75 €
-Avec une poêlée de légumes ou des pommes de terre rissolées, le tour est joué 😋
+1,2 kg · 24,99 €
+Avec des marrons ou un gratin, le tour est joué 😋
 
 {LIEN}`,
   },
   {
-    date: '2026-12-14', heure: '18 h 30', titre: 'Bûche Choco Tonka', visuels: ['08-buche-choco-tonka', '08b-buche-choco-tonka-interieur'], carrousel: true,
-    produits: ['tonka'], tags: '#bûchedeNoël #bûcheglacée #chocolat #Noël',
-    texte: `🍫 Pour les amateurs de chocolat noir.
+    date: '2026-12-14', heure: '18 h 30', titre: 'Langoustines entières', visuels: ['08-langoustines'],
+    produits: ['langoustines'], tags: '#langoustines #produitsdelamer #Noël #réveillon',
+    texte: `🦐 Des langoustines pour les fêtes ?
 
-La bûche Choco Tonka : crème glacée au chocolat et à la fève tonka, vanille Bourbon, coulis de caramel au lait et croustillant chocolat-praliné. Fondant et croquant à chaque cuillère.
+Pêchées en pleine mer, nos langoustines entières ont une chair fine et délicatement sucrée. Un produit d'exception à savourer tout simplement poêlé, pour l'entrée ou le plateau du réveillon.
 
-6 à 8 parts · 26,90 €
-Glissez pour voir l'intérieur 👉
+1 kg (20 à 30 pièces) · 18,59 €
 
 {LIEN}`,
   },
   {
     date: '2026-12-16', heure: '12 h', titre: 'Un réveillon pour 4 à moins de 50 €', visuels: ['09-menu-reveillon'],
-    produits: ['quiches', 'feuilletes', 'dinde', 'petitsfours'], tags: '#menudefêtes #réveillon #Noël #bonplan',
+    produits: ['quiches', 'feuilletes', 'dinde', 'macarons'], tags: '#menudefêtes #réveillon #Noël #bonplan',
     texte: `🍽 Un réveillon complet pour 4, à moins de 50 € ?
 
 Voici notre idée de menu :
 🥂 Apéritif : 25 mini quiches apéritives (13,90 €)
 🐚 Entrée : 4 feuilletés de Saint-Jacques (8,89 €)
 🦃 Plat : rôti de dinde farci aux marrons et aux cèpes (14,99 €)
-🍰 Dessert : 12 petits fours (10,39 €)
+🍬 Dessert : 12 macarons assortis (10,45 €)
 
-Total : 48,17 € pour tout le repas.
-Tout se garde au congélateur jusqu'au jour J. Pensez juste à sortir le rôti la veille au réfrigérateur.
+Total : 48,23 € pour tout le repas.
+Tout se garde au congélateur jusqu'au jour J. Pensez juste à sortir le rôti la veille et les macarons 4 heures avant, au réfrigérateur.
 
 {LIEN}`,
   },
@@ -351,14 +343,14 @@ Les créneaux de la semaine de Noël partent vite 😉
   },
   {
     date: '2026-12-22', heure: '11 h 30', titre: 'Dernier jour pour commander en livraison', visuels: ['13-dernier-jour-livraison'],
-    produits: ['buchettes', 'chocolats'], tags: '#Noël #dernièreminute',
+    produits: ['petitsfours'], tags: '#Noël #dernièreminute #petitsfours',
     texte: `🚚 Aujourd'hui, dernier jour pour commander en livraison !
 
 Les commandes passées aujourd'hui sont livrées demain, mercredi 23 décembre, juste à temps pour Noël.
 
-Et pour la petite touche de dernière minute :
-🍦 6 bûchettes glacées individuelles (fraise-vanille, vanille-chocolat, chocolat-noisette) : 5,19 €
-🎁 Une boîte de chocolats fins prête à offrir, nouée d'un ruban : 8,50 €
+Et pour finir le repas en douceur, avec le café : nos 12 petits fours dessert 🍰
+Opéra café-chocolat, mini-éclairs au chocolat, tartelettes au citron et financiers à la framboise.
+10,39 € les 12 · à sortir 5 heures avant, au réfrigérateur
 
 Après aujourd'hui, il reste le retrait au dépôt de Plouédern jusqu'au jeudi 24 à midi.
 

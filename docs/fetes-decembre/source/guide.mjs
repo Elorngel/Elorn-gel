@@ -100,6 +100,8 @@ function blocPublication(p, i) {
 }
 
 export function ecrireGuide(dossier) {
+  const utilises = PUBLICATIONS.flatMap((p) => p.produits || [])
+  const nbBuches = utilises.filter((k) => /BÛCHE/.test(PRODUITS[k].nom)).length
   let semaine = ''
   const calendrier = PUBLICATIONS.map((p, i) => {
     const d = jour(p.date)
@@ -132,8 +134,8 @@ export function ecrireGuide(dossier) {
 <h2>En bref</h2>
 <div class="chiffres">
   <div><b>${PUBLICATIONS.length} publications</b>3 à 4 par semaine jusqu'au 24, puis le 31 décembre et le 1er janvier</div>
-  <div><b>8 bûches</b>Toutes mises en avant, une seule fois chacune (la bûche profiteroles est déjà sur la couverture)</div>
-  <div><b>16 produits</b>Du rayon « Fêtes », jamais deux fois le même dans le mois</div>
+  <div><b>${nbBuches} bûches</b>Une seule fois chacune, en carrousel avec l'intérieur pour les grandes bûches</div>
+  <div><b>${utilises.length} produits</b>Du rayon « Fêtes », jamais deux fois le même dans le mois</div>
   <div><b>25/12 → 03/01</b>Fermeture. Réouverture le lundi 4 janvier</div>
 </div>
 <div class="ok"><b>Les dates répétées partout</b> (vérifiées dans le calendrier de l'admin le 20/11) : dernières livraisons le <b>mercredi 23</b>, dernier retrait le <b>jeudi 24 jusqu'à midi</b>, commande au plus tard la veille (le site propose les créneaux à partir du lendemain), fermeture du 25 décembre au 3 janvier, réouverture le <b>lundi 4 janvier</b>. Le site reste ouvert pendant la fermeture : les clients peuvent commander pour le 4 janvier et après.</div>
@@ -143,7 +145,7 @@ export function ecrireGuide(dossier) {
   <li>☐ <b>Programmer toutes les publications</b> dans Meta Business Suite (pas à pas ci-dessous). Facebook et Instagram en même temps.</li>
   <li>☐ <b>Instagram → Modifier le profil → Liens</b> : mettre <code>https://bontin.fr/fetes</code> (Instagram n'accepte pas de lien cliquable dans les publications, d'où le « lien dans la bio »).</li>
   <li>☐ <b>Admin → Fêtes → Les dates à retenir</b> : la date du 25/12 s'appelle « Réveillon » avec le texte « Joyeux Noël, on se retrouve le 4 Janvier 2027 ». Je propose de la renommer <b>« Fermeture »</b> avec le texte « Du 25 décembre au 3 janvier. Réouverture le lundi 4 janvier. »</li>
-  <li>☐ <b>Stocks</b> avec Sylvie : les 16 produits du tableau de la partie 4, surtout les bûches.</li>
+  <li>☐ <b>Stocks</b> avec Sylvie : les ${utilises.length} produits du tableau de la partie 4, surtout les bûches.</li>
 </ul>
 <div class="attention"><b>Prix relevés sur le site le 20 novembre.</b> La veille de chaque publication de produit, jetez un œil à sa fiche sur bontin.fr : si le prix a changé ou si le produit est en rupture, dites-le-moi et je refais le visuel en 2 minutes (ou décalez la publication).</div>
 
@@ -174,9 +176,9 @@ ${calendrier}
 <table><tr><th>Produit (nom sur le site)</th><th>Publié le</th></tr>${lignesProduits}</table>
 <h3>Volontairement laissés de côté</h3>
 <ul>
-  <li><b>Bûche profiteroles, 16 mini feuilletés apéritif, noix de Saint-Jacques de Saint-Brieuc, pintade farcie aux cèpes</b> : ce sont les 4 photos de la publication « Merci + place aux fêtes » du 30 novembre et de la photo de couverture Facebook, visibles tout le mois. Pas de doublon.</li>
+  <li><b>Bûche profiteroles et noix de Saint-Jacques de Saint-Brieuc</b> : déjà sur la publication « Merci + place aux fêtes » du 30 novembre et sur la photo de couverture Facebook, visible tout le mois. (La pintade farcie et les mini feuilletés y sont aussi, mais ils ont leur publication en décembre, à la demande de Romuald.)</li>
   <li><b>Les vins de la « Cave de Noël »</b> : la loi Évin encadre strictement la publicité pour l'alcool sur les réseaux sociaux. Mieux vaut ne pas les mettre en avant.</li>
-  <li>Les coquilles Saint-Jacques et les macarons ont été le « prix choc » et une promo de la Black Week.</li>
+  <li>Les coquilles Saint-Jacques ont été le « prix choc » de la Black Week. Les macarons, en promo pendant la Black Week, reviennent seulement comme dessert du menu du 16 décembre, à leur prix normal.</li>
 </ul>
 
 <h2>5. Publicité payante (facultatif, ≈ 45 €)</h2>
@@ -262,7 +264,7 @@ ${trait}
 ☐ Meta Business Suite : programmer les ${PUBLICATIONS.length} publications (Facebook + Instagram, textes personnalisés par plateforme) et les 6 stories
 ☐ Instagram : lien du profil = https://bontin.fr/fetes
 ☐ Admin → Fêtes : renommer la date du 25/12 « Réveillon » en « Fermeture » (texte : Du 25 décembre au 3 janvier. Réouverture le lundi 4 janvier.)
-☐ Stocks des 16 produits mis en avant avec Sylvie (surtout les bûches)
+☐ Stocks des ${PUBLICATIONS.flatMap((p) => p.produits || []).length} produits mis en avant avec Sylvie (surtout les bûches)
 ☐ La veille de chaque publication produit : vérifier prix et stock sur bontin.fr (prix relevés le 20/11)
 ☐ Jeudi 24 après le dernier retrait : photo de couverture Facebook « On se retrouve le 4 janvier »
 ☐ Lundi 4 janvier : remettre la photo de couverture habituelle
@@ -278,6 +280,8 @@ ${jours}`
 export function copierBureau(dossier) {
   const bureau = path.join(os.homedir(), 'Desktop', 'Fetes Bontin 2026')
   fs.mkdirSync(bureau, { recursive: true })
+  // On repart d'un dossier propre : les visuels d'une ancienne version du calendrier sont retirés.
+  for (const f of fs.readdirSync(bureau)) if (/^\d\d[bsc]? - .*\.jpg$/.test(f)) fs.rmSync(path.join(bureau, f))
   const noms = nomsBureau()
   for (const [cle, nom] of Object.entries(noms)) {
     const source = path.join(dossier, 'visuels', cle + '.jpg')

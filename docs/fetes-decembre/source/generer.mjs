@@ -47,6 +47,10 @@ for (const [cle, p] of Object.entries(PRODUITS)) {
 
 // 2. Visuels : une page HTML par visuel, photographiée par Chrome, puis convertie en JPG (sips sur Mac)
 fs.mkdirSync(dossierVisuels, { recursive: true })
+if (!seulement.length) {
+  // Visuels d'une ancienne version du calendrier : retirés
+  for (const f of fs.readdirSync(dossierVisuels)) if (f.endsWith('.jpg') && !VISUELS[f.slice(0, -4)]) fs.rmSync(path.join(dossierVisuels, f))
+}
 const logo = pathToFileURL(path.join(racine, 'public/logo.png')).href
 const pages = pagesVisuels(photos, PRODUITS, logo)
 for (const [cle, html] of Object.entries(pages)) {

@@ -25,7 +25,7 @@ const CSS = `
 body{width:var(--w);height:var(--h);overflow:hidden;background:var(--forest);position:relative;font-family:'Public Sans',sans-serif;color:var(--ink)}
 .arcs{position:absolute;inset:0;opacity:.2;background-image:${ARCS};background-size:80px 40px}
 .etoile{position:absolute}
-.logo{position:absolute;left:50%;transform:translateX(-50%);filter:brightness(0) invert(1)}
+.logo{position:absolute;z-index:5;left:50%;transform:translateX(-50%);filter:brightness(0) invert(1)}
 .carte{position:absolute;background:var(--paper);clip-path:${coins(28)};text-align:center}
 .carte:before{content:'';position:absolute;inset:14px;border:2px solid var(--or);clip-path:${coins(22)};pointer-events:none}
 .carte>.etoile{position:absolute;top:24px;left:calc(50% - 14px);width:28px;height:28px}
@@ -105,6 +105,83 @@ function produit(v, photos, logoSrc) {
 </div>
 <div class="pied" style="bottom:42px">Commandez sur bontin.fr · livraison ou retrait</div>`,
   { logo: { src: logoSrc, top: 44, h: 66 } })
+}
+
+// Variante « plein cadre » : la photo occupe tout le visuel, le texte est posé dessus en bas (cadre or à coins coupés).
+function produitPlein(v, photos, logoSrc) {
+  const fond = img(photos, v.produit)
+  return pageHtml('post', `
+<div class="photo" style="left:0;top:0;width:1080px;height:1350px;box-shadow:none;background-image:url('${fond}');background-position:${v.pos || '50% 50%'}"></div>
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,38,25,.6) 0%,rgba(19,38,25,0) 16%,rgba(19,38,25,0) 42%,rgba(19,38,25,.88) 66%,rgba(19,38,25,.97) 100%)"></div>
+<div style="position:absolute;inset:26px;border:2px solid var(--or);clip-path:${coins(26)}"></div>
+${etoile('right:70px;top:70px;width:34px;height:34px')}${etoile('left:66px;bottom:250px;width:18px;height:18px;opacity:.8')}
+<div style="position:absolute;left:80px;right:80px;bottom:150px">
+  <div class="sur" style="color:var(--or)">✦ ${v.chip}</div>
+  <div class="titre fit" style="color:var(--paper);font-size:124px;margin:14px 0 10px">${v.titre}</div>
+  <div class="phrase" style="color:rgba(251,250,246,.88);font-size:29px;max-width:880px">${v.phrase}</div>
+  <div class="bas" style="justify-content:flex-start;margin-top:28px"><span class="prix">${v.prix}</span><span class="infos" style="color:var(--paper)">${v.infos}</span></div>
+</div>
+<div class="pied" style="bottom:62px">${v.sur} · bontin.fr</div>`,
+  { logo: { src: logoSrc, top: 58, h: 66 } })
+}
+
+// Variante « carte en haut » : la carte d'abord, la photo dessous avec le prix en étiquette.
+function produitHaut(v, photos, logoSrc) {
+  const fond = img(photos, v.produit)
+  return pageHtml('post', `
+<div style="position:absolute;left:80px;right:80px;top:136px;bottom:104px;display:flex;flex-direction:column">
+  <div class="carte" style="position:relative;margin:0 38px -46px;padding:60px 46px 64px;z-index:2">
+    ${etoile('', 'etoile')}
+    <div class="sur">${v.sur}</div>
+    <div class="titre fit">${v.titre}</div>
+    <div class="sep" style="margin-bottom:8px">✦</div>
+    <div class="phrase">${v.phrase}</div>
+  </div>
+  <div class="photo" style="position:relative;flex:1;background-image:url('${fond}');background-position:${v.pos || '50% 50%'}">
+    <div style="position:absolute;right:0;bottom:0;display:flex;align-items:stretch">
+      <span class="infos" style="background:var(--forest);color:var(--paper);padding:14px 20px;display:flex;align-items:center">${v.infos.replace('<br>', ' · ')}</span>
+      <span class="prix" style="font-size:78px">${v.prix}</span>
+    </div>
+    <div class="chip" style="top:auto;bottom:0;left:0;font-size:20px">✦ ${v.chip}</div>
+  </div>
+</div>
+<div class="pied" style="bottom:42px">Commandez sur bontin.fr · livraison ou retrait</div>`,
+  { logo: { src: logoSrc, top: 44, h: 66 } })
+}
+
+// Variante « arche » : la photo découpée en arche (la forme des coupes de bûches), la carte posée dessous.
+function produitArche(v, photos, logoSrc) {
+  const fond = img(photos, v.produit)
+  return pageHtml('post', `
+<div class="photo" style="left:150px;top:130px;width:780px;height:700px;border-radius:390px 390px 0 0;background-image:url('${fond}');background-position:${v.pos || '50% 50%'}"></div>
+<div style="position:absolute;left:126px;top:106px;width:828px;height:748px;border:2px solid var(--or);border-bottom:0;border-radius:414px 414px 0 0;opacity:.7"></div>
+${etoile('left:110px;top:150px;width:30px;height:30px')}${etoile('right:110px;top:250px;width:22px;height:22px')}
+<div class="carte" style="left:100px;right:100px;top:780px;padding:52px 50px 46px">
+  <div class="sur">${v.sur}</div>
+  <div class="titre fit" style="font-size:112px">${v.titre}</div>
+  <div class="phrase" style="margin-top:6px">${v.phrase}</div>
+  <div class="bas" style="margin-top:22px"><span class="infos" style="text-align:right">${v.infos}</span><span class="prix">${v.prix}</span></div>
+</div>
+<div class="pied" style="bottom:40px">bontin.fr · livraison ou retrait</div>`,
+  { logo: { src: logoSrc, top: 40, h: 62 } })
+}
+
+// Vœux « nuit étoilée » : pas de carte, le titre doré directement sur le vert, beaucoup d'étoiles.
+function voeuxNuit(v, format, logoSrc) {
+  const story = format === 'story'
+  const [w, h] = FORMATS[format]
+  const plus = [[18, 22, 22], [80, 30, 30], [12, 62, 16], [86, 70, 20], [30, 84, 14], [64, 14, 14], [50, 92, 18], [92, 44, 12], [8, 40, 12]]
+    .map(([g, t, s]) => etoile(`left:${g}%;top:${t}%;width:${s}px;height:${s}px;transform:translate(-50%,-50%)`)).join('')
+  return pageHtml(format, `${plus}
+<div style="position:absolute;left:70px;right:70px;top:0;height:${h}px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:${story ? 34 : 24}px">
+  <div class="sur" style="color:var(--or);letter-spacing:7px">${v.sur}</div>
+  <div style="font:400 ${story ? 250 : 220}px/.95 'Bebas Neue';color:var(--paper);letter-spacing:2px">${v.titre.replace('<span>', '<span style="color:var(--or)">')}</div>
+  <div class="sep" style="margin:0;font-size:30px">✦</div>
+  <div class="phrase" style="color:rgba(251,250,246,.88);font-size:32px">${v.texte}</div>
+  <div style="border:2px solid var(--or);color:var(--paper);font:700 26px 'Roboto Condensed';letter-spacing:3px;text-transform:uppercase;padding:18px 34px;margin-top:10px">${v.info}</div>
+</div>
+<div class="pied" style="bottom:${story ? 220 : 52}px">bontin.fr</div>`,
+  { logo: { src: logoSrc, top: story ? 210 : 60, h: story ? 84 : 66 } })
 }
 
 function interieur(v, photos, logoSrc) {
@@ -223,12 +300,15 @@ export function pagesVisuels(photosParId, PRODUITS, logoSrc) {
   const pages = {}
   for (const [cle, def] of Object.entries(VISUELS)) {
     const v = def.base ? { ...VISUELS[def.base], ...def } : def
-    if (v.type === 'produit') pages[cle] = produit(v, photos, logoSrc)
+    if (v.type === 'produit') {
+      const f = { plein: produitPlein, haut: produitHaut, arche: produitArche }[v.mise] || produit
+      pages[cle] = f(v, photos, logoSrc)
+    }
     else if (v.type === 'interieur') pages[cle] = interieur(v, photos, logoSrc)
     else if (v.type === 'duo') pages[cle] = duo(v, photos, logoSrc)
     else if (v.type === 'menu') pages[cle] = menu(v, photos, logoSrc)
     else if (v.type === 'dates') pages[cle] = dates(v, v.format, logoSrc)
-    else if (v.type === 'voeux') pages[cle] = voeux(v, v.format, logoSrc)
+    else if (v.type === 'voeux') pages[cle] = (v.mise === 'nuit' ? voeuxNuit : voeux)(v, v.format, logoSrc)
     else if (v.type === 'couverture') pages[cle] = couverture(v, logoSrc)
   }
   return pages
