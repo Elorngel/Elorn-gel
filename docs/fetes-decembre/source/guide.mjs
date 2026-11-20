@@ -154,7 +154,7 @@ export function ecrireGuide(dossier) {
   <li>business.facebook.com → <b>Planificateur</b> (ou « Créer une publication »).</li>
   <li>En haut, « Publier sur » : cocher <b>la page Facebook Bontin ET le compte Instagram</b>.</li>
   <li><b>Ajouter une photo</b> : le visuel de la publication. Pour les bûches, ajouter <b>les 2 photos</b> (la bûche puis « l'intérieur ») : Facebook les affiche ensemble, Instagram en fait un carrousel qu'on fait glisser.</li>
-  <li>Texte : coller la version <b>Facebook</b>. Puis activer <b>« Personnaliser le texte pour chaque plateforme »</b> et coller la version <b>Instagram</b> dans l'onglet Instagram (lien dans la bio + hashtags).</li>
+  <li>Texte : coller la version <b>Facebook</b> (sans lien : sinon Facebook ajoute un aperçu du site à retirer ; le nom du site est déjà sur chaque image). Puis activer <b>« Personnaliser le texte pour chaque plateforme »</b> et coller la version <b>Instagram</b> dans l'onglet Instagram (lien dans la bio + hashtags).</li>
   <li>En bas : flèche à côté de « Publier » → <b>Programmer</b> → date et heure du calendrier → Programmer.</li>
   <li><b>Stories</b> (6 jours marqués « + story ») : « Créer une story » → Facebook + Instagram → le visuel « story » → Programmer à la même heure. Sur Instagram, on peut ajouter à la main un autocollant « Lien » vers bontin.fr/fetes.</li>
 </ol>

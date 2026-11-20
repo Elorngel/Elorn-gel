@@ -5,8 +5,8 @@
 // JAMAIS le même produit deux fois dans le mois. Fermeture du 25/12 au 03/01, réouverture le lundi 04/01/2027.
 // Prix relevés sur le site le 20/11/2026 (prix en livraison ; remise retrait à 0 %, donc identiques en retrait).
 
-// {LIEN} est remplacé par le lien du site (Facebook) ou « lien dans la bio » (Instagram).
-export const LIEN_FB = '👉 bontin.fr/fetes'
+// {LIEN} : sur Instagram, « lien dans la bio ». Sur Facebook, RIEN (Romuald, 20/11/2026 : un lien fait apparaître un
+// aperçu qu'il faut retirer à chaque fois) — le nom du site est déjà, discrètement, sur chaque image.
 export const LIEN_IG = '👉 Lien dans la bio (bontin.fr)'
 const TAGS_BASE = '#Bontin #Plouédern #Landerneau #Finistère #Bretagne #commercelocal'
 
@@ -23,7 +23,7 @@ export const PRODUITS = {
   cassolette: { id: 'a523d1b9', nom: 'CASSOLETTE ST JACQUES SAUCE CHAMPAGNE' },
   pintade: { id: '8279a8ed', nom: 'PINTADE FARCIE AUX CEPES' },
   langoustines: { id: '981c1048', nom: 'LANGOUSTINES CRUES ENTIERES' },
-  crevettes: { id: '69e87724', nom: 'CREVETTES SAUVAGES CUITES' },
+  gambas: { id: '1f39d743', nom: 'GAMBAS SAUVAGES CRUES' },
   quiches: { id: 'a51290b8', nom: '25 MINI QUICHES APERITIVES' },
   feuilletes: { id: 'ce891ba6', nom: '4 FEUILLETÉS ST JACQUES' },
   dinde: { id: '349d3038', nom: 'ROTI DE DINDE FARCI MARRONS CEPES' },
@@ -42,11 +42,11 @@ export const VISUELS = {
   },
   '01b-buche-profiteroles-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'profiteroles', zoom: 108, titre: 'La bûche profiteroles' },
 
-  '02-crevettes': {
-    mise: 'haut', type: 'produit', format: 'post', produit: 'crevettes', pos: '50% 50%',
-    chip: 'Les produits de la mer', sur: 'Pour les entrées et les plateaux', titre: 'Crevettes sauvages cuites',
-    phrase: 'Une chair ferme et délicatement iodée, déjà cuites : il n’y a plus qu’à servir.',
-    prix: '24,79 €', infos: '1 kg<br>40 à 60 pièces',
+  '02-gambas': {
+    mise: 'haut', type: 'produit', format: 'post', produit: 'gambas', pos: '50% 50%',
+    chip: 'Les produits de la mer', sur: 'Pour la plancha des fêtes', titre: 'Gambas sauvages',
+    phrase: 'De belles gambas sauvages d’Argentine, crues, à saisir à la poêle ou à la plancha.',
+    prix: '18,49 €', infos: '1 kg<br>10 à 20 pièces',
   },
 
   '01-story-dates': {
@@ -228,13 +228,13 @@ Tout le menu des fêtes est dans la rubrique « Les fêtes » du site.
 {LIEN}`,
   },
   {
-    date: '2026-12-02', heure: '12 h', titre: 'Crevettes sauvages cuites', visuels: ['02-crevettes'],
-    produits: ['crevettes'], tags: '#crevettes #produitsdelamer #entréedefêtes #Noël',
-    texte: `🦐 Les crevettes, incontournables des repas de fêtes !
+    date: '2026-12-02', heure: '12 h', titre: 'Gambas sauvages', visuels: ['02-gambas'],
+    produits: ['gambas'], tags: '#gambas #produitsdelamer #plancha #Noël',
+    texte: `🦐 Des gambas pour les fêtes ?
 
-Nos crevettes sauvages sont déjà cuites : une chair ferme et délicatement iodée, à déguster froides avec une mayonnaise maison, en salade ou sur le plateau de fruits de mer. Il suffit de les décongeler au réfrigérateur.
+Nos gambas sauvages d'Argentine sont de belles pièces : 10 à 20 au kilo. Crues, elles se décongèlent au réfrigérateur puis se saisissent en quelques minutes à la poêle ou à la plancha, avec un filet d'huile d'olive, de l'ail et du persil… Effet garanti à l'apéritif comme en entrée !
 
-1 kg (40 à 60 pièces) · 24,79 €
+1 kg · 18,49 € (ou 500 g à 9,24 € en retrait au dépôt)
 
 {LIEN}`,
   },
@@ -437,7 +437,7 @@ Le dépôt rouvre ce lundi 4 janvier : livraisons et retraits reprennent dès lu
 ]
 
 export function texteFacebook(p) {
-  return p.texte.replace('{LIEN}', LIEN_FB).trim()
+  return p.texte.replace('{LIEN}', '').trim()
 }
 
 export function texteInstagram(p) {
