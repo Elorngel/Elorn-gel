@@ -111,9 +111,13 @@ function produit(v, photos, logoSrc) {
 function produitPlein(v, photos, logoSrc) {
   const fond = img(photos, v.produit)
   const c = v.fond === 'bleu' ? '12,45,87' : '19,38,25'
+  // hauteur : la photo s'arrête plus haut (fondu vers la couleur du fond) pour que le texte ne cache pas le produit
+  const H = v.hauteur || 1350
   return pageHtml('post', `
-<div class="photo" style="left:0;top:0;width:1080px;height:1350px;box-shadow:none;background-image:url('${fond}');background-position:${v.pos || '50% 50%'}"></div>
-<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(${c},.6) 0%,rgba(${c},0) 16%,rgba(${c},0) 42%,rgba(${c},.88) 66%,rgba(${c},.97) 100%)"></div>
+<div class="photo" style="left:0;top:0;width:1080px;height:${H}px;box-shadow:none;background-image:url('${fond}');background-position:${v.pos || '50% 50%'}"></div>
+<div style="position:absolute;left:0;right:0;top:0;height:${H}px;background:${v.hauteur
+    ? `linear-gradient(180deg,rgba(${c},.55) 0%,rgba(${c},0) 14%,rgba(${c},0) 72%,rgba(${c},1) 100%)`
+    : `linear-gradient(180deg,rgba(${c},.6) 0%,rgba(${c},0) 16%,rgba(${c},0) 42%,rgba(${c},.88) 66%,rgba(${c},.97) 100%)`}"></div>
 <div style="position:absolute;inset:26px;border:2px solid var(--or);clip-path:${coins(26)}"></div>
 ${etoile('right:70px;top:70px;width:34px;height:34px')}${etoile('left:66px;bottom:250px;width:18px;height:18px;opacity:.8')}
 <div style="position:absolute;left:80px;right:80px;bottom:150px">

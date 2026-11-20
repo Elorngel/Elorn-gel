@@ -23,6 +23,7 @@ export const PRODUITS = {
   cassolette: { id: 'a523d1b9', nom: 'CASSOLETTE ST JACQUES SAUCE CHAMPAGNE' },
   pintade: { id: '8279a8ed', nom: 'PINTADE FARCIE AUX CEPES' },
   langoustines: { id: '981c1048', nom: 'LANGOUSTINES CRUES ENTIERES' },
+  crevettes: { id: '69e87724', nom: 'CREVETTES SAUVAGES CUITES' },
   quiches: { id: 'a51290b8', nom: '25 MINI QUICHES APERITIVES' },
   feuilletes: { id: 'ce891ba6', nom: '4 FEUILLETÉS ST JACQUES' },
   dinde: { id: '349d3038', nom: 'ROTI DE DINDE FARCI MARRONS CEPES' },
@@ -34,12 +35,19 @@ export const PRODUITS = {
 // story (1080×1920), couv (1640×624).
 export const VISUELS = {
   '01-buche-profiteroles': {
-    mise: 'plein', fond: 'bleu', type: 'produit', format: 'post', produit: 'profiteroles', pos: '50% 50%',
+    mise: 'plein', fond: 'bleu', hauteur: 900, type: 'produit', format: 'post', produit: 'profiteroles', pos: '50% 30%',
     chip: 'Les bûches de Noël', sur: 'Notre plus grande bûche', titre: 'Bûche profiteroles',
     phrase: '12 choux à la vanille Bourbon, glace praliné, chocolat noir et noisettes croquantes.',
     prix: '32,90 €', infos: 'Glacée<br>10 à 12 parts',
   },
   '01b-buche-profiteroles-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'profiteroles', zoom: 108, titre: 'La bûche profiteroles' },
+
+  '02-crevettes': {
+    mise: 'haut', type: 'produit', format: 'post', produit: 'crevettes', pos: '50% 50%',
+    chip: 'Les produits de la mer', sur: 'Pour les entrées et les plateaux', titre: 'Crevettes sauvages cuites',
+    phrase: 'Une chair ferme et délicatement iodée, déjà cuites : il n’y a plus qu’à servir.',
+    prix: '24,79 €', infos: '1 kg<br>40 à 60 pièces',
+  },
 
   '01-story-dates': {
     type: 'dates', format: 'story',
@@ -52,62 +60,62 @@ export const VISUELS = {
     ],
   },
 
-  '02-buche-breizh': {
+  '03-buche-breizh': {
     fond: 'bleu',
     type: 'produit', format: 'post', produit: 'breizh', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'La bûche de chez nous', titre: 'Bûche Breizh',
     phrase: 'Palet breton, caramel au beurre salé et éclats de caramel.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
   },
-  '02b-buche-breizh-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'breizh', titre: 'La bûche Breizh' },
+  '03b-buche-breizh-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'breizh', titre: 'La bûche Breizh' },
 
-  '03-mini-feuilletes': {
+  '04-mini-feuilletes': {
     mise: 'plein', type: 'produit', format: 'post', produit: 'feuilletesApero', pos: '50% 55%',
     chip: "L'apéritif", sur: 'Pour trinquer', titre: '16 mini feuilletés apéritif',
     phrase: 'Pâte feuilletée pur beurre : emmental, tomate, truite et jambon-emmental.',
     prix: '8,99 €', infos: 'Les 16<br>15 min au four',
   },
 
-  '04-buche-rocher': {
+  '05-buche-rocher': {
     fond: 'bleu',
     mise: 'arche', type: 'produit', format: 'post', produit: 'rocher', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Pour les fans de praliné', titre: 'Bûche façon Rocher',
     phrase: 'Praliné, vanille, cœur caramel au lait, coque chocolat au lait et riz soufflé.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
   },
-  '04b-buche-rocher-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'rocher', titre: 'La bûche façon Rocher' },
+  '05b-buche-rocher-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'rocher', titre: 'La bûche façon Rocher' },
 
-  '05-cassolettes': {
+  '06-cassolettes': {
     mise: 'haut', type: 'produit', format: 'post', produit: 'cassolette', pos: '50% 55%',
     chip: "L'entrée", sur: "L'entrée chic sans effort", titre: 'Cassolettes de Saint-Jacques',
     phrase: 'Sauce au champagne, servies dans leur cassolette en céramique.',
     prix: '13,99 €', infos: '4 cassolettes<br>20 min au four',
   },
 
-  '06-buche-frambissima': {
+  '07-buche-frambissima': {
     fond: 'bleu',
     type: 'produit', format: 'post', produit: 'framb', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Fruitée et légère', titre: 'Bûche Frambissima',
     phrase: 'Framboise, vanille Bourbon de Madagascar, coulis de framboise et meringue.',
     prix: '26,90 €', infos: 'Glacée<br>6 à 8 parts',
   },
-  '06b-buche-frambissima-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'framb', titre: 'La bûche Frambissima' },
+  '07b-buche-frambissima-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'framb', titre: 'La bûche Frambissima' },
 
-  '07-pintade': {
+  '08-pintade': {
     mise: 'plein', type: 'produit', format: 'post', produit: 'pintade', pos: '50% 55%',
     chip: 'Le plat', sur: 'Le plat du réveillon', titre: 'Pintade farcie aux cèpes',
     phrase: 'Pintade française semi-désossée, farce aux cèpes et touche de vieil Armagnac.',
     prix: '24,99 €', infos: '1,2 kg<br>1 h 30 au four',
   },
 
-  '08-langoustines': {
+  '09-langoustines': {
     mise: 'haut', type: 'produit', format: 'post', produit: 'langoustines', pos: '50% 50%',
     chip: 'Les produits de la mer', sur: "Un produit d'exception", titre: 'Langoustines entières',
     phrase: 'Pêchées en pleine mer, une chair fine et délicatement sucrée.',
     prix: '18,59 €', infos: '1 kg<br>20 à 30 pièces',
   },
 
-  '09-menu-reveillon': {
+  '10-menu-reveillon': {
     type: 'menu', format: 'post',
     sur: 'Idée menu de réveillon', titre: 'Pour 4, à moins de 50 €',
     plats: [
@@ -119,16 +127,16 @@ export const VISUELS = {
     total: '48,23 €',
   },
 
-  '10-buche-citron': {
+  '11-buche-citron': {
     fond: 'bleu',
     mise: 'arche', type: 'produit', format: 'post', produit: 'citron', pos: '50% 60%',
     chip: 'Les bûches de Noël', sur: 'Comme une tarte au citron', titre: 'Bûche citron meringuée',
     phrase: 'Citron de Sicile, sorbet citron vert, pâte sucrée et meringue italienne.',
     prix: '26,90 €', infos: 'Glacée<br>8 parts',
   },
-  '10b-buche-citron-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'citron', titre: 'La bûche citron meringuée' },
+  '11b-buche-citron-interieur': { fond: 'bleu', type: 'interieur', format: 'post', produit: 'citron', titre: 'La bûche citron meringuée' },
 
-  '11-j-6': {
+  '12-j-6': {
     type: 'dates', format: 'post',
     sur: 'Dernière ligne droite', titre: 'Noël, c’est dans', compte: '6',
     lignes: [
@@ -136,9 +144,9 @@ export const VISUELS = {
       { j: 'Jeudi', n: '24', m: 'déc.', t: 'Dernier retrait', x: "Au dépôt jusqu'à midi, commande au plus tard le mercredi 23." },
     ],
   },
-  '11-story-j-6': { base: '11-j-6', format: 'story' },
+  '12-story-j-6': { base: '12-j-6', format: 'story' },
 
-  '12-buches-11-90': {
+  '13-buches-11-90': {
     type: 'duo', format: 'post',
     tuiles: [
       { produit: 'pomme', role: 'Glacée', nom: 'Caramel & pomme cidrée', prix: '11,90 €', pos: '50% 55%' },
@@ -149,14 +157,14 @@ export const VISUELS = {
     bas: '<span class="bandeau">6 à 8 parts chacune · glacée ou pâtissière</span>',
   },
 
-  '13-dernier-jour-livraison': {
+  '14-dernier-jour-livraison': {
     mise: 'plein', type: 'produit', format: 'post', produit: 'petitsfours', pos: '50% 55%',
     chip: 'Aujourd’hui : dernier jour en livraison', sur: 'Pour finir le repas en douceur', titre: '12 petits fours dessert',
     phrase: 'Opéra café-chocolat, mini-éclairs, tartelettes au citron et financiers à la framboise.',
     prix: '10,39 €', infos: 'Les 12<br>5 h au frigo',
   },
 
-  '14-dernier-jour-commande': {
+  '15-dernier-jour-commande': {
     type: 'dates', format: 'post',
     sur: 'Dernier jour pour commander', titre: 'Retrait demain jusqu’à midi',
     lignes: [
@@ -164,36 +172,36 @@ export const VISUELS = {
       { j: 'Demain', n: '24', m: 'déc.', t: 'Retrait au dépôt', x: "À Plouédern, de 8 h à midi." },
     ],
   },
-  '14-story-dernier-jour': { base: '14-dernier-jour-commande', format: 'story' },
+  '15-story-dernier-jour': { base: '15-dernier-jour-commande', format: 'story' },
 
-  '15-joyeux-noel': {
+  '16-joyeux-noel': {
     type: 'voeux', format: 'post',
     sur: 'Toute l’équipe Bontin vous souhaite un', titre: 'Joyeux<br><span>Noël</span>',
     texte: 'Merci pour votre confiance cette année.<br>Belles fêtes en famille !',
     info: 'Fermé du 25 décembre au 3 janvier<br><b>Réouverture le lundi 4 janvier</b>',
   },
-  '15-story-joyeux-noel': { base: '15-joyeux-noel', format: 'story' },
-  '15-couverture-fermeture': {
+  '16-story-joyeux-noel': { base: '16-joyeux-noel', format: 'story' },
+  '16-couverture-fermeture': {
     type: 'couverture', format: 'couv',
     sur: 'Fermé du 25 décembre au 3 janvier', titre: 'On se retrouve le 4 janvier',
     texte: 'Joyeuses fêtes ! Le site reste ouvert : commandez dès maintenant sur bontin.fr',
   },
 
-  '16-bon-reveillon': {
+  '17-bon-reveillon': {
     mise: 'nuit', type: 'voeux', format: 'post',
     sur: 'Pour la dernière soirée de 2026', titre: 'Bon<br><span>réveillon</span>',
     texte: 'Plein de bons moments, de rires<br>et de bonnes choses à partager.',
     info: 'On se retrouve le lundi 4 janvier',
   },
-  '16-story-bon-reveillon': { base: '16-bon-reveillon', format: 'story' },
+  '17-story-bon-reveillon': { base: '17-bon-reveillon', format: 'story' },
 
-  '17-bonne-annee': {
+  '18-bonne-annee': {
     type: 'voeux', format: 'post', annee: '2027',
     sur: 'Toute l’équipe Bontin vous souhaite une', titre: 'Bonne année',
     texte: 'Pleine de santé et de bons repas partagés.',
     info: 'Le dépôt rouvre ce <b>lundi 4 janvier</b>',
   },
-  '17-story-bonne-annee': { base: '17-bonne-annee', format: 'story' },
+  '18-story-bonne-annee': { base: '18-bonne-annee', format: 'story' },
 }
 
 // Le calendrier. semaine : sert aux titres du guide. visuels : clés de VISUELS (le 1er = la publication ;
@@ -220,7 +228,18 @@ Tout le menu des fêtes est dans la rubrique « Les fêtes » du site.
 {LIEN}`,
   },
   {
-    date: '2026-12-03', heure: '12 h', titre: 'Bûche Breizh', visuels: ['02-buche-breizh', '02b-buche-breizh-interieur'], carrousel: true,
+    date: '2026-12-02', heure: '12 h', titre: 'Crevettes sauvages cuites', visuels: ['02-crevettes'],
+    produits: ['crevettes'], tags: '#crevettes #produitsdelamer #entréedefêtes #Noël',
+    texte: `🦐 Les crevettes, incontournables des repas de fêtes !
+
+Nos crevettes sauvages sont déjà cuites : une chair ferme et délicatement iodée, à déguster froides avec une mayonnaise maison, en salade ou sur le plateau de fruits de mer. Il suffit de les décongeler au réfrigérateur.
+
+1 kg (40 à 60 pièces) · 24,79 €
+
+{LIEN}`,
+  },
+  {
+    date: '2026-12-03', heure: '12 h', titre: 'Bûche Breizh', visuels: ['03-buche-breizh', '03b-buche-breizh-interieur'], carrousel: true,
     produits: ['breizh'], tags: '#bûchedeNoël #bûcheglacée #caramelbeurresalé #Noël',
     texte: `🧈 La bûche de chez nous : la bûche Breizh !
 
@@ -234,7 +253,7 @@ Vous êtes plutôt Breizh ou chocolat ? Dites-le-nous en commentaire 👇
 {LIEN}`,
   },
   {
-    date: '2026-12-05', heure: '11 h 30', titre: '16 mini feuilletés apéritif', visuels: ['03-mini-feuilletes'],
+    date: '2026-12-05', heure: '11 h 30', titre: '16 mini feuilletés apéritif', visuels: ['04-mini-feuilletes'],
     produits: ['feuilletesApero'], tags: '#apéritif #apérodefêtes #Noël #réveillon',
     texte: `🥂 L'apéritif des fêtes, prêt en 15 minutes.
 
@@ -245,7 +264,7 @@ Vous êtes plutôt Breizh ou chocolat ? Dites-le-nous en commentaire 👇
 {LIEN}`,
   },
   {
-    date: '2026-12-07', heure: '18 h 30', titre: 'Bûche façon Rocher', visuels: ['04-buche-rocher', '04b-buche-rocher-interieur'], carrousel: true,
+    date: '2026-12-07', heure: '18 h 30', titre: 'Bûche façon Rocher', visuels: ['05-buche-rocher', '05b-buche-rocher-interieur'], carrousel: true,
     produits: ['rocher'], tags: '#bûchedeNoël #bûcheglacée #praliné #Noël',
     texte: `🍫 Les fans de praliné, celle-ci est pour vous.
 
@@ -257,7 +276,7 @@ Glissez pour voir ce qu'il y a dedans 👉
 {LIEN}`,
   },
   {
-    date: '2026-12-09', heure: '12 h', titre: 'Cassolettes de Saint-Jacques', visuels: ['05-cassolettes'],
+    date: '2026-12-09', heure: '12 h', titre: 'Cassolettes de Saint-Jacques', visuels: ['06-cassolettes'],
     produits: ['cassolette'], tags: '#SaintJacques #entréedefêtes #Noël #réveillon',
     texte: `✨ Une entrée chic, prête en 20 minutes.
 
@@ -268,7 +287,7 @@ Nos cassolettes de Saint-Jacques à la sauce au champagne, servies dans leur cas
 {LIEN}`,
   },
   {
-    date: '2026-12-11', heure: '18 h 30', titre: 'Bûche Frambissima', visuels: ['06-buche-frambissima', '06b-buche-frambissima-interieur'], carrousel: true,
+    date: '2026-12-11', heure: '18 h 30', titre: 'Bûche Frambissima', visuels: ['07-buche-frambissima', '07b-buche-frambissima-interieur'], carrousel: true,
     produits: ['framb'], tags: '#bûchedeNoël #bûcheglacée #framboise #Noël',
     texte: `🍓 Envie de fraîcheur après un bon repas ?
 
@@ -280,7 +299,7 @@ Glissez pour voir l'intérieur 👉
 {LIEN}`,
   },
   {
-    date: '2026-12-13', heure: '11 h', titre: 'Pintade farcie aux cèpes', visuels: ['07-pintade'],
+    date: '2026-12-13', heure: '11 h', titre: 'Pintade farcie aux cèpes', visuels: ['08-pintade'],
     produits: ['pintade'], tags: '#pintade #platdefêtes #Noël #réveillon',
     texte: `🍽 Le plat du réveillon qui fait son effet sur la table.
 
@@ -292,7 +311,7 @@ Avec des marrons ou un gratin, le tour est joué 😋
 {LIEN}`,
   },
   {
-    date: '2026-12-14', heure: '18 h 30', titre: 'Langoustines entières', visuels: ['08-langoustines'],
+    date: '2026-12-14', heure: '18 h 30', titre: 'Langoustines entières', visuels: ['09-langoustines'],
     produits: ['langoustines'], tags: '#langoustines #produitsdelamer #Noël #réveillon',
     texte: `🦐 Des langoustines pour les fêtes ?
 
@@ -303,7 +322,7 @@ Pêchées en pleine mer, nos langoustines entières ont une chair fine et délic
 {LIEN}`,
   },
   {
-    date: '2026-12-16', heure: '12 h', titre: 'Un réveillon pour 4 à moins de 50 €', visuels: ['09-menu-reveillon'],
+    date: '2026-12-16', heure: '12 h', titre: 'Un réveillon pour 4 à moins de 50 €', visuels: ['10-menu-reveillon'],
     produits: ['quiches', 'feuilletes', 'dinde', 'macarons'], tags: '#menudefêtes #réveillon #Noël #bonplan',
     texte: `🍽 Un réveillon complet pour 4, à moins de 50 € ?
 
@@ -319,7 +338,7 @@ Tout se garde au congélateur jusqu'au jour J. Pensez juste à sortir le rôti l
 {LIEN}`,
   },
   {
-    date: '2026-12-18', heure: '18 h 30', titre: 'Bûche citron meringuée', visuels: ['10-buche-citron', '10b-buche-citron-interieur'], carrousel: true,
+    date: '2026-12-18', heure: '18 h 30', titre: 'Bûche citron meringuée', visuels: ['11-buche-citron', '11b-buche-citron-interieur'], carrousel: true,
     produits: ['citron'], tags: '#bûchedeNoël #bûcheglacée #citron #Noël',
     texte: `🍋 Comme une tarte au citron… mais en bûche glacée !
 
@@ -331,7 +350,7 @@ Glissez pour voir l'intérieur 👉
 {LIEN}`,
   },
   {
-    date: '2026-12-19', heure: '11 h', titre: 'Noël dans 6 jours', visuels: ['11-j-6'], story: '11-story-j-6',
+    date: '2026-12-19', heure: '11 h', titre: 'Noël dans 6 jours', visuels: ['12-j-6'], story: '12-story-j-6',
     tags: '#Noël #menudefêtes',
     texte: `⏳ Noël, c'est dans 6 jours !
 
@@ -344,7 +363,7 @@ Les créneaux de la semaine de Noël partent vite 😉
 {LIEN}`,
   },
   {
-    date: '2026-12-21', heure: '12 h', titre: 'Deux bûches à 11,90 €', visuels: ['12-buches-11-90'],
+    date: '2026-12-21', heure: '12 h', titre: 'Deux bûches à 11,90 €', visuels: ['13-buches-11-90'],
     produits: ['pomme', 'cafe'], tags: '#bûchedeNoël #petitprix #Noël',
     texte: `🎄 Une belle bûche pour 11,90 € ? On en a deux !
 
@@ -357,7 +376,7 @@ Les créneaux de la semaine de Noël partent vite 😉
 {LIEN}`,
   },
   {
-    date: '2026-12-22', heure: '11 h 30', titre: 'Dernier jour pour commander en livraison', visuels: ['13-dernier-jour-livraison'],
+    date: '2026-12-22', heure: '11 h 30', titre: 'Dernier jour pour commander en livraison', visuels: ['14-dernier-jour-livraison'],
     produits: ['petitsfours'], tags: '#Noël #dernièreminute #petitsfours',
     texte: `🚚 Aujourd'hui, dernier jour pour commander en livraison !
 
@@ -372,7 +391,7 @@ Après aujourd'hui, il reste le retrait au dépôt de Plouédern jusqu'au jeudi 
 {LIEN}`,
   },
   {
-    date: '2026-12-23', heure: '12 h', titre: 'Dernier jour pour commander', visuels: ['14-dernier-jour-commande'], story: '14-story-dernier-jour',
+    date: '2026-12-23', heure: '12 h', titre: 'Dernier jour pour commander', visuels: ['15-dernier-jour-commande'], story: '15-story-dernier-jour',
     tags: '#Noël #dernièreminute',
     texte: `⏰ Dernier jour pour commander avant Noël !
 
@@ -383,7 +402,7 @@ Merci à tous ceux qui ont déjà commandé : les livraisons sont en route aujou
 {LIEN}`,
   },
   {
-    date: '2026-12-24', heure: '14 h', titre: 'Joyeux Noël + fermeture', visuels: ['15-joyeux-noel'], story: '15-story-joyeux-noel', couverture: '15-couverture-fermeture',
+    date: '2026-12-24', heure: '14 h', titre: 'Joyeux Noël + fermeture', visuels: ['16-joyeux-noel'], story: '16-story-joyeux-noel', couverture: '16-couverture-fermeture',
     tags: '#JoyeuxNoël #Noël',
     texte: `🎄 Joyeux Noël à tous !
 
@@ -395,7 +414,7 @@ Le site reste ouvert : vous pouvez déjà commander pour une livraison ou un ret
 {LIEN}`,
   },
   {
-    date: '2026-12-31', heure: '17 h', titre: 'Bon réveillon', visuels: ['16-bon-reveillon'], story: '16-story-bon-reveillon',
+    date: '2026-12-31', heure: '17 h', titre: 'Bon réveillon', visuels: ['17-bon-reveillon'], story: '17-story-bon-reveillon',
     tags: '#bonréveillon #nouvelan #réveillon',
     texte: `✨ Bon réveillon à tous !
 
@@ -405,7 +424,7 @@ Merci d'avoir fait de cette année une belle année pour Bontin 🙏
 On se retrouve le lundi 4 janvier.`,
   },
   {
-    date: '2027-01-01', heure: '10 h', titre: 'Bonne année 2027', visuels: ['17-bonne-annee'], story: '17-story-bonne-annee',
+    date: '2027-01-01', heure: '10 h', titre: 'Bonne année 2027', visuels: ['18-bonne-annee'], story: '18-story-bonne-annee',
     tags: '#bonneannée #bonneannée2027 #nouvelan',
     texte: `🥂 Bonne année 2027 !
 
