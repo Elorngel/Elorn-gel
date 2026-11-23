@@ -51,6 +51,14 @@ const ALIAS = {
   MILIAC: 'MILIZAC GUIPRONVEL', // faute de frappe vue dans un tableau
   GUIPRONVEL: 'MILIZAC GUIPRONVEL',
 }
+// Communes desservies par la même tournée (Romuald, 23/11/2026) : la tournée « IRVILLAC » de Julien livre aussi
+// Tréflévénez le même jour (à ~5 km, au-delà du rayon de proximité). Ajoutées à la lecture du planning ET au calcul
+// des jours conseillés (donc aussi pour les tournées déjà enregistrées).
+const COMMUNES_ASSOCIEES = {
+  Irvillac: ['Tréflévénez'],
+}
+export const avecAssociees = (communes) => [...new Set((communes || []).flatMap((c) => [c, ...(COMMUNES_ASSOCIEES[c] || [])]))]
+
 // Premiers mots trop courants pour signaler une commune ambiguë (« SAINT MARC » à Brest n'est pas une commune).
 const MOTS_GENERIQUES = new Set(['SAINT', 'SAINTE', 'LE', 'LA', 'LES', 'L', 'ILE', 'ILES'])
 
@@ -104,7 +112,7 @@ export function lireLieu(lieu) {
     }
     if (!trouve) aPreciser.push({ texte: mots.join(' '), candidats: [] })
   }
-  return { communes, aPreciser }
+  return { communes: avecAssociees(communes), aPreciser }
 }
 
 // Texte copié depuis Excel (colonnes JOUR … LIEU, séparées par des tabulations) pour un mois « AAAA-MM ».
@@ -139,7 +147,7 @@ export function conseilsLivraison(nomCommune, tournees, { aujourdhui, rayonDepot
   const parDate = new Map()
   for (const t of tournees) {
     if (aujourdhui && t.jour <= aujourdhui) continue
-    for (const c of t.communes || []) {
+    for (const c of avecAssociees(t.communes)) {
       const d = distanceKm(ici, coordonnees(c))
       if (d === null || d > rayonTournee) continue
       const actuel = parDate.get(t.jour)

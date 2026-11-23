@@ -129,7 +129,8 @@ SQL : `supabase-offres.sql` (appliqué) ; `supabase-verrou-commandes.sql` à app
 (`TourneesPanel.jsx`, table `tournees` commercial/jour/lieu/communes[], `supabase-tournees.sql`) ; commerciaux Julien,
 Fabrice, Gilles, Dominique (`COMMERCIAUX` dans `src/lib/tournees.js`). Saisie mensuelle : copier-coller JOUR→LIEU depuis
 leurs Excel, ou Romuald envoie les captures et Claude insère (novembre 2026 saisi ainsi). `lireLieu` reconnaît les
-communes (numéros de tournée ignorés, « + » / « / », alias PORTSALL/BRIGNOGAN/MILIAC). Coordonnées des communes et du
+communes (numéros de tournée ignorés, « + » / « / », alias PORTSALL/BRIGNOGAN/MILIAC). Communes livrées par la même tournée : `COMMUNES_ASSOCIEES`
+(23/11/2026 : Irvillac ⇒ + Tréflévénez, tournée de Julien), ajoutées par `lireLieu` et par `conseilsLivraison` (`avecAssociees`). Coordonnées des communes et du
 dépôt (71 rue Vasco de Gama) dans `src/data/coordonneesCommunes.js` ; `conseilsLivraison` : ≤ 10 km du dépôt = zone de
 Romuald, sinon jours de tournée dans la commune ou à ≤ 3 km (réglages `parametres_site.tournees_rayon_depot` /
 `tournees_rayon_proximite`), simple conseil, aucun conseil si pas de tournée. Texte client validé (« Un camion Bontin
