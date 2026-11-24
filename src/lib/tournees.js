@@ -69,7 +69,8 @@ export function lireLieu(lieu) {
   const aPreciser = []
   const parties = String(lieu || '')
     .split(/\+|,|\/|\bET\b|&/i)
-    .map((p) => normaliserNom(p).split(' ').filter(Boolean))
+    // « LPL PLOUARZEL » ou « LPL » = Lampaul-Plouarzel (tableau de Dominique, décembre 2026).
+    .map((p) => normaliserNom(p).replace(/\bLPL( PLOUARZEL)?\b/, 'LAMPAUL PLOUARZEL').split(' ').filter(Boolean))
   for (let mots of parties) {
     mots = mots.flatMap((m) => (ALIAS[m] ? ALIAS[m].split(' ') : [m]))
     // Numéros de tournée en fin de texte (« 88 », « 08 », « A06 ») : ignorés.

@@ -128,7 +128,7 @@ SQL : `supabase-offres.sql` (appliqué) ; `supabase-verrou-commandes.sql` à app
 **Tournées des commerciaux** (12/11/2026, ADMIN SEULEMENT, rien côté client pour l'instant) : onglet « Tournées »
 (`TourneesPanel.jsx`, table `tournees` commercial/jour/lieu/communes[], `supabase-tournees.sql`) ; commerciaux Julien,
 Fabrice, Gilles, Dominique (`COMMERCIAUX` dans `src/lib/tournees.js`). Saisie mensuelle : copier-coller JOUR→LIEU depuis
-leurs Excel, ou Romuald envoie les captures et Claude insère (novembre 2026 saisi ainsi). `lireLieu` reconnaît les
+leurs Excel, ou Romuald envoie les captures et Claude insère (novembre et décembre 2026 saisis ainsi ; plus de tournées à partir du 24 décembre ; « LAMPAUL + SAINT SAUVEUR » = Lampaul-Guimiliau ; « LPL » = Lampaul-Plouarzel). `lireLieu` reconnaît les
 communes (numéros de tournée ignorés, « + » / « / », alias PORTSALL/BRIGNOGAN/MILIAC). Communes livrées par la même tournée : `COMMUNES_ASSOCIEES`
 (23/11/2026 : Irvillac ⇒ + Tréflévénez, tournée de Julien), ajoutées par `lireLieu` et par `conseilsLivraison` (`avecAssociees`). Coordonnées des communes et du
 dépôt (71 rue Vasco de Gama) dans `src/data/coordonneesCommunes.js` ; `conseilsLivraison` : ≤ 10 km du dépôt = zone de
