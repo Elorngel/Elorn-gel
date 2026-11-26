@@ -194,6 +194,13 @@ SMS » sous le téléphone (`ChampsCompte.jsx`, création ET « Mon compte »), 
 `sms_consenti_le` (posée par le déclencheur `clients_consentement_sms`, preuve de l'accord, vidée au retrait) ; enregistré
 par `creer-compte` ; admin Clients : colonne SMS + bouton « Copier les numéros (SMS acceptés) » ; politique de
 confidentialité mise à jour (STOP). Tout SMS promo doit contenir « STOP » (mention de désinscription).
+**Emails de création de compte** (26/11/2026) : `creer-compte` envoie « Bienvenue chez Bontin » au client (depuis
+contact@bontin.fr, code parrain + bon de filleul s'il y en a, gabarit `emailBienvenue`) et « Nouveau compte client » à
+`ADMIN_EMAIL` (commune, téléphone, connu par, parrain, offres email/SMS, rang du compte, gabarit `emailNouveauCompte`) ;
+jamais pour les adresses @example.com (test) ; un échec d'envoi ne bloque pas la création.
+**Paniers abandonnés** (26/11/2026) : suivi e-commerce Matomo (`panierModifie` / `commandeEnregistree` dans
+`src/lib/statistiques.js`, appelés par `CartContext` et `CartPage`) ; anonyme ; nécessite la case « Site e-commerce »
+dans Matomo (Administration → Sites web → Gérer). Rapport : Matomo → E-commerce → Paniers abandonnés.
 **Mot de passe oublié** (12/11/2026) : lien sous chaque connexion (`MotDePasseOublie.jsx`) → fonction `mot-de-passe-oublie`
 (email depuis contact@bontin.fr, gabarit `emailMotDePasse`, réponse identique compte ou non, admins exclus, 3/h par adresse
 via `demandes_mot_de_passe`, `supabase-mot-de-passe.sql`) → page `/nouveau-mot-de-passe?jeton=` (`verifyOtp` recovery au

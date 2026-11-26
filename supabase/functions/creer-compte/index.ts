@@ -2,6 +2,13 @@
 // qui ne peut pas fonctionner tant que le domaine bontin.fr n'est pas vérifié dans Resend :
 // le compte est actif tout de suite, puis le site connecte le client avec son mot de passe.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4'
+import { emailBienvenue, emailNouveauCompte } from '../send-order-emails/gabarit.js'
+
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const FROM_CONTACT = Deno.env.get('FROM_CONTACT') ?? 'contact@bontin.fr'
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
+const ADMIN_EMAIL = (Deno.env.get('ADMIN_EMAIL') ?? 'logistique@elorngel.fr').split(',').map((a) => a.trim()).filter(Boolean)
+const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://bontin.fr'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,7 +67,7 @@ Deno.serve(async (req) => {
 
   // Parrainage : code facultatif d'un client existant. On le vérifie AVANT de créer le compte.
   const codeParrain = texte(d.codeParrain, 30).toUpperCase().replace(/\s/g, '')
-  let parrain: { id: string; telephone: string; adresse: string; code_postal: string } | null = null
+  let parrain: { id: string; prenom: string; nom: string; telephone: string; adresse: string; code_postal: string } | null = null
   const { data: reglages } = await admin
     .from('parametres_site')
     .select('parrainage_actif, parrainage_montant, parrainage_minimum, parrainage_validite_mois')
@@ -69,7 +76,7 @@ Deno.serve(async (req) => {
   if (codeParrain && reglages?.parrainage_actif) {
     const { data } = await admin
       .from('clients')
-      .select('id, telephone, adresse, code_postal')
+      .select('id, prenom, nom, telephone, adresse, code_postal')
       .eq('code_parrain', codeParrain)
       .maybeSingle()
     if (!data) return json({ erreur: 'Code parrain inconnu : vérifiez-le, ou laissez la case vide.' }, 400)
@@ -110,6 +117,7 @@ Deno.serve(async (req) => {
   }
 
   // Bon de bienvenue du filleul (valable N mois, à partir d'un minimum de commande).
+  let bon: { montant: number; minimum_commande: number; valable_jusqu_au: string } | null = null
   if (parrain && reglages) {
     const fin = new Date()
     fin.setMonth(fin.getMonth() + (reglages.parrainage_validite_mois || 1))
@@ -121,7 +129,60 @@ Deno.serve(async (req) => {
       valable_jusqu_au: fin.toISOString(),
     })
     if (errBon) console.error('Bon de parrainage non créé :', errBon)
+    else bon = { montant: reglages.parrainage_montant, minimum_commande: reglages.parrainage_minimum, valable_jusqu_au: fin.toISOString() }
+  }
+
+  // Emails (26/11/2026) : bienvenue au client + avis « nouveau compte » à Bontin. Un échec d'envoi ne doit
+  // jamais empêcher la création du compte : on l'écrit seulement dans le journal de la fonction.
+  try {
+    await envoyerEmailsCompte(admin, { ...fiche, email, id: cree.user.id }, parrain, bon)
+  } catch (err) {
+    console.error('Emails du nouveau compte non envoyés :', err)
   }
 
   return json({ ok: true, parraine: !!parrain })
 })
+
+async function envoyerEmailsCompte(
+  admin: ReturnType<typeof createClient>,
+  client: Record<string, unknown>,
+  parrain: { prenom: string; nom: string } | null,
+  bon: { montant: number; minimum_commande: number; valable_jusqu_au: string } | null
+) {
+  // Comptes du test automatique (scripts/test-commandes.mjs, adresses @example.com) : aucun email.
+  if (!RESEND_API_KEY || String(client.email).endsWith('@example.com')) return
+  const [{ data: reglages }, { data: fiche }, { count }] = await Promise.all([
+    admin.from('parametres_site').select('logo_url, contact_telephone, adresse').eq('id', 1).maybeSingle(),
+    admin.from('clients').select('code_parrain').eq('id', client.id).maybeSingle(),
+    admin.from('clients').select('id', { count: 'exact', head: true }),
+  ])
+  const infos = {
+    logo: reglages?.logo_url || `${SITE_URL}/logo.png`,
+    telephone: reglages?.contact_telephone || '02 56 31 11 97',
+    adresse: reglages?.adresse || 'ZI de Keriel Nord, 29800 Plouédern',
+    site: SITE_URL,
+  }
+  const envoyer = (corps: Record<string, unknown>) =>
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(corps),
+    }).then(async (r) => {
+      if (r.status >= 300) console.error('Envoi Resend refusé :', r.status, await r.text())
+    })
+  await Promise.allSettled([
+    envoyer({
+      from: `Bontin <${FROM_CONTACT}>`,
+      to: client.email,
+      subject: 'Bienvenue chez Bontin : votre compte est créé',
+      html: emailBienvenue(client, infos, { bon, codeParrain: fiche?.code_parrain }),
+    }),
+    envoyer({
+      from: `Site Bontin <${FROM_EMAIL}>`,
+      to: ADMIN_EMAIL,
+      reply_to: client.email,
+      subject: `Nouveau compte : ${client.prenom} ${client.nom} (${client.ville})`,
+      html: emailNouveauCompte(client, infos, { parrain, rang: count ?? null }),
+    }),
+  ])
+}

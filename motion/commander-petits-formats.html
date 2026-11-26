@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bontin — réel commander + petits formats</title>
+<!--
+  Réel 9:16 (1080 × 1920), 22 secondes : comment commander sur bontin.fr, et l'intérêt des petits formats
+  (exclusivité retrait). Le téléphone reproduit le vrai parcours du site (menu, fiche, panier, confirmation).
+  · Aperçu : ouvrir ce fichier dans Chrome → l'animation tourne en boucle.
+    (ajouter ?t=7.5 à la fin de l'adresse pour figer l'image à 7,5 s)
+  · Vidéo MP4 : dans le Terminal, depuis le dossier motion/ → npm run render:commander
+-->
+<style>
+  @font-face { font-family: 'Bebas Neue'; font-weight: 400; src: url(assets/fonts/bebas-neue-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 500; src: url(assets/fonts/public-sans-latin-500-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 600; src: url(assets/fonts/public-sans-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 700; src: url(assets/fonts/public-sans-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 800; src: url(assets/fonts/public-sans-latin-800-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Condensed'; font-weight: 600; src: url(assets/fonts/roboto-condensed-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Condensed'; font-weight: 700; src: url(assets/fonts/roboto-condensed-latin-700-normal.woff2) format('woff2'); }
+
+  /* Palette du site (src/index.css) */
+  :root {
+    --ink: #1b231a;
+    --forest: #23422b;
+    --forest-light: #3c6b46;
+    --stone: #e7e2d3;
+    --paper: #fbfaf6;
+    --rust: #a34428;
+    --muted: #6b7264;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #0e130e; overflow: hidden; }
+
+  #stage {
+    position: absolute; left: 50%; top: 50%;
+    width: 1080px; height: 1920px; overflow: hidden;
+    background: var(--stone); color: var(--ink);
+    font-family: 'Public Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.render #stage { left: 0; top: 0; transform: none !important; }
+
+  .scene { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  .abs { position: absolute; }
+  .center { left: 0; width: 1080px; display: flex; justify-content: center; text-align: center; }
+  .shade { position: absolute; inset: 0; background: var(--ink); opacity: 0; z-index: 50; }
+  /* Bande de couleur qui précède chaque écran quand il monte */
+  .lead { position: absolute; left: 0; top: -90px; width: 100%; height: 90px; }
+
+  .display {
+    font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+    line-height: .86; text-transform: uppercase; white-space: nowrap;
+  }
+  .tag {
+    font-family: 'Roboto Condensed', sans-serif; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .3em; white-space: nowrap;
+  }
+  /* Masque pour faire monter le texte ligne par ligne (marge haute pour les accents) */
+  .mask { display: block; overflow: hidden; padding: .16em 0 .04em; margin: -.16em 0 -.04em; }
+  .mask > .in { display: block; }
+
+  .ph { position: relative; overflow: hidden; background: var(--stone); flex: none; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.05); }
+  .check { fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; stroke-dasharray: 100 102; }
+
+  /* Carré brique qui « tape » sur un élément */
+  .tap { position: absolute; border: 6px solid var(--rust); opacity: 0; z-index: 30; }
+
+  /* Tampon brique incliné (forme du badge des fiches produits) */
+  .stamp {
+    background: var(--rust); color: var(--paper); white-space: nowrap;
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+  }
+
+  /* ---------- 1. Accroche ---------- */
+  .carte-photo { width: 640px; height: 500px; background: var(--paper); padding: 14px; box-shadow: 0 24px 50px rgba(27, 35, 26, .25); }
+  .carte-photo .ph { width: 100%; height: 100%; }
+  .carte-photo .ph img { object-position: 50% 58%; }
+  .nom-produit {
+    position: absolute; left: -10px; bottom: 34px; background: var(--ink); color: var(--paper);
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 32px; letter-spacing: .04em; text-transform: uppercase; padding: 12px 20px 10px;
+  }
+  #s1-prix { padding: 20px 56px 14px; font-family: 'Bebas Neue'; font-size: 92px; line-height: .9; transform-origin: 50% 50%; }
+  .barre { position: absolute; left: -10px; right: -10px; top: 52%; height: 16px; background: var(--ink); transform-origin: 0 50%; }
+
+  /* ---------- 2. Petits formats ---------- */
+  #s2 { background: var(--forest); color: var(--paper); }
+  .fcard { width: 936px; height: 190px; display: flex; align-items: center; background: var(--paper); color: var(--ink); }
+  .fcard .ph { width: 190px; height: 190px; }
+  .fc-txt { flex: 1; padding: 0 0 0 28px; }
+  .fc-nom { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 31px; letter-spacing: .03em; text-transform: uppercase; }
+  .fc-comp { display: flex; align-items: center; gap: 16px; margin-top: 6px; }
+  .fc-comp s { font-family: 'Roboto Condensed'; font-weight: 600; font-size: 34px; color: var(--muted); text-transform: uppercase; text-decoration-thickness: 3px; }
+  .fc-comp svg { width: 40px; height: 30px; color: var(--rust); flex: none; }
+  .fc-comp b { font-family: 'Bebas Neue'; font-weight: 400; font-size: 78px; line-height: .86; padding-top: 6px; }
+  .fc-prix { font-family: 'Bebas Neue'; font-size: 104px; line-height: .86; color: var(--rust); padding: 10px 34px 0 0; white-space: nowrap; }
+
+  /* ---------- 3. Le téléphone (reproduction du site) ---------- */
+  .legende { left: 72px; top: 176px; width: 936px; }
+  .no-fond { left: 72px; top: 184px; width: 112px; height: 112px; background: var(--ink); }
+  .legende .no {
+    position: absolute; left: 0; top: 8px; width: 112px; height: 112px; color: var(--paper);
+    display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue'; font-size: 96px; line-height: 1; padding-top: 10px;
+  }
+  .legende .titre { position: absolute; left: 140px; top: 0; font-size: 104px; color: var(--ink); }
+  .legende .sous { position: absolute; left: 140px; top: 214px; font-family: 'Public Sans'; font-weight: 600; font-size: 36px; color: var(--muted); white-space: nowrap; }
+
+  .tel { left: 140px; top: 512px; width: 800px; height: 1560px; background: var(--ink); border-radius: 72px; padding: 22px; box-shadow: 0 40px 80px rgba(27, 35, 26, .35); }
+  .ecran { position: relative; width: 756px; height: 1516px; border-radius: 52px; overflow: hidden; background: var(--stone); }
+  /* Le site est dessiné à 320 px de large puis agrandi (× 2,3625) */
+  .site { position: absolute; left: 0; top: 0; width: 320px; height: 642px; transform: scale(2.3625); transform-origin: 0 0; background: var(--stone); }
+  .m-top { height: 26px; background: var(--ink); color: var(--paper); display: flex; align-items: center; padding: 0 11px; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 9px; }
+  .m-head { position: relative; z-index: 2; height: 54px; background: var(--paper); border-bottom: 1px solid rgba(27, 35, 26, .15); display: flex; align-items: center; gap: 7px; padding: 0 11px; }
+  .m-head img { height: 21px; margin-right: auto; }
+  .m-btn { position: relative; border: 1px solid rgba(27, 35, 26, .4); font-family: 'Roboto Condensed'; font-weight: 700; font-size: 9px; text-transform: uppercase; padding: 6px 8px 5px; }
+  .m-burger { width: 28px; height: 28px; border: 1px solid rgba(27, 35, 26, .4); display: flex; align-items: center; justify-content: center; }
+  .m-burger svg { width: 14px; height: 14px; }
+  .m-badge { position: absolute; right: -7px; top: -8px; width: 15px; height: 15px; border-radius: 50%; background: var(--rust); color: var(--paper); font-size: 8.5px; display: flex; align-items: center; justify-content: center; font-family: 'Public Sans'; font-weight: 700; }
+  .pages { position: absolute; left: 0; top: 80px; width: 320px; height: 562px; overflow: hidden; }
+  .page { position: absolute; left: 0; top: 0; width: 320px; }
+  .page-contenu { padding: 12px; }
+
+  /* Menu */
+  #p-menu { background: var(--paper); height: 562px; }
+  .m-recherche { display: flex; border: 1px solid rgba(27, 35, 26, .4); height: 34px; }
+  .m-recherche span { flex: 1; display: flex; align-items: center; padding: 0 9px; font-size: 11px; color: var(--muted); }
+  .m-recherche b { width: 34px; border-left: 1px solid rgba(27, 35, 26, .4); display: flex; align-items: center; justify-content: center; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 9px; }
+  .m-mode { display: flex; border: 1px solid rgba(27, 35, 26, .4); margin-top: 10px; height: 32px; }
+  .m-mode span { flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 11px; text-transform: uppercase; }
+  .m-mode span + span { border-left: 1px solid rgba(27, 35, 26, .4); }
+  .m-rayons { margin-top: 10px; border-top: 1px solid rgba(27, 35, 26, .1); }
+  .m-rayons div { height: 38px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(27, 35, 26, .1); font-size: 12px; }
+  .m-rayons div::after { content: ''; border: 4px solid transparent; border-top-color: var(--muted); margin-top: 4px; margin-right: 4px; }
+  .m-petits { display: inline-block; margin-top: 12px; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 10.5px; text-transform: uppercase; color: var(--forest); }
+
+  /* Fiche produit */
+  .f-photo { height: 84px; }
+  .f-photo img { object-position: 50% 58%; }
+  .f-titre { font-family: 'Bebas Neue'; font-size: 25px; line-height: 1; margin-top: 9px; }
+  .f-label { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 8.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-top: 7px; }
+  .f-formats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .f-formats span { border: 1px solid rgba(27, 35, 26, .4); height: 30px; display: flex; align-items: center; justify-content: center; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 10.5px; text-transform: uppercase; }
+  .f-kg { font-family: 'Roboto Condensed'; font-weight: 600; font-size: 9px; color: var(--muted); margin-top: 10px; }
+  .f-prix { font-family: 'Bebas Neue'; font-size: 27px; line-height: 1; }
+  .f-ajout { display: flex; gap: 8px; margin-top: 8px; height: 34px; }
+  .f-qte { width: 86px; border: 1px solid rgba(27, 35, 26, .4); display: flex; align-items: center; justify-content: space-around; font-size: 11px; }
+  .f-bouton { position: relative; flex: 1; background: var(--ink); color: var(--paper); overflow: hidden; }
+  .f-bouton span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 5px; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; }
+  .f-bouton .ok { background: var(--forest); clip-path: inset(0 100% 0 0); }
+  .f-bouton svg { width: 11px; height: 11px; }
+  .f-cuisson { display: flex; gap: 16px; margin-top: 14px; }
+  .f-cuisson div { display: flex; align-items: center; gap: 6px; }
+  .f-cuisson svg { width: 26px; height: 26px; color: var(--rust); flex: none; }
+  .f-cuisson small { display: block; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 7.5px; text-transform: uppercase; color: var(--muted); }
+  .f-cuisson span { font-size: 10.5px; }
+  .f-dispo { display: inline-block; margin-top: 12px; border: 1px solid var(--forest); color: var(--forest); font-family: 'Roboto Condensed'; font-weight: 700; font-size: 8.5px; text-transform: uppercase; padding: 4px 6px 3px; }
+
+  /* Panier */
+  .c-titre { font-family: 'Bebas Neue'; font-size: 25px; line-height: 1; }
+  .c-carte { background: var(--paper); border: 1px solid rgba(27, 35, 26, .12); padding: 9px; margin-top: 8px; }
+  .c-ligne { display: flex; gap: 8px; align-items: center; }
+  .c-ligne .ph { width: 42px; height: 42px; }
+  .c-ligne .ph img { object-position: 50% 58%; }
+  .c-nom { font-size: 11px; font-weight: 600; }
+  .c-petit { font-family: 'Roboto Condensed'; font-weight: 600; font-size: 9px; color: var(--muted); }
+  .c-prix { font-family: 'Bebas Neue'; font-size: 17px; line-height: 1.1; }
+  .c-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 10.5px; padding: 3px 0; }
+  .c-row b { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 9px; text-transform: uppercase; color: var(--muted); }
+  .c-total { font-family: 'Bebas Neue'; font-size: 21px; line-height: 1; }
+  .c-onglets { display: flex; margin-top: 7px; border: 1px solid rgba(27, 35, 26, .4); }
+  .c-onglets span { flex: 1; height: 24px; display: flex; align-items: center; justify-content: center; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 8.5px; }
+  .c-onglets span:first-child { background: var(--ink); color: var(--paper); }
+  .c-champ { height: 22px; border: 1px solid rgba(27, 35, 26, .25); margin-top: 4px; }
+  .c-vert { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 9px; text-transform: uppercase; color: var(--forest); }
+  .c-select { position: relative; height: 30px; border: 1px solid rgba(27, 35, 26, .4); margin-top: 4px; display: flex; align-items: center; padding: 0 9px; font-size: 11px; background: var(--paper); }
+  .c-select::after { content: ''; position: absolute; right: 9px; top: 12px; border: 4px solid transparent; border-top-color: var(--ink); }
+  .c-select .vide { color: var(--muted); }
+  .c-select .choix { position: absolute; left: 9px; top: 0; height: 100%; display: flex; align-items: center; font-weight: 600; opacity: 0; }
+  .c-valider { position: relative; height: 34px; margin-top: 8px; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: .03em; }
+
+  /* Confirmation */
+  .ok-carte { background: var(--paper); border: 1px solid rgba(27, 35, 26, .12); padding: 16px 14px; margin-top: 4px; }
+  .ok-coche { width: 44px; height: 44px; background: var(--forest); color: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .ok-coche svg { width: 26px; height: 26px; }
+  .ok-titre { font-family: 'Bebas Neue'; font-size: 36px; line-height: 1; margin-top: 12px; }
+  .ok-texte { font-size: 12px; line-height: 1.45; margin-top: 8px; }
+
+  /* ---------- 4. Appel à l'action ---------- */
+  #s4 { background: var(--forest); color: var(--paper); }
+  .label { background: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .label::after { content: ''; position: absolute; inset: 10px; border: 2px solid rgba(27, 35, 26, .16); }
+  .cta-btn {
+    position: relative; height: 132px; padding: 0 60px; background: var(--rust); color: var(--paper);
+    display: flex; align-items: center; gap: 26px;
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 52px; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .cta-btn svg { width: 56px; height: 56px; }
+  .cta-info { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: var(--stone); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ============ 1. ACCROCHE ============ -->
+  <section class="scene" id="s1">
+    <div class="shade"></div>
+    <div class="abs center" style="top:132px"><img id="s1-logo" src="assets/img/logo.png" alt="" style="height:66px"></div>
+    <div class="abs center tag" id="s1-tag" style="top:250px; font-size:34px; color:var(--rust)">
+      <span style="display:block">Astuce Bontin</span>
+    </div>
+    <div class="abs center display" id="s1-t1" style="top:302px; font-size:214px; color:var(--rust)">
+      <span class="mask" style="position:relative"><span class="in" style="position:relative">1 kg,<i class="barre" id="s1-barre"></i></span></span>
+    </div>
+    <div class="abs center display" id="s1-t2" style="top:486px; font-size:214px">
+      <span class="mask"><span class="in">c'est trop&nbsp;?</span></span>
+    </div>
+    <div class="abs carte-photo" id="s1-carte" style="left:220px; top:760px">
+      <div class="ph"><img src="assets/img/aiguillette-poulet.jpg" alt=""></div>
+      <div class="nom-produit">Aiguillette de poulet</div>
+      <div class="abs stamp" id="s1-prix" style="right:-60px; top:-46px"><span id="s1-prix-txt">1 kg · 13,30&nbsp;€</span></div>
+    </div>
+    <div class="abs center display" id="s1-rep" style="top:1300px; font-size:112px; color:var(--forest)">
+      <span class="mask"><span class="in">Prenez le petit format&nbsp;!</span></span>
+    </div>
+  </section>
+
+  <!-- ============ 2. LES PETITS FORMATS ============ -->
+  <section class="scene" id="s2">
+    <div class="lead" style="background:var(--rust)"></div>
+    <div class="shade"></div>
+    <div class="abs stamp tag" id="s2-chip" style="left:72px; top:196px; font-size:30px; letter-spacing:.2em; padding:14px 34px 12px">Exclusivité retrait</div>
+    <div class="abs display" id="s2-titre" style="left:68px; top:290px; font-size:224px; color:var(--paper)">
+      <span class="mask"><span class="in">Les petits</span></span>
+      <span class="mask"><span class="in">formats</span></span>
+    </div>
+    <div class="abs" id="s2-sous" style="left:72px; top:690px; font-family:'Public Sans'; font-weight:700; font-size:40px; color:var(--stone)">
+      <span class="mask"><span class="in">Même prix au kilo, en plus petit.</span></span>
+    </div>
+    <div id="s2-cartes"></div>
+    <div class="abs tag" id="s2-pied" style="left:72px; top:1404px; font-size:28px; letter-spacing:.12em; color:var(--stone)">
+      57 produits · retrait gratuit, sans minimum
+    </div>
+  </section>
+
+  <!-- ============ 3. COMMANDER EN 4 ÉTAPES ============ -->
+  <section class="scene" id="s3">
+    <div class="lead" style="background:var(--forest)"></div>
+    <div class="shade"></div>
+    <div class="abs no-fond" id="s3-no-fond"></div>
+    <div id="s3-legendes"></div>
+
+    <div class="abs tel" id="tel">
+      <div class="ecran">
+        <div class="site">
+          <div class="m-top">Retrait gratuit sous 24h à Plouédern</div>
+          <div class="m-head">
+            <img src="assets/img/logo.png" alt="">
+            <span class="m-btn">Compte</span>
+            <span class="m-btn">Panier<span class="m-badge" id="m-badge">1</span></span>
+            <span class="m-burger" id="m-burger">
+              <svg viewBox="0 0 14 14"><path id="m-burger-trait" d="M2 2l10 10M12 2 2 12" stroke="#1b231a" stroke-width="1.6" fill="none"/></svg>
+            </span>
+          </div>
+          <div class="pages">
+            <!-- Menu -->
+            <div class="page" id="p-menu">
+              <div class="page-contenu">
+                <div class="m-recherche"><span>Rechercher un produit…</span><b>OK</b></div>
+                <div class="m-mode"><span id="m-retrait">Retrait</span><span id="m-livraison">Livraison</span></div>
+                <div class="m-rayons">
+                  <div>Entrées et apéritifs</div><div>Viandes</div><div>Poissons et fruits de mer</div><div>Plats cuisinés</div>
+                </div>
+                <span class="m-petits" id="m-petits">🎁 Petits formats — exclusif retrait</span>
+              </div>
+            </div>
+            <!-- Fiche produit -->
+            <div class="page" id="p-fiche">
+              <div class="page-contenu">
+                <div class="ph f-photo"><img src="assets/img/aiguillette-poulet.jpg" alt=""></div>
+                <div class="f-titre">Aiguillette de poulet</div>
+                <div class="f-label">Conditionnement</div>
+                <div class="f-formats" id="f-formats">
+                  <span>400 g — 5.32 €</span><span>600 g — 7.98 €</span><span>1 kg — 13.30 €</span><span>1.5 kg — 19.95 €</span>
+                </div>
+                <div class="f-kg">13.30 €/kg</div>
+                <div class="f-prix" id="f-prix">13.30 €</div>
+                <div class="f-ajout">
+                  <div class="f-qte"><span>−</span><span>1</span><span>+</span></div>
+                  <div class="f-bouton" id="f-bouton">
+                    <span>Ajouter au panier</span>
+                    <span class="ok" id="f-ok">Ajouté au panier
+                      <svg viewBox="0 0 24 24"><polyline class="check" pathLength="100" style="stroke-width:3.4" points="3.5,12.5 9.5,18.5 20.5,6"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="f-cuisson">
+                  <div>
+                    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15c0 4.4 4 6.5 9 6.5s9-2.1 9-6.5"/><path d="M4 15c0-1 .6-1.5 1.5-1.5h15c.9 0 1.5.5 1.5 1.5"/><line x1="22" y1="14" x2="28" y2="10"/><path d="M11 8c.5 1.5-1 2-1 3.5"/><path d="M15.5 8c.5 1.5-1 2-1 3.5"/><path d="M20 8c.5 1.5-1 2-1 3.5"/></svg>
+                    <p><small>Poêle</small><span>6-8 min à feu vif</span></p>
+                  </div>
+                  <div>
+                    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="22" height="25" rx="7"/><circle cx="10.5" cy="10" r="1.8"/><rect x="14.5" y="8.5" width="8.5" height="3" rx="1.5"/><line x1="5" y1="14.5" x2="27" y2="14.5"/><rect x="13" y="17" width="6" height="9" rx="3"/></svg>
+                    <p><small>Airfryer</small><span>8-10 min à 180°C</span></p>
+                  </div>
+                </div>
+                <span class="f-dispo">Disponible</span>
+              </div>
+            </div>
+            <!-- Panier -->
+            <div class="page" id="p-panier">
+              <div class="page-contenu" id="c-contenu">
+                <div class="c-titre">Votre panier</div>
+                <div class="c-carte c-ligne">
+                  <div class="ph"><img src="assets/img/aiguillette-poulet.jpg" alt=""></div>
+                  <div style="flex:1">
+                    <div class="c-nom">AIGUILLETTE DE POULET</div>
+                    <div class="c-petit">400 g</div>
+                    <div class="c-prix">5.32 €</div>
+                  </div>
+                </div>
+                <div class="c-carte">
+                  <div class="c-row"><b>Mode</b><b style="color:var(--ink)">Retrait</b></div>
+                  <div class="c-row"><span>Sous-total</span><span>5.32 €</span></div>
+                  <div class="c-row" style="border-top:1px solid rgba(27,35,26,.12); margin-top:3px; padding-top:6px"><b>Total</b><span class="c-total">5.32 €</span></div>
+                </div>
+                <div class="c-carte">
+                  <div class="c-titre" style="font-size:17px">Vos coordonnées</div>
+                  <div class="c-onglets"><span>Je crée mon compte</span><span>J'ai déjà un compte</span></div>
+                  <div class="c-champ"></div><div class="c-champ"></div>
+                </div>
+                <div class="c-carte">
+                  <div class="c-vert">Commande disponible sous 24h au dépôt</div>
+                  <div class="c-petit" style="margin-top:7px">JOUR DE RETRAIT</div>
+                  <div class="c-select" id="c-jour"><span class="vide">— choisir un jour —</span><span class="choix">Mercredi 2 décembre</span></div>
+                  <div class="c-petit" style="margin-top:7px">CRÉNEAU HORAIRE</div>
+                  <div class="c-select" id="c-creneau"><span class="vide">— choisir d'abord un jour —</span><span class="choix">10h00 - 10h30</span></div>
+                  <div class="c-vert" style="margin-top:8px; text-transform:none; font-size:9.5px">Paiement sur place, à la récupération de la commande.</div>
+                  <div class="c-valider" id="c-valider">Créer mon compte et valider la commande</div>
+                </div>
+              </div>
+            </div>
+            <!-- Confirmation -->
+            <div class="page" id="p-ok">
+              <div class="page-contenu">
+                <div class="ok-carte">
+                  <div class="ok-coche"><svg viewBox="0 0 24 24"><polyline class="check" id="ok-coche" pathLength="100" style="stroke-width:3" points="3.5,12.5 9.5,18.5 20.5,6"/></svg></div>
+                  <div class="ok-titre">Merci&nbsp;!</div>
+                  <div class="c-vert" style="margin-top:4px">Commande confirmée</div>
+                  <div class="ok-texte">Rendez-vous au dépôt le <b>mercredi 2&nbsp;décembre, 10h00 - 10h30</b>.<br>Le paiement se fait sur place, à la récupération.</div>
+                  <div class="c-petit" style="margin-top:10px">ZI de Keriel Nord, 29800 Plouédern</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. APPEL À L'ACTION ============ -->
+  <section class="scene" id="s4">
+    <div class="lead" style="background:var(--rust)"></div>
+    <div class="abs label" id="s4-label" style="left:290px; top:236px; width:500px; height:250px">
+      <img src="assets/img/logo.png" alt="" style="width:400px">
+    </div>
+    <div class="abs center display" id="s4-titre" style="top:602px; font-size:180px; color:var(--paper); flex-direction:column; align-items:center">
+      <span class="mask"><span class="in">Retrait gratuit</span></span>
+      <span class="mask"><span class="in" style="color:var(--stone)">sous 24&nbsp;h</span></span>
+    </div>
+    <div class="abs center" style="top:1006px; flex-direction:column; align-items:center; gap:14px">
+      <span class="mask"><span class="in cta-info">Dépôt ZI de Keriel Nord · Plouédern</span></span>
+      <span class="mask"><span class="in cta-info">Du lundi au vendredi · paiement sur place</span></span>
+    </div>
+    <div class="abs center" style="top:1186px">
+      <div class="cta-btn" id="s4-btn">
+        <span>Commandez sur bontin.fr</span>
+        <svg viewBox="0 0 24 24" id="s4-fleche"><path d="M3 12h16M13 5.5l6.5 6.5-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<svg id="fx" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// Réglages
+// ---------------------------------------------------------------------------
+const CONFIG = {
+  duration: 22,     // secondes
+  fps: 30,          // images par seconde de la vidéo
+  shutter: 0.5,     // flou de mouvement (0 = aucun, 0.5 = obturateur à 180°)
+}
+
+// Exemples de petits formats (prix du site au 25/11/2026, même prix au kilo que le grand format)
+const FORMATS = [
+  { img: 'pf-steaks', pos: '50% 50%', nom: 'Steaks hachés 15 %', avant: 'Par 10', apres: 'Par 2', prix: '3,90' },
+  { img: 'pf-coquilles', pos: '49% 61%', nom: 'Coquilles Saint-Jacques', avant: 'Par 6', apres: 'Par 2', prix: '8,40' },
+  { img: 'aiguillette-poulet', pos: '50% 58%', nom: 'Aiguillettes de poulet', avant: '1 kg', apres: '400 g', prix: '5,32' },
+]
+
+// Les 4 étapes : titre (2 lignes) et sous-titre
+const ETAPES = [
+  { titre: ['Choisissez', '« Retrait »'], sous: 'Dans le menu : gratuit, sans minimum.' },
+  { titre: ['Choisissez', 'votre format'], sous: 'Puis ajoutez-le au panier.' },
+  { titre: ['Choisissez', "le jour et l'heure"], sous: 'Du lundi au vendredi, sous 24 h.' },
+  { titre: ['Validez,', 'payez sur place'], sous: 'Votre compte se crée en même temps.' },
+]
+
+const params = new URLSearchParams(location.search)
+const RENDER = params.has('render')
+if (RENDER) document.body.classList.add('render')
+
+const $ = (s, root = document) => root.querySelector(s)
+const $$ = (s, root = document) => [...root.querySelectorAll(s)]
+
+gsap.config({ force3D: false })
+const tl = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } })
+
+// Fonctions rappelées après chaque image (compteurs…)
+const afterRender = []
+const sync = () => afterRender.forEach((f) => f())
+
+// --- Petits outils d'animation -------------------------------------------
+// Texte qui monte depuis son masque
+const rise = (targets, at, { d = 0.75, stagger = 0.08, ease = 'expo.out' } = {}) =>
+  tl.fromTo(targets, { yPercent: 140 }, { yPercent: 0, duration: d, stagger, ease }, at)
+
+// Texte qui sort par le haut de son masque
+const sortir = (targets, at, { d = 0.4, stagger = 0.05 } = {}) =>
+  tl.to(targets, { yPercent: -140, duration: d, stagger, ease: 'power3.in' }, at)
+
+// Volet qui découvre un élément de gauche à droite
+const wipe = (targets, at, { d = 0.5, ease = 'expo.out', stagger = 0 } = {}) =>
+  tl.fromTo(targets, { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: d, ease, stagger }, at)
+
+// Passage d'un écran à l'autre : le suivant monte, le précédent s'efface
+function transition(from, to, at, d = 0.5) {
+  tl.set(to, { visibility: 'visible' }, at)
+  tl.fromTo(to, { y: 1920 + 90 }, { y: 0, duration: d, ease: 'power4.inOut' }, at)
+  tl.to(from, { y: -380, duration: d, ease: 'power4.inOut' }, at)
+  const shade = $('.shade', from)
+  if (shade) tl.to(shade, { opacity: 0.6, duration: d, ease: 'power2.in' }, at)
+  tl.set(from, { visibility: 'hidden' }, at + d)
+}
+
+// Position d'un élément dans un conteneur, sans tenir compte des animations en cours
+function offsetIn(el, root) {
+  let x = 0, y = 0, n = el
+  while (n && n !== root) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent }
+  return { x, y }
+}
+
+// Cadre brique qui « tape » sur un élément de l'écran du téléphone.
+// `defil` = défilement de la page (en px du site) au moment du clic.
+const ECRAN = { x: 140 + 22, y: 512 + 22, s: 2.3625, entete: 80 }
+function tapEcran(el, page, at, defil = 0) {
+  const { x, y } = offsetIn(el, page)
+  const pad = 14
+  const tap = document.createElement('div')
+  tap.className = 'tap'
+  $('#s3').appendChild(tap)
+  gsap.set(tap, {
+    left: ECRAN.x + x * ECRAN.s - pad,
+    top: ECRAN.y + (ECRAN.entete + y - defil) * ECRAN.s - pad,
+    width: el.offsetWidth * ECRAN.s + pad * 2,
+    height: el.offsetHeight * ECRAN.s + pad * 2,
+  })
+  tl.fromTo(tap, { scale: 1.25, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.18, ease: 'power2.out' }, at)
+    .to(tap, { scale: 0.96, opacity: 0, duration: 0.32, ease: 'power2.in' }, at + 0.28)
+}
+
+// Flou de mouvement (vidéo seulement) : un élément qui se déplace vite reçoit
+// un flou proportionnel à la distance parcourue depuis l'image précédente,
+// comme une caméra dont l'obturateur reste ouvert un instant.
+const blurred = []
+function trackBlur(measureEl, filterEl = measureEl) {
+  const ns = 'http://www.w3.org/2000/svg'
+  const id = 'mb' + blurred.length
+  const filter = document.createElementNS(ns, 'filter')
+  filter.setAttribute('id', id)
+  filter.setAttribute('x', '-20%')
+  filter.setAttribute('width', '140%')
+  filter.setAttribute('y', '-40%')
+  filter.setAttribute('height', '180%')
+  filter.setAttribute('color-interpolation-filters', 'sRGB')
+  const gauss = document.createElementNS(ns, 'feGaussianBlur')
+  gauss.setAttribute('stdDeviation', '0 0')
+  filter.appendChild(gauss)
+  $('#fx').appendChild(filter)
+  blurred.push({ measureEl, filterEl, id, gauss, last: null })
+}
+function applyBlur(sequential) {
+  blurred.forEach((b) => {
+    const x = gsap.getProperty(b.measureEl, 'x')
+    const y = gsap.getProperty(b.measureEl, 'y')
+    const dx = sequential && b.last ? Math.abs(x - b.last.x) : 0
+    const dy = sequential && b.last ? Math.abs(y - b.last.y) : 0
+    b.last = { x, y }
+    const sx = Math.min(140, dx * CONFIG.shutter * 0.3)
+    const sy = Math.min(140, dy * CONFIG.shutter * 0.3)
+    if (sx < 0.6 && sy < 0.6) {
+      b.filterEl.style.filter = ''
+    } else {
+      b.gauss.setAttribute('stdDeviation', `${sx.toFixed(2)} ${sy.toFixed(2)}`)
+      b.filterEl.style.filter = `url(#${b.id})`
+    }
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Éléments générés
+// ---------------------------------------------------------------------------
+function prepare() {
+  const fleche = '<svg viewBox="0 0 40 30"><path d="M2 15h32M24 5l10 10-10 10" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="square"/></svg>'
+  $('#s2-cartes').innerHTML = FORMATS.map((f, i) => `
+    <div class="abs fcard" style="left:72px; top:${774 + i * 206}px">
+      <div class="ph"><img src="assets/img/${f.img}.jpg" alt="" style="object-position:${f.pos}"></div>
+      <div class="fc-txt">
+        <div class="fc-nom">${f.nom}</div>
+        <div class="fc-comp"><s>${f.avant}</s>${fleche}<b>${f.apres}</b></div>
+      </div>
+      <div class="fc-prix">${f.prix}&nbsp;€</div>
+    </div>`).join('')
+
+  $('#s3-legendes').innerHTML = ETAPES.map((e, i) => `
+    <div class="abs legende" id="leg-${i}">
+      <div class="no"><span class="mask" style="padding:0; margin:0"><span class="in">${i + 1}</span></span></div>
+      <div class="titre display">${e.titre.map((l) => `<span class="mask"><span class="in">${l}</span></span>`).join('')}</div>
+      <div class="sous"><span class="mask"><span class="in">${e.sous}</span></span></div>
+    </div>`).join('')
+}
+
+// ---------------------------------------------------------------------------
+// Construction de la timeline
+// ---------------------------------------------------------------------------
+function build() {
+  const S = [1, 2, 3, 4].map((i) => $('#s' + i))
+  gsap.set(S.slice(1), { y: 1920 + 90, visibility: 'hidden' })
+  S.forEach((s, i) => gsap.set(s, { zIndex: i + 1 }))
+
+  // Moments de bascule entre les écrans
+  const T = [2.45, 7.0, 18.4]
+  T.forEach((at, i) => transition(S[i], S[i + 1], at))
+
+  // ===== 1. Accroche : « 1 kg, c'est trop ? » ============================
+  tl.fromTo('#s1-logo', { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.7 }, 0)
+  wipe('#s1-tag', 0.05, { d: 0.6 })
+  rise('#s1-t1 .in', 0.08, { d: 0.8 })
+  rise('#s1-t2 .in', 0.18, { d: 0.8 })
+  tl.fromTo('#s1-carte', { y: 420, rotation: 6 }, { y: 0, rotation: -2, duration: 0.9 }, 0.2)
+  tl.fromTo('#s1-prix', { scale: 2.2, rotation: 24, opacity: 0 }, { scale: 1, rotation: 6, opacity: 1, duration: 0.42, ease: 'back.out(2)' }, 0.75)
+  tl.fromTo('#s1-barre', { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: 'power2.inOut' }, 1.45)
+  // L'étiquette se retourne : 1 kg → 400 g
+  tl.to('#s1-prix', { scaleY: 0, duration: 0.12, ease: 'power2.in' }, 1.5)
+  const etiquette = { face: 0 }
+  afterRender.push(() => {
+    $('#s1-prix-txt').innerHTML = etiquette.face ? '400 g · 5,32&nbsp;€' : '1 kg · 13,30&nbsp;€'
+  })
+  tl.set(etiquette, { face: 1 }, 1.62)
+  tl.to('#s1-prix', { scaleY: 1, duration: 0.3, ease: 'back.out(2.5)' }, 1.62)
+  rise('#s1-rep .in', 1.7, { d: 0.7 })
+
+  // ===== 2. Les petits formats ===========================================
+  const t2 = T[0]
+  wipe('#s2-chip', t2 + 0.25, { d: 0.5 })
+  rise('#s2-titre .in', t2 + 0.15, { d: 0.8, stagger: 0.09 })
+  rise('#s2-sous .in', t2 + 0.5)
+  $$('#s2-cartes .fcard').forEach((c, i) => {
+    const at = t2 + 0.75 + i * 0.32
+    tl.fromTo(c, { x: 1100 }, { x: 0, duration: 0.7 }, at)
+    tl.fromTo($('.fc-comp b', c), { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, at + 0.35)
+    tl.fromTo($('.fc-prix', c), { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, at + 0.45)
+    gsap.set($('.fc-comp b', c), { transformOrigin: '0% 60%' })
+    trackBlur(c)
+  })
+  tl.fromTo('#s2-pied', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, t2 + 2.0)
+
+  // ===== 3. Commander en 4 étapes ========================================
+  const t3 = T[1]
+  const pages = { menu: $('#p-menu'), fiche: $('#p-fiche'), panier: $('#p-panier'), ok: $('#p-ok') }
+  gsap.set([pages.fiche, pages.panier, pages.ok], { x: 320 })
+  tl.fromTo('#tel', { y: 1150 }, { y: 0, duration: 0.85 }, t3 + 0.1)
+  tl.fromTo('#s3-no-fond', { scale: 0 }, { scale: 1, duration: 0.5, ease: 'back.out(2)' }, t3 + 0.2)
+
+  // Légendes : chacune entre, puis laisse la place à la suivante
+  const debut = [t3 + 0.25, t3 + 2.95, t3 + 5.7, t3 + 8.5]
+  ETAPES.forEach((e, i) => {
+    const leg = $('#leg-' + i)
+    rise($$('.no .in, .titre .in, .sous .in', leg), debut[i], { d: 0.7, stagger: 0.06 })
+    if (i < ETAPES.length - 1) sortir($$('.no .in, .titre .in, .sous .in', leg), debut[i + 1] - 0.3)
+  })
+  const changerPage = (de, vers, at) => {
+    tl.to(de, { x: -320, duration: 0.5, ease: 'power3.inOut' }, at)
+    tl.fromTo(vers, { x: 320 }, { x: 0, duration: 0.5, ease: 'power3.inOut' }, at)
+  }
+
+  // Étape 1 : le menu, on passe de Livraison à Retrait
+  gsap.set('#m-retrait', { backgroundColor: 'rgba(27,35,26,0)', color: '#1b231a' })
+  gsap.set('#m-livraison', { backgroundColor: '#1b231a', color: '#fbfaf6' })
+  tapEcran($('#m-retrait'), pages.menu, t3 + 1.15)
+  tl.to('#m-retrait', { backgroundColor: '#1b231a', color: '#fbfaf6', duration: 0.18, ease: 'none' }, t3 + 1.2)
+  tl.to('#m-livraison', { backgroundColor: 'rgba(27,35,26,0)', color: '#1b231a', duration: 0.18, ease: 'none' }, t3 + 1.2)
+  tl.fromTo('#m-petits', { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5 }, t3 + 1.4)
+  tapEcran($('#m-petits'), pages.menu, t3 + 2.0)
+
+  // Étape 2 : la fiche produit, on choisit 400 g puis on ajoute au panier
+  tl.set('#m-burger-trait', { attr: { d: 'M2 4h10M2 7h10M2 10h10' } }, debut[1] + 0.05)
+  changerPage(pages.menu, pages.fiche, debut[1] + 0.05)
+  const formats = $$('#f-formats span')
+  gsap.set(formats, { backgroundColor: 'rgba(27,35,26,0)', color: '#1b231a' })
+  gsap.set(formats[2], { backgroundColor: '#1b231a', color: '#fbfaf6' })
+  tapEcran(formats[0], pages.fiche, debut[1] + 0.75)
+  tl.to(formats[2], { backgroundColor: 'rgba(27,35,26,0)', color: '#1b231a', duration: 0.18, ease: 'none' }, debut[1] + 0.8)
+  tl.to(formats[0], { backgroundColor: '#1b231a', color: '#fbfaf6', duration: 0.18, ease: 'none' }, debut[1] + 0.8)
+  const prix = { v: 13.3 }
+  afterRender.push(() => { $('#f-prix').textContent = prix.v.toFixed(2) + ' €' })
+  tl.fromTo(prix, { v: 13.3 }, { v: 5.32, duration: 0.45, ease: 'power2.out', immediateRender: false }, debut[1] + 0.82)
+  tapEcran($('#f-bouton'), pages.fiche, debut[1] + 1.6)
+  wipe('#f-ok', debut[1] + 1.65, { d: 0.32, ease: 'power3.out' })
+  tl.fromTo('#f-ok .check', { strokeDashoffset: 101, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, debut[1] + 1.85)
+  tl.fromTo('#m-badge', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(3)' }, debut[1] + 1.8)
+
+  // Étape 3 : le panier, jour et créneau de retrait
+  changerPage(pages.fiche, pages.panier, debut[2] + 0.05)
+  tl.fromTo('#c-contenu', { y: 0 }, { y: -196, duration: 0.55, ease: 'power2.inOut' }, debut[2] + 0.45)
+  tapEcran($('#c-jour'), pages.panier, debut[2] + 1.05, 196)
+  tl.to('#c-jour .vide', { opacity: 0, duration: 0.1, ease: 'none' }, debut[2] + 1.1)
+  tl.to('#c-jour .choix', { opacity: 1, duration: 0.15, ease: 'none' }, debut[2] + 1.12)
+  tapEcran($('#c-creneau'), pages.panier, debut[2] + 1.75, 196)
+  tl.to('#c-creneau .vide', { opacity: 0, duration: 0.1, ease: 'none' }, debut[2] + 1.8)
+  tl.to('#c-creneau .choix', { opacity: 1, duration: 0.15, ease: 'none' }, debut[2] + 1.82)
+
+  // Étape 4 : on valide, la confirmation s'affiche
+  tl.to('#c-contenu', { y: -300, duration: 0.45, ease: 'power2.inOut' }, debut[3] + 0.05)
+  tapEcran($('#c-valider'), pages.panier, debut[3] + 0.7, 300)
+  tl.to('#c-valider', { backgroundColor: '#23422b', duration: 0.12, ease: 'none' }, debut[3] + 0.75)
+  changerPage(pages.panier, pages.ok, debut[3] + 0.95)
+  tl.fromTo('#ok-coche', { strokeDashoffset: 101, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, duration: 0.45, ease: 'power2.out' }, debut[3] + 1.35)
+
+  // ===== 4. Appel à l'action =============================================
+  const t4 = T[2]
+  gsap.set('#s4-label', { transformOrigin: '50% 0%' })
+  tl.fromTo('#s4-label', { y: -300, rotation: -14 }, { y: 0, rotation: 0, duration: 1.2, ease: 'elastic.out(1, 0.55)' }, t4 + 0.2)
+  rise('#s4-titre .in', t4 + 0.3, { d: 0.8, stagger: 0.09 })
+  rise('#s4 .cta-info', t4 + 0.7, { stagger: 0.08 })
+  wipe('#s4-btn', t4 + 0.95, { d: 0.55 })
+  tl.fromTo('#s4-fleche', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5 }, t4 + 1.2)
+  tl.to('#s4-btn', { keyframes: { scale: [1, 0.95, 1] }, duration: 0.42, ease: 'power2.out' }, t4 + 2.2)
+  tl.to('#s4-fleche', { keyframes: { x: [0, 14, 0] }, duration: 0.6, ease: 'sine.inOut', repeat: 1 }, t4 + 2.6)
+
+  // Éléments qui reçoivent le flou de mouvement
+  S.forEach((scene) => trackBlur(scene))
+  ;['#tel', '#s1-carte', '#s4-label'].forEach((sel) => trackBlur($(sel)))
+  Object.values(pages).forEach((p) => trackBlur(p))
+  trackBlur($('#c-contenu'))
+
+  // Durée totale exacte
+  tl.set({}, {}, CONFIG.duration)
+}
+
+// ---------------------------------------------------------------------------
+// Démarrage
+// ---------------------------------------------------------------------------
+function layout() {
+  if (RENDER) return
+  const s = Math.min(innerWidth / 1080, innerHeight / 1920)
+  gsap.set('#stage', { xPercent: -50, yPercent: -50, scale: s })
+}
+
+async function start() {
+  prepare()
+  const faces = [
+    '400 100px "Bebas Neue"',
+    '500 40px "Public Sans"', '600 40px "Public Sans"', '700 40px "Public Sans"', '800 40px "Public Sans"',
+    '600 40px "Roboto Condensed"', '700 40px "Roboto Condensed"',
+  ]
+  await Promise.all(faces.map((f) => document.fonts.load(f, 'AÉé€°')))
+  await document.fonts.ready
+  await Promise.all($$('img').map((img) => img.decode().catch(() => {})))
+
+  build()
+
+  let lastT = null
+  window.__seek = (t) => {
+    tl.seek(t, false)
+    sync()
+    if (RENDER) applyBlur(lastT !== null && Math.abs(t - lastT - 1 / CONFIG.fps) < 1e-6)
+    lastT = t
+  }
+  window.__duration = CONFIG.duration
+  window.__fps = CONFIG.fps
+  window.__ready = true
+
+  if (RENDER) { window.__seek(0); return }
+  layout()
+  addEventListener('resize', layout)
+  if (params.has('t')) {
+    window.__seek(parseFloat(params.get('t')))
+  } else {
+    tl.eventCallback('onUpdate', sync)
+    tl.repeat(-1).play(0)
+  }
+}
+start()
+</script>
+</body>
+</html>

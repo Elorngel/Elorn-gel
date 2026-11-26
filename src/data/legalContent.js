@@ -194,7 +194,7 @@ Le site n'utilise aucun cookie publicitaire. Il conserve seulement dans votre na
 votre connexion, indispensables à son fonctionnement.
 </p>
 <p>
-Pour savoir quelles pages sont consultées et améliorer le site, nous mesurons la fréquentation avec
+Pour savoir quelles pages sont consultées, quels produits sont mis au panier sans être commandés et améliorer le site, nous mesurons la fréquentation avec
 Matomo, installé sur notre propre hébergement (IONOS, en France / Union européenne) : aucun cookie n'est
 déposé, votre adresse IP est anonymisée, les statistiques ne servent qu'à nous et ne sont partagées avec
 personne. Elles sont conservées 25 mois au plus. Cette mesure est dispensée de consentement selon les

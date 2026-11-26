@@ -223,3 +223,81 @@ export function emailMotDePasse(prenom, lien, infos) {
       <a href="tel:${esc(infos.telephone.replace(/\s/g, ''))}" style="color:${C.paper};font-weight:bold;white-space:nowrap;">${esc(infos.telephone).replace(/ /g, '&nbsp;')}</a>.`,
   })
 }
+
+const piedContact = (infos) => `Une question ? Répondez simplement à cet email ou appelez-nous au
+      <a href="tel:${esc(infos.telephone.replace(/\s/g, ''))}" style="color:${C.paper};font-weight:bold;white-space:nowrap;">${esc(infos.telephone).replace(/ /g, '&nbsp;')}</a>.`
+
+// Email de bienvenue au client, juste après la création de son compte (fonction creer-compte, 26/11/2026).
+export function emailBienvenue(client, infos, { bon, codeParrain } = {}) {
+  const fin = bon
+    ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'Europe/Paris' }).format(new Date(bon.valable_jusqu_au))
+    : ''
+  const contenu = `
+    <p style="margin:0 0 12px;">Bonjour ${esc(client.prenom)},</p>
+    <p style="margin:0 0 16px;">Votre compte Bontin est bien créé. Pour vous connecter, utilisez votre adresse
+      <strong>${esc(client.email)}</strong> et le mot de passe que vous avez choisi.</p>
+    <p style="margin:0 0 6px;">Avec votre compte, vous pouvez :</p>
+    <ul style="margin:0 0 18px;padding-left:20px;">
+      <li style="margin-bottom:4px;">commander en livraison ou en retrait au dépôt de Plouédern, sans ressaisir vos coordonnées ;</li>
+      <li style="margin-bottom:4px;">retrouver vos commandes et modifier vos informations dans « Mon compte » ;</li>
+      <li>parrainer vos proches et recevoir un bon d'achat.</li>
+    </ul>
+    ${
+      bon
+        ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid ${C.forest};margin:0 0 18px;">
+      <tr><td style="padding:16px;">
+        <div style="font:bold 11px ${TEXTE};letter-spacing:1.5px;text-transform:uppercase;color:${C.forest};">Cadeau de bienvenue (parrainage)</div>
+        <div style="font:400 40px/1.05 ${TITRE};color:${C.ink};padding-top:4px;">${euros(bon.montant)} offerts</div>
+        <div style="font:14px/1.45 ${TEXTE};color:${C.muted};padding-top:4px;">Sur votre commande${Number(bon.minimum_commande) > 0 ? ` dès ${euros(bon.minimum_commande)} de produits` : ''}, jusqu'au ${esc(fin)}. Déduit automatiquement de votre panier.</div>
+      </td></tr>
+    </table>`
+        : ''
+    }
+    ${
+      codeParrain
+        ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.stone};margin:0 0 6px;">
+      <tr><td style="padding:12px 16px;font:14px/1.5 ${TEXTE};">Votre code parrain : <strong style="font-size:16px;letter-spacing:1px;">${esc(codeParrain)}</strong><br>
+        À donner à vos proches lors de la création de leur compte.</td></tr>
+    </table>`
+        : ''
+    }
+    ${bouton(`${infos.site}/catalogue`, 'Découvrir le catalogue')}`
+  return cadre({
+    infos,
+    apercu: 'Votre compte Bontin est créé : vous pouvez commander en livraison ou en retrait.',
+    titre: 'Bienvenue chez Bontin',
+    sousTitre: 'Votre compte est bien créé',
+    contenu,
+    pied: `Vous n'êtes pas à l'origine de cette inscription ? Répondez à cet email, nous supprimerons le compte.<br>${piedContact(infos)}`,
+  })
+}
+
+// Avis à Bontin : un nouveau compte client vient d'être créé (fonction creer-compte, 26/11/2026).
+export function emailNouveauCompte(client, infos, { parrain, rang } = {}) {
+  const ligne = (label, valeur) =>
+    valeur
+      ? `<tr><td style="padding:4px 12px 4px 0;font:bold 11px ${TEXTE};letter-spacing:1px;text-transform:uppercase;color:${C.muted};white-space:nowrap;vertical-align:top;">${label}</td><td style="padding:4px 0;font:15px/1.4 ${TEXTE};">${valeur}</td></tr>`
+      : ''
+  const oui = (v) => (v ? '<strong>oui</strong>' : 'non')
+  const tel = esc(client.telephone)
+  const contenu = `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+      ${ligne('Client', `<strong>${esc(client.prenom)} ${esc(client.nom)}</strong>`)}
+      ${ligne('Commune', `${esc(client.code_postal)} ${esc(client.ville)}`)}
+      ${ligne('Téléphone', `<a href="tel:${tel.replace(/\s/g, '')}" style="color:${C.ink};">${tel}</a>`)}
+      ${ligne('Email', `<a href="mailto:${esc(client.email)}" style="color:${C.ink};">${esc(client.email)}</a>`)}
+      ${ligne('Connu par', esc(client.source || ''))}
+      ${ligne('Parrainé par', parrain ? esc(`${parrain.prenom} ${parrain.nom}`) : '')}
+      ${ligne('Offres email', oui(client.accepte_offres))}
+      ${ligne('Offres SMS', oui(client.accepte_sms))}
+    </table>
+    ${bouton(`${infos.site}/admin`, "Ouvrir l'onglet Clients")}`
+  return cadre({
+    infos,
+    apercu: `${client.prenom} ${client.nom} — ${client.ville}${rang ? ` — ${rang}e compte` : ''}`,
+    titre: 'Nouveau compte client',
+    sousTitre: rang ? `C'est le ${rang}<sup>e</sup> compte client du site` : 'Inscription sur bontin.fr',
+    contenu,
+    pied: `Répondre à cet email écrit directement au client (${esc(client.email)}).`,
+  })
+}

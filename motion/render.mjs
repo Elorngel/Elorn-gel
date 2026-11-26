@@ -1,5 +1,6 @@
-// Rendu de index.html en vidéo MP4 9:16 (1080 × 1920, 30 images/s).
-// Usage, depuis le dossier motion/ :  npm run render
+// Rendu d'une animation HTML en vidéo MP4 9:16 (1080 × 1920, 30 images/s).
+// Usage, depuis le dossier motion/ :  npm run render  (ou npm run render:concours)
+// Options : node render.mjs [sortie.mp4] [--page fichier.html] [--param v=instagram]
 // Chrome (déjà installé sur la machine) photographie chaque image de
 // l'animation, puis ffmpeg les assemble en H.264 compatible Instagram/TikTok.
 // Le flou de mouvement est calculé dans la page (voir CONFIG.shutter).
@@ -14,7 +15,14 @@ const puppeteer = require('puppeteer-core')
 const ffmpegPath = require('ffmpeg-static')
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const OUT = path.join(here, process.argv[2] || 'bontin-motion-9x16.mp4')
+const args = process.argv.slice(2)
+const option = (nom) => {
+  const i = args.indexOf(nom)
+  return i >= 0 ? args.splice(i, 2)[1] : null
+}
+const PAGE = option('--page') || 'index.html'
+const PARAM = option('--param')
+const OUT = path.join(here, args[0] || 'bontin-motion-9x16.mp4')
 
 const CHROME_CANDIDATES = [
   process.env.CHROME_PATH,
@@ -36,7 +44,7 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage()
 page.on('pageerror', (e) => console.error('Erreur dans la page :', e.message))
 await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 })
-await page.goto(pathToFileURL(path.join(here, 'index.html')).href + '?render', { waitUntil: 'load' })
+await page.goto(pathToFileURL(path.join(here, PAGE)).href + '?render' + (PARAM ? '&' + PARAM : ''), { waitUntil: 'load' })
 await page.waitForFunction('window.__ready === true', { timeout: 60000 })
 
 const { duration, FPS } = await page.evaluate(() => ({ duration: window.__duration, FPS: window.__fps }))

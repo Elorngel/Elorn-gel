@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bontin — réel concours Black Week</title>
+<!--
+  Réel 9:16 (1080 × 1920), 15 secondes : jeu concours Black Week (le colis à gagner).
+  Deux versions, qui ne diffèrent que par l'étape 1 et la mention légale :
+    ?v=facebook (par défaut) et ?v=instagram
+  · Aperçu : ouvrir ce fichier dans Chrome → l'animation tourne en boucle.
+    (ajouter ?t=7.5 à la fin de l'adresse pour figer l'image à 7,5 s)
+  · Vidéos MP4 : dans le Terminal, depuis le dossier motion/ → npm run render:concours
+-->
+<style>
+  @font-face { font-family: 'Bebas Neue'; font-weight: 400; src: url(assets/fonts/bebas-neue-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 500; src: url(assets/fonts/public-sans-latin-500-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 600; src: url(assets/fonts/public-sans-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 700; src: url(assets/fonts/public-sans-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Public Sans'; font-weight: 800; src: url(assets/fonts/public-sans-latin-800-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Condensed'; font-weight: 600; src: url(assets/fonts/roboto-condensed-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Roboto Condensed'; font-weight: 700; src: url(assets/fonts/roboto-condensed-latin-700-normal.woff2) format('woff2'); }
+
+  /* Couleurs des visuels Black Week (docs/black-week/visuels) */
+  :root {
+    --noir: #111111;
+    --ink: #1b231a;
+    --paper: #fbfaf6;
+    --ticket: #f7f5ee;
+    --rust: #a34428;
+    --rust-vif: #cd5735;
+    --muted: #6b7264;
+    --gris: #8d8d86;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #050505; overflow: hidden; }
+
+  #stage {
+    position: absolute; left: 50%; top: 50%;
+    width: 1080px; height: 1920px; overflow: hidden;
+    background: var(--noir); color: var(--paper);
+    font-family: 'Public Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.render #stage { left: 0; top: 0; transform: none !important; }
+
+  .scene { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: var(--noir); }
+  .abs { position: absolute; }
+  .center { left: 0; width: 1080px; display: flex; justify-content: center; text-align: center; }
+  .shade { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 50; }
+  /* Bande de couleur qui précède chaque écran quand il monte */
+  .lead { position: absolute; left: 0; top: -90px; width: 100%; height: 90px; }
+
+  .display {
+    font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+    line-height: .86; text-transform: uppercase; white-space: nowrap;
+  }
+  .contour { color: transparent; -webkit-text-stroke: 5px var(--paper); }
+  .tag {
+    font-family: 'Roboto Condensed', sans-serif; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .3em; white-space: nowrap;
+  }
+  /* Masque pour faire monter le texte ligne par ligne (marge haute pour les accents) */
+  .mask { display: block; overflow: hidden; padding: .16em 0 .04em; margin: -.16em 0 -.04em; }
+  .mask > .in { display: block; }
+
+  .logo-blanc { filter: brightness(0) invert(1); height: 74px; }
+  .ph { position: relative; overflow: hidden; background: #222; flex: none; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.05); }
+
+  .check { fill: none; stroke: currentColor; stroke-width: 3.4; stroke-linecap: square; stroke-linejoin: miter; }
+
+  /* Compteur à rouleaux (« 93,14 € ») */
+  .num { display: flex; line-height: 1; }
+  .num .fix, .odo { display: block; height: .86em; margin-top: .06em; overflow: hidden; }
+  .num .fix .in, .odo .win { display: block; height: 1em; margin-top: -.06em; }
+  .odo .roll span { display: block; height: 1em; text-align: center; }
+
+  /* Tampon brique incliné (forme du badge des fiches produits) */
+  .stamp {
+    background: var(--rust); color: var(--paper);
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+    font-family: 'Bebas Neue'; font-size: 124px; line-height: .86; white-space: nowrap;
+    padding: 30px 74px 18px;
+  }
+
+  /* ---------- 1. Accroche ---------- */
+  .strip { display: flex; gap: 20px; }
+  .strip .ph { width: 380px; height: 380px; }
+
+  /* ---------- 2. Le colis ---------- */
+  .cadre { overflow: hidden; background: var(--noir); }
+  .vue { position: absolute; inset: 0; clip-path: inset(100% 0 0 0); }
+  .vue img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .chip-nom {
+    position: absolute; left: 24px; bottom: 24px; background: var(--paper); color: var(--ink);
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 36px; text-transform: uppercase;
+    letter-spacing: .03em; padding: 12px 20px 10px; white-space: nowrap;
+  }
+  .chip-prix {
+    position: absolute; right: 24px; bottom: 24px; background: var(--rust); color: var(--paper);
+    font-family: 'Bebas Neue'; font-size: 74px; line-height: 1; padding: 12px 20px 2px; transform-origin: 100% 100%;
+  }
+  .compte {
+    position: absolute; left: 24px; top: 24px; z-index: 5; background: var(--noir); color: var(--paper);
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 30px; letter-spacing: .14em; padding: 10px 16px 8px;
+  }
+  .grille {
+    position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; align-content: center;
+  }
+  .grille .ph { height: 228px; }
+  .grille .sept {
+    background: var(--rust); display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .grille .sept b { font-family: 'Bebas Neue'; font-weight: 400; font-size: 140px; line-height: .8; padding-top: 14px; }
+  .grille .sept span { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 26px; letter-spacing: .1em; text-transform: uppercase; text-align: center; line-height: 1.1; }
+
+  .ombre { filter: drop-shadow(0 30px 40px rgba(0, 0, 0, .55)); }
+  /* Ticket de caisse, bas en dents de scie comme la bannière du site */
+  .ticket {
+    background: var(--ticket); color: #111; padding: 30px 44px 54px;
+    -webkit-mask: linear-gradient(#000, #000) top / 100% calc(100% - 24px) no-repeat,
+      radial-gradient(circle at 16px 24px, transparent 14px, #000 15px) bottom / 32px 24px repeat-x;
+    mask: linear-gradient(#000, #000) top / 100% calc(100% - 24px) no-repeat,
+      radial-gradient(circle at 16px 24px, transparent 14px, #000 15px) bottom / 32px 24px repeat-x;
+  }
+  .t-entete { text-align: center; border-bottom: 3px dashed #111; padding-bottom: 14px; margin-bottom: 12px; }
+  .t-entete b { display: block; font-family: 'Bebas Neue'; font-weight: 400; font-size: 62px; letter-spacing: 4px; line-height: 1; }
+  .t-entete small { display: block; font-family: 'Roboto Condensed'; font-weight: 700; font-size: 21px; letter-spacing: .25em; text-transform: uppercase; margin-top: 6px; }
+  .t-ligne {
+    display: flex; align-items: baseline; gap: 12px; height: 46px;
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 30px; text-transform: uppercase;
+    clip-path: inset(0 100% 0 0);
+  }
+  .t-ligne span { white-space: nowrap; }
+  .t-ligne i { flex: 1; border-bottom: 3px dotted #9a9a94; transform: translateY(-7px); }
+  .t-ligne b { color: var(--rust); white-space: nowrap; }
+  .t-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-top: 3px dashed #111; margin-top: 12px; padding-top: 16px;
+    font-family: 'Bebas Neue'; font-size: 78px; line-height: 1;
+  }
+  .t-total b { font-weight: 400; color: var(--rust); }
+
+  /* ---------- 3. Pour jouer ---------- */
+  #s3 { background: var(--rust) repeating-linear-gradient(135deg, rgba(0, 0, 0, .09) 0 3px, transparent 3px 26px); }
+  .carte { width: 936px; height: 172px; display: flex; background: var(--paper); color: var(--ink); }
+  .carte .no {
+    width: 172px; flex: none; background: var(--ink); color: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue'; font-size: 132px; line-height: 1; padding-top: 12px;
+  }
+  .carte .txt {
+    display: flex; align-items: center; padding: 0 34px;
+    font-family: 'Roboto Condensed'; font-weight: 700; font-size: 44px; line-height: 1.12;
+    text-transform: uppercase; letter-spacing: .02em;
+  }
+  .carte.bonus { background: var(--ink); color: var(--paper); }
+  .carte.bonus .no { background: var(--rust-vif); font-size: 112px; }
+
+  /* ---------- 4. Tirage et appel à commenter ---------- */
+  .billet {
+    width: 940px; height: 470px; display: flex; background: var(--paper); color: var(--ink);
+    -webkit-mask: radial-gradient(circle at 282px 0, transparent 26px, #000 27px) top / 100% 51% no-repeat,
+      radial-gradient(circle at 282px 100%, transparent 26px, #000 27px) bottom / 100% 51% no-repeat;
+    mask: radial-gradient(circle at 282px 0, transparent 26px, #000 27px) top / 100% 51% no-repeat,
+      radial-gradient(circle at 282px 100%, transparent 26px, #000 27px) bottom / 100% 51% no-repeat;
+  }
+  .souche {
+    width: 282px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; border-right: 4px dashed var(--rust); padding-top: 6px;
+  }
+  .billet-main { position: relative; flex: 1; padding: 46px 48px 0 56px; }
+  .billet .petit { font-family: 'Roboto Condensed'; font-weight: 700; text-transform: uppercase; }
+  .billet mark { background: var(--ink); color: var(--paper); padding: 2px 10px 4px; }
+
+  .bulle { position: relative; width: 936px; display: flex; gap: 24px; align-items: center; background: var(--paper); color: var(--ink); padding: 24px 26px; }
+  .bulle::after {
+    content: ''; position: absolute; left: 64px; bottom: -28px;
+    border-right: 36px solid transparent; border-top: 28px solid var(--paper);
+  }
+  .avatar { width: 92px; height: 92px; flex: none; background: var(--rust-vif); color: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .avatar svg { width: 64px; height: 64px; }
+  .bulle .lbl { font-family: 'Roboto Condensed'; font-weight: 700; font-size: 22px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .bulle .texte { font-family: 'Public Sans'; font-weight: 700; font-size: 42px; line-height: 1.2; margin-top: 4px; white-space: nowrap; }
+  .caret { display: inline-block; width: 4px; height: 44px; background: var(--rust); vertical-align: -7px; margin-left: 3px; }
+  .envoi { width: 76px; height: 76px; flex: none; margin-left: auto; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .envoi svg { width: 40px; height: 40px; }
+  .legal { font-family: 'Public Sans'; font-weight: 500; font-size: 23px; line-height: 1.35; color: var(--gris); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ============ 1. ACCROCHE : le colis à gagner ============ -->
+  <section class="scene" id="s1">
+    <div class="shade"></div>
+    <div class="abs center" style="top:150px"><img class="logo-blanc" id="s1-logo" src="assets/img/logo.png" alt=""></div>
+    <div class="abs center tag" id="s1-tag" style="top:300px; font-size:38px; color:var(--rust-vif)">
+      <span style="display:block">Jeu concours · Black Week</span>
+    </div>
+    <div class="abs center display" id="s1-t1" style="top:372px; font-size:300px; color:var(--paper)">
+      <span class="mask"><span class="in">Gagnez</span></span>
+    </div>
+    <div class="abs center display contour" id="s1-t2" style="top:622px; font-size:300px">
+      <span class="mask"><span class="in">le colis</span></span>
+    </div>
+    <div class="abs center tag" id="s1-valeur" style="top:884px; font-size:40px; color:var(--paper)">
+      <span class="mask"><span class="in">D'une valeur de</span></span>
+    </div>
+    <div class="abs center" style="top:928px">
+      <div class="num display" id="s1-prix" style="font-size:230px; color:var(--rust-vif)" data-valeur="93,14 €"></div>
+    </div>
+    <div class="abs strip" id="s1-strip" style="left:0; top:1210px"></div>
+  </section>
+
+  <!-- ============ 2. CE QU'IL Y A DANS LE COLIS ============ -->
+  <section class="scene" id="s2">
+    <div class="lead" style="background:var(--rust)"></div>
+    <div class="shade"></div>
+    <div class="abs center tag" id="s2-tag" style="top:146px; font-size:38px; color:var(--rust-vif)">
+      <span style="display:block">Dans le colis</span>
+    </div>
+    <div class="abs cadre" id="s2-cadre" style="left:72px; top:214px; width:936px; height:600px">
+      <div id="s2-vues"></div>
+      <div class="grille" id="s2-grille"></div>
+      <div class="compte" id="s2-compte">1 / 7</div>
+    </div>
+    <div class="abs ombre" id="s2-ticket-wrap" style="left:110px; top:862px; width:860px">
+      <div class="ticket" id="s2-ticket">
+        <div class="t-entete"><b>Bontin</b><small>Ticket · jeu concours</small></div>
+        <div id="s2-lignes"></div>
+        <div class="t-total"><span>Total</span><b id="s2-total">0,00 €</b></div>
+      </div>
+    </div>
+    <div class="abs stamp" id="s2-stamp" style="left:250px; top:442px">À gagner&nbsp;!</div>
+  </section>
+
+  <!-- ============ 3. POUR JOUER ============ -->
+  <section class="scene" id="s3">
+    <div class="lead" style="background:var(--paper)"></div>
+    <div class="shade"></div>
+    <div class="abs display" id="s3-titre" style="left:68px; top:232px; font-size:214px">
+      <span class="mask" style="color:var(--paper)"><span class="in">Pour jouer,</span></span>
+      <span class="mask" style="color:var(--ink)"><span class="in">c'est simple</span></span>
+    </div>
+    <div class="abs carte" id="s3-c1" style="left:72px; top:684px">
+      <div class="no">1</div><div class="txt" id="s3-etape1"></div>
+    </div>
+    <div class="abs carte" id="s3-c2" style="left:72px; top:882px">
+      <div class="no">2</div><div class="txt"><span>Commentez : votre plat<br>préféré pour les fêtes</span></div>
+    </div>
+    <div class="abs carte bonus" id="s3-c3" style="left:72px; top:1080px">
+      <div class="no">+1</div><div class="txt"><span>Compte créé sur bontin.fr<br>= une 2<sup style="font-size:.6em">e</sup>&nbsp;chance</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. TIRAGE + APPEL À COMMENTER ============ -->
+  <section class="scene" id="s4">
+    <div class="lead" style="background:var(--paper)"></div>
+    <div class="abs center" style="top:132px"><img class="logo-blanc" id="s4-logo" src="assets/img/logo.png" alt=""></div>
+
+    <div class="abs ombre" id="s4-billet-wrap" style="left:70px; top:262px">
+      <div class="billet" id="s4-billet">
+        <div class="souche">
+          <span class="mask"><span class="in petit" style="font-size:26px; letter-spacing:.22em; color:var(--rust)">Tirage</span></span>
+          <span class="mask"><span class="in display" style="font-size:70px; line-height:.95">Vendredi</span></span>
+          <span class="mask"><span class="in display" style="font-size:122px; line-height:.86">27/11</span></span>
+          <span class="mask"><span class="in display" style="font-size:66px; line-height:.95; color:var(--rust)">à 12&nbsp;h</span></span>
+          <span class="mask"><span class="in petit" style="font-size:20px; letter-spacing:.14em; line-height:1.25; margin-top:10px">Jour du<br>Black Friday</span></span>
+        </div>
+        <div class="billet-main">
+          <div class="abs petit" style="right:34px; top:30px; font-size:26px; letter-spacing:.12em; color:var(--rust)">N° 0027</div>
+          <span class="mask"><span class="in petit" style="font-size:26px; letter-spacing:.3em; color:var(--muted)">Ne le ratez pas</span></span>
+          <span class="mask"><span class="in display" style="font-size:148px; margin-top:10px">À vous de</span></span>
+          <span class="mask"><span class="in display" style="font-size:176px; color:var(--rust)">jouer&nbsp;!</span></span>
+          <span class="mask"><span class="in" style="font-family:'Public Sans'; font-weight:700; font-size:31px; line-height:1.5; margin-top:14px">Participation jusqu'au<br><mark>jeudi 26 novembre, 23&nbsp;h&nbsp;59</mark></span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs bulle" id="s4-bulle" style="left:72px; top:808px">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.2-7 8.5-7s7.7 2.4 8.5 7z"/></svg>
+      </div>
+      <div>
+        <div class="lbl">Votre commentaire</div>
+        <div class="texte"><span id="s4-texte"></span><span class="caret" id="s4-caret"></span></div>
+      </div>
+      <div class="envoi" id="s4-envoi">
+        <svg viewBox="0 0 24 24"><path d="M4 12h14M12.5 5.5 19 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/></svg>
+      </div>
+    </div>
+
+    <div class="abs center display" id="s4-cta" style="top:1046px; font-size:226px; color:var(--paper)">
+      <span class="mask"><span class="in">Commentez</span></span>
+    </div>
+    <div class="abs center" style="top:1262px">
+      <svg id="s4-fleche" width="110" height="130" viewBox="0 0 110 130"><path d="M55 8v100M18 72l37 37 37-37" fill="none" stroke="#cd5735" stroke-width="13" stroke-linecap="square"/></svg>
+    </div>
+    <div class="abs center" style="top:1422px">
+      <p class="legal" id="s4-legal" style="width:900px"></p>
+    </div>
+  </section>
+
+</div>
+
+<svg id="fx" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// Réglages
+// ---------------------------------------------------------------------------
+const CONFIG = {
+  duration: 15,     // secondes
+  fps: 30,          // images par seconde de la vidéo
+  shutter: 0.5,     // flou de mouvement (0 = aucun, 0.5 = obturateur à 180°)
+}
+
+// Seules différences entre les deux réseaux
+const VARIANTES = {
+  facebook: { etape1: 'Aimez la page Bontin', reseau: 'Facebook' },
+  instagram: { etape1: 'Suivez @bontin.surgeles', reseau: 'Instagram' },
+}
+
+// Le colis (prix du site au 25/11/2026, total 93,14 €). `pos` = cadrage de la photo.
+const COLIS = [
+  { img: 'bw-hache', photo: 'Haché tradition 1 kg', ticket: 'Haché tradition 1 kg', prix: 20.49, pos: '50% 62%' },
+  { img: 'bw-saumon', photo: 'Pavés de saumon 1 kg', ticket: 'Pavés de saumon 1 kg', prix: 26.90, pos: '50% 42%' },
+  { img: 'bw-saucisses', photo: 'Saucisses fumées 1 kg', ticket: 'Saucisses fumées 1 kg', prix: 10.79, pos: '50% 55%' },
+  { img: 'bw-aiguillettes', photo: 'Aiguillettes panées 1 kg', ticket: 'Aiguillettes de poulet panées', prix: 12.49, pos: '50% 55%' },
+  { img: 'bw-nems', photo: '28 nems au poulet', ticket: '28 nems au poulet', prix: 10.59, pos: '50% 58%' },
+  { img: 'bw-tarte', photo: 'Tarte aux pommes 8 parts', ticket: 'Tarte aux pommes 8 parts', prix: 7.89, pos: '50% 46%' },
+  { img: 'bw-batonnets', photo: '4 bâtonnets double caramel', ticket: '4 bâtonnets double caramel', prix: 3.99, pos: '51% 29%' },
+]
+const COMMENTAIRE = 'Les coquilles Saint-Jacques !'
+
+const params = new URLSearchParams(location.search)
+const V = VARIANTES[params.get('v')] || VARIANTES.facebook
+const RENDER = params.has('render')
+if (RENDER) document.body.classList.add('render')
+
+const $ = (s, root = document) => root.querySelector(s)
+const $$ = (s, root = document) => [...root.querySelectorAll(s)]
+const euros = (n) => n.toFixed(2).replace('.', ',') + ' €'
+
+gsap.config({ force3D: false })
+const tl = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } })
+
+// Fonctions rappelées après chaque image (compteurs, texte tapé…)
+const afterRender = []
+const sync = () => afterRender.forEach((f) => f())
+
+// --- Petits outils d'animation -------------------------------------------
+// Texte qui monte depuis son masque
+const rise = (targets, at, { d = 0.75, stagger = 0.08, ease = 'expo.out' } = {}) =>
+  tl.fromTo(targets, { yPercent: 140 }, { yPercent: 0, duration: d, stagger, ease }, at)
+
+// Volet qui découvre un élément de gauche à droite
+const wipe = (targets, at, { d = 0.5, ease = 'expo.out', stagger = 0 } = {}) =>
+  tl.fromTo(targets, { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: d, ease, stagger }, at)
+
+// Passage d'un écran à l'autre : le suivant monte, le précédent s'efface
+function transition(from, to, at, d = 0.5) {
+  tl.set(to, { visibility: 'visible' }, at)
+  tl.fromTo(to, { y: 1920 + 90 }, { y: 0, duration: d, ease: 'power4.inOut' }, at)
+  tl.to(from, { y: -380, duration: d, ease: 'power4.inOut' }, at)
+  const shade = $('.shade', from)
+  if (shade) tl.to(shade, { opacity: 0.6, duration: d, ease: 'power2.in' }, at)
+  tl.set(from, { visibility: 'hidden' }, at + d)
+}
+
+// Flou de mouvement (vidéo seulement) : un élément qui se déplace vite reçoit
+// un flou proportionnel à la distance parcourue depuis l'image précédente,
+// comme une caméra dont l'obturateur reste ouvert un instant.
+const blurred = []
+function trackBlur(measureEl, filterEl = measureEl) {
+  const ns = 'http://www.w3.org/2000/svg'
+  const id = 'mb' + blurred.length
+  const filter = document.createElementNS(ns, 'filter')
+  filter.setAttribute('id', id)
+  filter.setAttribute('x', '-20%')
+  filter.setAttribute('width', '140%')
+  filter.setAttribute('y', '-40%')
+  filter.setAttribute('height', '180%')
+  filter.setAttribute('color-interpolation-filters', 'sRGB')
+  const gauss = document.createElementNS(ns, 'feGaussianBlur')
+  gauss.setAttribute('stdDeviation', '0 0')
+  filter.appendChild(gauss)
+  $('#fx').appendChild(filter)
+  blurred.push({ measureEl, filterEl, id, gauss, last: null })
+}
+function applyBlur(sequential) {
+  blurred.forEach((b) => {
+    const x = gsap.getProperty(b.measureEl, 'x')
+    const y = gsap.getProperty(b.measureEl, 'y')
+    const dx = sequential && b.last ? Math.abs(x - b.last.x) : 0
+    const dy = sequential && b.last ? Math.abs(y - b.last.y) : 0
+    b.last = { x, y }
+    const sx = Math.min(140, dx * CONFIG.shutter * 0.3)
+    const sy = Math.min(140, dy * CONFIG.shutter * 0.3)
+    if (sx < 0.6 && sy < 0.6) {
+      b.filterEl.style.filter = ''
+    } else {
+      b.gauss.setAttribute('stdDeviation', `${sx.toFixed(2)} ${sy.toFixed(2)}`)
+      b.filterEl.style.filter = `url(#${b.id})`
+    }
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Éléments générés
+// ---------------------------------------------------------------------------
+function prepare() {
+  // Compteur à rouleaux : un rouleau par chiffre, les autres signes fixes
+  const prix = $('#s1-prix')
+  let spins = 1
+  prix.innerHTML = [...prix.dataset.valeur].map((c) => {
+    if (!/\d/.test(c)) return `<span class="fix"><span class="in">${c === ' ' ? '&nbsp;' : c}</span></span>`
+    const steps = spins++ * 10 + +c + 1
+    const digits = '<span></span>' + Array.from({ length: steps }, (_, i) => `<span>${i % 10}</span>`).join('')
+    return `<span class="odo" data-steps="${steps}"><span class="win"><span class="roll" style="display:block">${digits}</span></span></span>`
+  }).join('')
+
+  // Bandeau de photos de l'accroche (deux fois la série, pour défiler sans trou)
+  $('#s1-strip').innerHTML = [...COLIS, ...COLIS]
+    .map((p) => `<div class="ph"><img src="assets/img/${p.img}.jpg" alt=""></div>`).join('')
+
+  // Photos plein cadre, grille finale et lignes du ticket
+  $('#s2-vues').innerHTML = COLIS.map((p) => `
+    <div class="vue">
+      <img src="assets/img/${p.img}.jpg" alt="" style="object-position:${p.pos}">
+      <span class="chip-nom">${p.photo}</span>
+      <span class="chip-prix">${euros(p.prix)}</span>
+    </div>`).join('')
+  $('#s2-grille').innerHTML = COLIS.map((p) => `<div class="ph"><img src="assets/img/${p.img}.jpg" alt="" style="object-position:${p.pos}"></div>`).join('')
+    + '<div class="sept"><b>7</b><span>produits<br>surgelés</span></div>'
+  $('#s2-lignes').innerHTML = COLIS.map((p) => `<div class="t-ligne"><span>${p.ticket}</span><i></i><b>${euros(p.prix)}</b></div>`).join('')
+
+  $('#s3-etape1').textContent = V.etape1
+  $('#s4-legal').textContent = `Jeu gratuit sans obligation d'achat, réservé aux majeurs résidant dans le Finistère. `
+    + `Règlement en commentaire. ${V.reseau} n'est ni organisateur ni parrain de ce jeu.`
+}
+
+// ---------------------------------------------------------------------------
+// Construction de la timeline
+// ---------------------------------------------------------------------------
+function build() {
+  const S = [1, 2, 3, 4].map((i) => $('#s' + i))
+  gsap.set(S.slice(1), { y: 1920 + 90, visibility: 'hidden' })
+  S.forEach((s, i) => gsap.set(s, { zIndex: i + 1 }))
+
+  // Moments de bascule entre les écrans
+  const T = [2.25, 7.35, 11.25]
+  T.forEach((at, i) => transition(S[i], S[i + 1], at))
+
+  // ===== 1. Accroche =====================================================
+  tl.fromTo('#s1-logo', { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.7 }, 0)
+  wipe('#s1-tag', 0.05, { d: 0.6 })
+  rise('#s1-t1 .in', 0.08, { d: 0.8 })
+  wipe('#s1-t2', 0.3, { d: 0.75, ease: 'power3.out' })
+  rise('#s1-valeur .in', 0.5)
+  rise('#s1-prix .fix .in', 0.55, { d: 0.6, stagger: 0.04 })
+  $$('#s1-prix .odo').forEach((odo, i) => {
+    const roll = $('.roll', odo)
+    tl.fromTo(roll, { y: 0 }, { y: () => -odo.dataset.steps * roll.firstElementChild.offsetHeight, duration: 1.0 + i * 0.12, ease: 'power4.out' }, 0.55 + i * 0.05)
+  })
+  tl.to('#s1-prix', { keyframes: { scale: [1, 1.08, 1] }, duration: 0.4, ease: 'power2.out' }, 1.8)
+  tl.fromTo('#s1-strip', { y: 200 }, { y: 0, duration: 0.9 }, 0)
+  tl.fromTo('#s1-strip', { x: 0 }, { x: -1200, duration: 2.75, ease: 'none' }, 0)
+
+  // ===== 2. Ce qu'il y a dans le colis ===================================
+  const t2 = T[0]
+  wipe('#s2-tag', t2 + 0.2)
+  tl.fromTo('#s2-ticket-wrap', { y: 160, rotation: 0 }, { y: 0, rotation: -1.5, duration: 0.9 }, t2 + 0.15)
+  const vues = $$('#s2-vues .vue')
+  const lignes = $$('#s2-lignes .t-ligne')
+  const total = { v: 0 }
+  const compte = { k: 1 }
+  afterRender.push(() => {
+    $('#s2-total').textContent = euros(total.v)
+    $('#s2-compte').textContent = `${Math.round(compte.k)} / 7`
+  })
+  let cumul = 0
+  COLIS.forEach((p, i) => {
+    const ti = t2 + 0.3 + i * 0.52
+    const avant = cumul
+    cumul += p.prix
+    tl.fromTo(vues[i], { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.32, ease: 'power3.out' }, ti)
+    tl.fromTo($('img', vues[i]), { scale: 1.18 }, { scale: 1.04, duration: 1.0, ease: 'power2.out' }, ti)
+    tl.fromTo($('.chip-nom', vues[i]), { x: -70, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4 }, ti + 0.1)
+    tl.fromTo($('.chip-prix', vues[i]), { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' }, ti + 0.14)
+    tl.set(compte, { k: i + 1 }, ti)
+    wipe(lignes[i], ti + 0.12, { d: 0.3, ease: 'power2.out' })
+    tl.fromTo(total, { v: avant }, { v: cumul, duration: 0.36, ease: 'power2.out', immediateRender: false }, ti + 0.16)
+  })
+  // Les 7 produits réunis, puis le tampon
+  const tg = t2 + 0.3 + COLIS.length * 0.52
+  tl.to('#s2-vues', { opacity: 0, duration: 0.3, ease: 'none' }, tg)
+  tl.to('#s2-compte', { opacity: 0, duration: 0.2, ease: 'none' }, tg)
+  tl.fromTo('#s2-grille > *', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'back.out(1.6)' }, tg)
+  tl.fromTo('#s2-stamp', { scale: 2.4, rotation: -30, opacity: 0 }, { scale: 1, rotation: -6, opacity: 1, duration: 0.42, ease: 'back.out(2)' }, tg + 0.35)
+  tl.to('#s2-cadre', { keyframes: { x: [0, -12, 8, -3, 0] }, duration: 0.26, ease: 'none' }, tg + 0.43)
+  tl.to('#s2-total', { keyframes: { scale: [1, 1.14, 1] }, duration: 0.45, ease: 'power2.out' }, tg + 0.1)
+  gsap.set('#s2-total', { transformOrigin: '100% 80%', display: 'inline-block' })
+
+  // ===== 3. Pour jouer ===================================================
+  const t3 = T[1]
+  rise('#s3-titre .in', t3 + 0.2, { d: 0.8, stagger: 0.09 })
+  ;['#s3-c1', '#s3-c2', '#s3-c3'].forEach((c, i) => {
+    tl.fromTo(c, { x: 1100 }, { x: 0, duration: 0.7 }, t3 + 0.55 + i * 0.35)
+    tl.fromTo(`${c} .no`, { scale: 0.4 }, { scale: 1, duration: 0.5, ease: 'back.out(2.4)' }, t3 + 0.8 + i * 0.35)
+  })
+
+  // ===== 4. Tirage + appel à commenter ==================================
+  const t4 = T[2]
+  tl.fromTo('#s4-logo', { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.7 }, t4 + 0.2)
+  tl.fromTo('#s4-billet-wrap', { y: 700, rotation: 7 }, { y: 0, rotation: -2.5, duration: 0.95 }, t4 + 0.22)
+  rise('#s4-billet .souche .in', t4 + 0.5, { stagger: 0.05 })
+  rise('#s4-billet .billet-main .in', t4 + 0.6, { stagger: 0.06 })
+  tl.fromTo('#s4-bulle', { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(1.8)' }, t4 + 1.05)
+  const frappe = { n: 0 }
+  afterRender.push(() => {
+    $('#s4-texte').textContent = COMMENTAIRE.slice(0, Math.round(frappe.n))
+    // le curseur clignote quand on ne tape pas
+    const t = tl.time()
+    const tape = t > t4 + 1.3 && t < t4 + 2.4
+    $('#s4-caret').style.opacity = tape || Math.floor(t * 2.5) % 2 === 0 ? 1 : 0
+  })
+  tl.fromTo(frappe, { n: 0 }, { n: COMMENTAIRE.length, duration: 1.1, ease: 'none', immediateRender: false }, t4 + 1.3)
+  tl.to('#s4-envoi', { keyframes: { scale: [1, 0.86, 1] }, duration: 0.35, ease: 'power2.out' }, t4 + 2.5)
+  tl.to('#s4-envoi', { backgroundColor: '#a34428', duration: 0.15, ease: 'none' }, t4 + 2.5)
+  rise('#s4-cta .in', t4 + 1.2, { d: 0.8 })
+  tl.fromTo('#s4-fleche', { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, t4 + 1.5)
+  tl.to('#s4-fleche', { keyframes: { y: [0, 30, 0] }, duration: 0.6, ease: 'sine.inOut', repeat: 2 }, t4 + 1.95)
+  tl.fromTo('#s4-legal', { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'none' }, t4 + 1.6)
+
+  // Éléments qui reçoivent le flou de mouvement
+  S.forEach((scene) => trackBlur(scene))
+  $$('#s1-prix .odo').forEach((odo) => trackBlur($('.roll', odo), $('.win', odo)))
+  ;['#s1-strip', '#s2-ticket-wrap', '#s3-c1', '#s3-c2', '#s3-c3', '#s4-billet-wrap'].forEach((sel) => trackBlur($(sel)))
+
+  // Durée totale exacte
+  tl.set({}, {}, CONFIG.duration)
+}
+
+// ---------------------------------------------------------------------------
+// Démarrage
+// ---------------------------------------------------------------------------
+function layout() {
+  if (RENDER) return
+  const s = Math.min(innerWidth / 1080, innerHeight / 1920)
+  gsap.set('#stage', { xPercent: -50, yPercent: -50, scale: s })
+}
+
+async function start() {
+  prepare()
+  const faces = [
+    '400 100px "Bebas Neue"',
+    '500 40px "Public Sans"', '600 40px "Public Sans"', '700 40px "Public Sans"', '800 40px "Public Sans"',
+    '600 40px "Roboto Condensed"', '700 40px "Roboto Condensed"',
+  ]
+  await Promise.all(faces.map((f) => document.fonts.load(f, 'AÉé€°')))
+  await document.fonts.ready
+  await Promise.all($$('img').map((img) => img.decode().catch(() => {})))
+
+  build()
+
+  let lastT = null
+  window.__seek = (t) => {
+    tl.seek(t, false)
+    sync()
+    if (RENDER) applyBlur(lastT !== null && Math.abs(t - lastT - 1 / CONFIG.fps) < 1e-6)
+    lastT = t
+  }
+  window.__duration = CONFIG.duration
+  window.__fps = CONFIG.fps
+  window.__ready = true
+
+  if (RENDER) { window.__seek(0); return }
+  layout()
+  addEventListener('resize', layout)
+  if (params.has('t')) {
+    window.__seek(parseFloat(params.get('t')))
+  } else {
+    tl.eventCallback('onUpdate', sync)
+    tl.repeat(-1).play(0)
+  }
+}
+start()
+</script>
+</body>
+</html>

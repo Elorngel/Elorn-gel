@@ -72,3 +72,41 @@ export function pageVue() {
     derniere = url
   }, 800)
 }
+
+// --- Paniers abandonnés (26/11/2026) ------------------------------------------------------------------------
+// Fonction « E-commerce » de Matomo (à cocher une fois dans Matomo : Administration → Sites web → Gérer →
+// « Site e-commerce »). Chaque changement de panier envoie son contenu (produits, quantités) ; une commande
+// enregistrée vide le panier côté Matomo. Un panier jamais commandé apparaît dans « E-commerce → Paniers
+// abandonnés ». Anonyme : Matomo ne sait pas QUI a fait le panier, seulement ce qu'il contenait.
+// Valeur indicative : prix livraison de base (sans promo ni remise retrait).
+function pret() {
+  if (!ACTIF || statistiquesRefusees()) return null
+  if (!charge) charger()
+  return window._paq
+}
+
+let minuteurPanier = null
+export function panierModifie(items) {
+  const paq = pret()
+  if (!paq || !items.length) return
+  clearTimeout(minuteurPanier)
+  minuteurPanier = setTimeout(() => {
+    paq.push(['clearEcommerceCart'])
+    let total = 0
+    for (const i of items) {
+      const prix = Number(i.prix_livraison) || 0
+      total += prix * i.quantity
+      paq.push(['addEcommerceItem', i.cartKey, i.nom, [], prix, i.quantity])
+    }
+    paq.push(['trackEcommerceCartUpdate', Math.round(total * 100) / 100])
+  }, 1500)
+}
+
+export function commandeEnregistree(commande, items) {
+  const paq = pret()
+  if (!paq || !commande?.id) return
+  clearTimeout(minuteurPanier)
+  paq.push(['clearEcommerceCart'])
+  for (const i of items) paq.push(['addEcommerceItem', i.cartKey, i.nom, [], Number(i.prix_livraison) || 0, i.quantity])
+  paq.push(['trackEcommerceOrder', String(commande.id).slice(0, 8).toUpperCase(), Number(commande.total) || 0])
+}

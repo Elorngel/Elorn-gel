@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { commandeEnregistree } from '../lib/statistiques'
 import { useCart } from '../context/CartContext'
 import { usePriceMode } from '../context/PriceModeContext'
 import { useOrder } from '../hooks/useOrder'
@@ -278,6 +279,7 @@ export default function CartPage() {
         // Compte tout juste créé : un bon de parrainage a pu s'ajouter, le serveur fait foi.
         totalAttendu: source === 'creation' ? undefined : calcul.total,
       })
+      commandeEnregistree(commande, items)
       setConfirmedOrder(commande)
       setCodeApplique(null)
       clear()

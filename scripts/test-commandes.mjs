@@ -82,7 +82,7 @@ async function tests() {
   // Commande au prix du serveur, code promo et bon
   const reglages = (await get('/rest/v1/parametres_site?select=remise_retrait,frais_livraison&id=eq.1'))[0]
   const avecVariantes = new Set((await get('/rest/v1/variantes_produit?select=produit_id')).map((v) => v.produit_id))
-  const produits = (await get('/rest/v1/produits?select=id,nom,nom_retrait,actif,en_rupture,en_promo,taux_promo,prix_promo,promo_debut,promo_fin,en_destockage,prix_destockage,prix_livraison,dispo_livraison,dispo_retrait&actif=eq.true&en_rupture=eq.false&dispo_retrait=neq.false&prix_livraison=gt.5&order=prix_livraison.desc&limit=40')).filter((p) => !avecVariantes.has(p.id))
+  const produits = (await get('/rest/v1/produits?select=id,nom,nom_retrait,actif,en_rupture,en_promo,taux_promo,prix_promo,promo_debut,promo_fin,en_destockage,prix_destockage,prix_livraison,dispo_livraison,dispo_retrait,sans_code_promo&actif=eq.true&en_rupture=eq.false&dispo_retrait=neq.false&prix_livraison=gt.5&order=prix_livraison.desc&limit=40')).filter((p) => !avecVariantes.has(p.id))
   const choix = produits.slice(0, 4)
   const lignes = choix.map((p) => ({ produit: p, variante: null, quantite: 1 }))
   const code = await post('/rest/v1/rpc/verifier_code_promo', { p_code: 'bienvenue10' }, JF)

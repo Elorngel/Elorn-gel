@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { panierModifie } from '../lib/statistiques'
 import { getPromoPercent, getDestockagePercent } from '../lib/pricing'
 
 const CartContext = createContext(null)
@@ -15,6 +16,16 @@ function loadInitialCart() {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadInitialCart)
+
+  // Statistiques (paniers abandonnés) : seulement quand le client modifie son panier, pas au chargement de la page.
+  const premier = useRef(true)
+  useEffect(() => {
+    if (premier.current) {
+      premier.current = false
+      return
+    }
+    panierModifie(items)
+  }, [items])
 
   useEffect(() => {
     try {

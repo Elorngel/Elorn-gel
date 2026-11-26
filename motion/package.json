@@ -2,9 +2,11 @@
   "name": "bontin-motion",
   "private": true,
   "type": "module",
-  "description": "Motion design 9:16 (15 s) — rendu vidéo à partir de index.html",
+  "description": "Vidéos motion design 9:16 (rendu à partir des pages HTML du dossier)",
   "scripts": {
-    "render": "node render.mjs"
+    "render": "node render.mjs",
+    "render:concours": "node render.mjs concours-black-week-facebook.mp4 --page concours-black-week.html --param v=facebook && node render.mjs concours-black-week-instagram.mp4 --page concours-black-week.html --param v=instagram",
+    "render:commander": "node render.mjs commander-petits-formats.mp4 --page commander-petits-formats.html"
   },
   "devDependencies": {
     "@fontsource/bebas-neue": "^5.3.0",
