@@ -204,7 +204,7 @@ ${calendrier}
 <div class="texte">Bonjour [Prénom], merci pour votre message. Nous vous répondons en message privé pour regarder ça ensemble.</div>
 
 <h2>Tous les visuels</h2>
-<p>Publications au format 4:5 (1080 × 1350, parfait pour Facebook et Instagram), stories en 1080 × 1920, couverture en 1640 × 624. Ils sont aussi dans le dossier <code>Fetes Bontin 2026</code> du Bureau, nommés avec le jour et l'heure.</p>
+<p>Publications au format 4:5 (1080 × 1350, parfait pour Facebook et Instagram), stories en 1080 × 1920, couverture en 1640 × 624. Ils sont aussi dans le dossier <code>Bontin Facebook et Instagram › Fetes Bontin 2026</code> du Bureau, nommés avec le jour et l'heure.</p>
 <div class="galerie">${galerie}</div>
 </main>
 <script>
@@ -249,7 +249,7 @@ ${texteInstagram(p)}
 `
   }).join(`\n${'·'.repeat(30)}\n\n`)
   const txt = `BONTIN — KIT FACEBOOK / INSTAGRAM DES FÊTES (DÉCEMBRE 2026)
-Guide avec visuels : docs/fetes-decembre/kit-fetes.html · Visuels : dossier « Fetes Bontin 2026 » sur le Bureau
+Guide avec visuels : docs/fetes-decembre/kit-fetes.html · Visuels : Bureau › « Bontin Facebook et Instagram » › « Fetes Bontin 2026 »
 
 ${trait}
 LES DATES RÉPÉTÉES PARTOUT
@@ -278,7 +278,7 @@ ${jours}`
 }
 
 export function copierBureau(dossier) {
-  const bureau = path.join(os.homedir(), 'Desktop', 'Fetes Bontin 2026')
+  const bureau = path.join(os.homedir(), 'Desktop', 'Bontin Facebook et Instagram', 'Fetes Bontin 2026')
   fs.mkdirSync(bureau, { recursive: true })
   // On repart d'un dossier propre : les visuels d'une ancienne version du calendrier sont retirés.
   for (const f of fs.readdirSync(bureau)) if (/^\d\d[bsc]? - .*\.jpg$/.test(f)) fs.rmSync(path.join(bureau, f))
